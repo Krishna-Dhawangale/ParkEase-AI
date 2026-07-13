@@ -35,3 +35,25 @@ export const useSidebarStore = create<SidebarStore>((set) => ({
   collapsed: false,
   toggleSidebar: () => set((s) => ({ collapsed: !s.collapsed })),
 }));
+
+interface AuthStore {
+  isAuthenticated: boolean;
+  user: { email: string } | null;
+  login: (email: string) => void;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthStore>((set) => ({
+  isAuthenticated: localStorage.getItem('parkease-auth') === 'true',
+  user: localStorage.getItem('parkease-user') ? { email: localStorage.getItem('parkease-user')! } : null,
+  login: (email) => {
+    localStorage.setItem('parkease-auth', 'true');
+    localStorage.setItem('parkease-user', email);
+    set({ isAuthenticated: true, user: { email } });
+  },
+  logout: () => {
+    localStorage.removeItem('parkease-auth');
+    localStorage.removeItem('parkease-user');
+    set({ isAuthenticated: false, user: null });
+  },
+}));

@@ -337,7 +337,7 @@ export function DashboardPage() {
               <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
               <Tooltip
-                formatter={(v: number) => [`₹${(v/1000).toFixed(0)}K`, 'Revenue']}
+                formatter={(v: any) => [`₹${(v/1000).toFixed(0)}K`, 'Revenue']}
                 contentStyle={{ borderRadius: 12, border: '1px solid #E5E7EB', fontSize: 12, fontFamily: 'Plus Jakarta Sans' }}
               />
               <Bar dataKey="revenue" fill="#0F766E" radius={[4, 4, 0, 0]} opacity={0.9} />

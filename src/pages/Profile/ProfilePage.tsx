@@ -7,7 +7,8 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { mockRecentBookings } from '../../lib/data';
-import { useThemeStore } from '../../store';
+import { useThemeStore, useAuthStore } from '../../store';
+import { useNavigate } from 'react-router-dom';
 
 const tabs = ['Overview', 'Vehicles', 'History', 'Rewards', 'Settings'];
 
@@ -21,6 +22,8 @@ function ProfileTab({ active, children }: { active: boolean; children: React.Rea
 
 export function ProfilePage() {
   const { theme, toggleTheme } = useThemeStore();
+  const logout = useAuthStore(s => s.logout);
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Overview');
 
   return (
@@ -308,7 +311,13 @@ export function ProfilePage() {
             </div>
           ))}
 
-          <button className="card w-full p-4 flex items-center justify-center gap-2 text-sm font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
+          <button 
+            onClick={() => {
+              logout();
+              navigate('/');
+            }}
+            className="card w-full p-4 flex items-center justify-center gap-2 text-sm font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+          >
             <LogOut className="w-4 h-4" />
             Sign Out
           </button>
