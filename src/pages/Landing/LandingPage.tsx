@@ -33,6 +33,8 @@ export function LandingPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [titleFinished, setTitleFinished] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   // Time progress listener for the first video
   const handleTimeUpdate = () => {
@@ -55,12 +57,12 @@ export function LandingPage() {
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!email || !password) {
       setError('Please fill in all fields.');
       return;
     }
-    
+
     if (isSignUp && !fullName) {
       setError('Please enter your full name.');
       return;
@@ -71,13 +73,25 @@ export function LandingPage() {
     // Simple simulation of authentication
     setTimeout(() => {
       setLoading(false);
+
+      if (!isSignUp) {
+        if (email === 'admin@parkease.ai' && password !== 'admin123') {
+          setError('Invalid password for Admin account. Use admin123.');
+          return;
+        }
+        if (email === 'user@parkease.ai' && password !== 'user123') {
+          setError('Invalid password for User account. Use user123.');
+          return;
+        }
+      }
+
       loginUser(email);
       navigate('/dashboard');
     }, 1500);
   };
 
   // Determine if title & button should animate into view
-  const triggerIntroElements = videoProgress >= 60;
+  const triggerIntroElements = videoProgress >= 38;
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black font-sans text-white select-none">
@@ -88,6 +102,8 @@ export function LandingPage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8 }}
             className="absolute inset-0 w-full h-full"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
             {/* First Video Background */}
             <video
@@ -103,8 +119,8 @@ export function LandingPage() {
             {/* Dark Overlay (Fades in when intro text animates) */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: triggerIntroElements ? 0.65 : 0 }}
-              transition={{ duration: 1.2 }}
+              animate={{ opacity: triggerIntroElements ? 0.40 : 0 }}
+              transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
               className="absolute inset-0 bg-black pointer-events-none"
             />
 
@@ -113,42 +129,73 @@ export function LandingPage() {
               <AnimatePresence>
                 {triggerIntroElements && (
                   <div className="max-w-2xl flex flex-col items-center justify-center">
-                    {/* Brand / Logo */}
+                    {/* Unified Entrance Container */}
                     <motion.div
-                      initial={{ opacity: 0, y: 50 }}
-                      animate={{ opacity: 1, y: -20 }}
-                      transition={{ type: 'spring', stiffness: 80, damping: 15 }}
-                      className="flex items-center gap-3 mb-4"
+                      initial={{ opacity: 0.15, y: 500, scale: 0.98 }}
+                      animate={{ opacity: 1, y: -40, scale: 1 }}
+                      transition={{ delay: 0.2, duration: 5.5, ease: [0.76, 0, 0.24, 1] }}
+                      onAnimationComplete={() => setTitleFinished(true)}
+                      className="w-full flex flex-col items-center justify-center"
                     >
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center shadow-lg shadow-[#0F766E]/40">
-                        <Car className="w-6 h-6 text-white" />
-                      </div>
-                      <h1 className="text-4xl sm:text-6xl font-bold tracking-tighter text-white">
-                        ParkEase <span className="text-[#14B8A6]">AI</span>
-                      </h1>
+                      {/* Inner Idle floating wrapper */}
+                      <motion.div
+                        animate={
+                          titleFinished && !isHovered && screenState === 'intro'
+                            ? { y: [0, -2, -0.5, -1.8, 0] }
+                            : { y: 0 }
+                        }
+                        transition={
+                          titleFinished && !isHovered && screenState === 'intro'
+                            ? {
+                                duration: 12,
+                                ease: "easeInOut",
+                                repeat: Infinity,
+                              }
+                            : { duration: 0.5, ease: "easeOut" }
+                        }
+                        className="w-full flex flex-col items-center justify-center"
+                      >
+                        {/* Brand / Logo */}
+                        <div className="flex items-center gap-4 mb-6 cinematic-shadow">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[24px] bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center shadow-lg shadow-[#0F766E]/40">
+                            <Car className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
+                          </div>
+                          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[90px] font-sora font-extrabold tracking-tighter text-white">
+                            ParkEase AI
+                          </h1>
+                        </div>
+
+                        {/* Subtitle / Description */}
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 1.5, duration: 3.5, ease: [0.76, 0, 0.24, 1] }}
+                          className="font-inter font-medium text-[rgba(255,255,255,0.82)] text-base sm:text-lg max-w-[650px] leading-[1.5] text-center cinematic-shadow"
+                        >
+                          A world-class Smart Parking Management Platform powered by advanced AI and Digital Twin visualization.
+                        </motion.p>
+                      </motion.div>
                     </motion.div>
 
-                    {/* Subtitle / Description */}
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.6, duration: 1 }}
-                      className="text-base sm:text-lg text-white/70 max-w-md leading-relaxed mb-8"
-                    >
-                      A world-class Smart Parking Management Platform powered by advanced AI and Digital Twin visualization.
-                    </motion.p>
-
                     {/* Get Started Button */}
-                    <motion.button
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.1, type: 'spring', stiffness: 100 }}
-                      onClick={startAuthTransition}
-                      className="group flex items-center gap-2 px-8 py-3.5 rounded-2xl text-base font-semibold text-white bg-[#0F766E] hover:bg-[#0D6B63] active:scale-95 transition-all shadow-lg shadow-[#0F766E]/30"
-                    >
-                      Get Started
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </motion.button>
+                    <div className="h-20 mt-8 flex items-center justify-center">
+                      <motion.button
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={titleFinished ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
+                        transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                        onClick={startAuthTransition}
+                        className={cn(
+                          "group flex items-center gap-2 px-8 py-3.5 rounded-2xl text-base font-semibold text-white bg-[#0F766E] hover:bg-[#0D6B63] active:scale-95 transition-all shadow-lg shadow-[#0F766E]/30",
+                          !titleFinished && "pointer-events-none opacity-0"
+                        )}
+                        style={{
+                          visibility: titleFinished ? 'visible' : 'hidden'
+                        }}
+                      >
+                        Get Started
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </motion.button>
+                    </div>
                   </div>
                 )}
               </AnimatePresence>
@@ -222,6 +269,31 @@ export function LandingPage() {
                     Create Account
                   </button>
                 </div>
+
+                {/* Demo Credentials Helper */}
+                {!isSignUp && (
+                  <div className="mb-4 p-3 rounded-xl bg-white/5 border border-white/10 text-white/70 text-xs space-y-1.5 font-sans text-left">
+                    <div className="font-semibold text-white">Demo Accounts:</div>
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <div>
+                        <span className="text-white/40 block">Admin Email:</span>
+                        <code className="text-teal-300 font-mono">admin@parkease.ai</code>
+                      </div>
+                      <div>
+                        <span className="text-white/40 block">Password:</span>
+                        <code className="text-teal-300 font-mono">admin123</code>
+                      </div>
+                      <div>
+                        <span className="text-white/40 block">User Email:</span>
+                        <code className="text-teal-300 font-mono">user@parkease.ai</code>
+                      </div>
+                      <div>
+                        <span className="text-white/40 block">Password:</span>
+                        <code className="text-teal-300 font-mono">user123</code>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Error Display */}
                 <AnimatePresence>

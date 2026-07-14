@@ -12,7 +12,7 @@ export default {
       },
       colors: {
         brand: {
-          50:  '#f0fdfa',
+          50: '#f0fdfa',
           100: '#ccfbf1',
           200: '#99f6e4',
           300: '#5eead4',
@@ -28,7 +28,7 @@ export default {
           500: '#d97706',
         },
         surface: {
-          50:  '#F8FAFC',
+          50: '#F8FAFC',
           100: '#EEF2F7',
           200: '#E5E7EB',
           card: '#FFFFFF',
