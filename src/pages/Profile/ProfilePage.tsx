@@ -7,7 +7,8 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { mockRecentBookings } from '../../lib/data';
-import { useThemeStore } from '../../store';
+import { useThemeStore, useAuthStore } from '../../store';
+import { useNavigate } from 'react-router-dom';
 
 const tabs = ['Overview', 'Vehicles', 'History', 'Rewards', 'Settings'];
 
@@ -21,7 +22,11 @@ function ProfileTab({ active, children }: { active: boolean; children: React.Rea
 
 export function ProfilePage() {
   const { theme, toggleTheme } = useThemeStore();
+  const logout = useAuthStore(s => s.logout);
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Overview');
+  const user = useAuthStore(s => s.user);
+  const isAdmin = user?.email === 'admin@parkease.ai';
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
@@ -34,7 +39,7 @@ export function ProfilePage() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-5">
           <div className="relative">
             <div className="w-20 h-20 rounded-2xl gradient-brand flex items-center justify-center text-white text-3xl font-bold">
-              G
+              {isAdmin ? 'A' : 'U'}
             </div>
             <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white dark:bg-[#334155] border border-[#E5E7EB] dark:border-[#475569] flex items-center justify-center shadow-soft">
               <Camera className="w-3.5 h-3.5 text-[#6B7280]" />
@@ -44,10 +49,14 @@ export function ProfilePage() {
           <div className="flex-1">
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-xl font-bold text-[#111827] dark:text-white">Girish Kumar</h1>
-                <p className="text-sm text-[#6B7280] dark:text-[#94A3B8]">girish.kumar@email.com · +91 98765 43210</p>
+                <h1 className="text-xl font-bold text-[#111827] dark:text-white">
+                  {isAdmin ? 'Girish Kumar' : 'Standard User'}
+                </h1>
+                <p className="text-sm text-[#6B7280] dark:text-[#94A3B8]">
+                  {user?.email || 'user@parkease.ai'} · +91 98765 43210
+                </p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="badge badge-brand">Premium Member</span>
+                  <span className="badge badge-brand">{isAdmin ? 'Admin' : 'Customer'}</span>
                   <span className="badge badge-success">Verified</span>
                 </div>
               </div>
@@ -308,7 +317,13 @@ export function ProfilePage() {
             </div>
           ))}
 
-          <button className="card w-full p-4 flex items-center justify-center gap-2 text-sm font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
+          <button 
+            onClick={() => {
+              logout();
+              navigate('/');
+            }}
+            className="card w-full p-4 flex items-center justify-center gap-2 text-sm font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+          >
             <LogOut className="w-4 h-4" />
             Sign Out
           </button>

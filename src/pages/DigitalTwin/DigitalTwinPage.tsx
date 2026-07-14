@@ -44,7 +44,7 @@ export function DigitalTwinPage() {
   }, []);
 
   const floor = mockFloors[activeFloor];
-  const slots = floor?.slots ?? [];
+  const slots = (floor?.slots ?? []) as Slot[];
 
   const available = slots.filter(s => s.status === 'available').length;
   const occupied = slots.filter(s => s.status === 'occupied').length;

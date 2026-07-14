@@ -55,7 +55,12 @@
     min-height: 100vh;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-weight: 700;
     letter-spacing: -0.02em;
   }
@@ -219,8 +224,13 @@
 
 /* Custom animations */
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .shimmer {
@@ -235,18 +245,45 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
 /* Slot colors for Digital Twin */
-.slot-available { fill: #16A34A; stroke: #15803d; }
-.slot-occupied { fill: #DC2626; stroke: #b91c1c; }
-.slot-reserved { fill: #F59E0B; stroke: #d97706; }
-.slot-ev { fill: #2563EB; stroke: #1d4ed8; }
-.slot-vip { fill: #7C3AED; stroke: #6d28d9; }
-.slot-emergency { fill: #EA580C; stroke: #c2410c; }
-.slot-maintenance { fill: #6B7280; stroke: #4B5563; }
+.slot-available {
+  fill: #16A34A;
+  stroke: #15803d;
+}
+
+.slot-occupied {
+  fill: #DC2626;
+  stroke: #b91c1c;
+}
+
+.slot-reserved {
+  fill: #F59E0B;
+  stroke: #d97706;
+}
+
+.slot-ev {
+  fill: #2563EB;
+  stroke: #1d4ed8;
+}
+
+.slot-vip {
+  fill: #7C3AED;
+  stroke: #6d28d9;
+}
+
+.slot-emergency {
+  fill: #EA580C;
+  stroke: #c2410c;
+}
+
+.slot-maintenance {
+  fill: #6B7280;
+  stroke: #4B5563;
+}
 
 /* Progress ring */
 .progress-ring {
@@ -278,7 +315,7 @@
 .recharts-tooltip-wrapper .recharts-default-tooltip {
   border-radius: 12px !important;
   border: 1px solid #E5E7EB !important;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
   font-family: 'Plus Jakarta Sans', sans-serif !important;
   font-size: 12px !important;
 }

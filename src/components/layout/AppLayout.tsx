@@ -7,7 +7,7 @@ import {
   Bell, Menu, X, Sun, Moon, ChevronLeft, ChevronRight,
   Car, Zap, LogOut, Settings, ChevronDown
 } from 'lucide-react';
-import { useThemeStore, useSidebarStore } from '../../store';
+import { useThemeStore, useSidebarStore, useAuthStore } from '../../store';
 import { cn } from '../../lib/utils';
 
 const navItems = [
@@ -34,6 +34,15 @@ export function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const isAdmin = user?.email === 'admin@parkease.ai';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
     <div className="flex flex-col h-full">
@@ -107,7 +116,9 @@ export function AppLayout() {
         {!collapsed && (
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF] px-3 mb-2">Tools</p>
         )}
-        {secondaryNav.map((item) => (
+        {secondaryNav
+          .filter((item) => item.label !== 'Admin' || isAdmin)
+          .map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
@@ -162,17 +173,34 @@ export function AppLayout() {
           )}
         </button>
 
+        <button
+          onClick={handleLogout}
+          className={cn(
+            'sidebar-item w-full text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-700 dark:hover:text-red-300',
+            collapsed && 'justify-center px-0'
+          )}
+        >
+          <LogOut className="w-4 h-4 flex-shrink-0" />
+          {!collapsed && (
+            <span className="text-sm font-semibold">Logout</span>
+          )}
+        </button>
+
         {!collapsed && (
           <div
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#F8FAFC] dark:hover:bg-[#334155] transition-all cursor-pointer"
             onClick={() => navigate('/profile')}
           >
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-              G
+              {isAdmin ? 'A' : 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-[#111827] dark:text-white truncate">Girish Kumar</p>
-              <p className="text-[10px] text-[#6B7280] dark:text-[#94A3B8]">Admin</p>
+              <p className="text-xs font-semibold text-[#111827] dark:text-white truncate">
+                {isAdmin ? 'Girish Kumar' : 'Standard User'}
+              </p>
+              <p className="text-[10px] text-[#6B7280] dark:text-[#94A3B8]">
+                {isAdmin ? 'Admin' : 'Customer'}
+              </p>
             </div>
             <ChevronDown className="w-3 h-3 text-[#6B7280]" />
           </div>
@@ -298,7 +326,7 @@ export function AppLayout() {
               onClick={() => navigate('/profile')}
               className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center text-white text-xs font-bold"
             >
-              G
+              {isAdmin ? 'A' : 'U'}
             </button>
           </div>
         </header>
