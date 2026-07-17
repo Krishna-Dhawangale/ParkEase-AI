@@ -221,7 +221,7 @@ export function AnalyticsPage() {
                 cy="50%"
                 outerRadius={70}
                 dataKey="count"
-                label={({ name, percentage }) => `${name} ${percentage}%`}
+                label={(props: any) => `${props.name} ${props.percentage}%`}
                 labelLine={false}
                 fontSize={9}
               >

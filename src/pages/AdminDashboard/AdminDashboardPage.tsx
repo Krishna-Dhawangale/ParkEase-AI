@@ -176,7 +176,7 @@ export function AdminDashboardPage() {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(v: number, name: string) => [`${v} slots`, name]}
+                  formatter={(v, name) => [`${Number(v)} slots`, name]}
                   contentStyle={{ borderRadius: 12, border: '1px solid #E5E7EB', fontSize: 12, fontFamily: 'Plus Jakarta Sans' }}
                 />
               </PieChart>
