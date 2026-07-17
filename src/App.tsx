@@ -14,6 +14,7 @@ import { AnalyticsPage } from './pages/Analytics/AnalyticsPage';
 import { AIInsightsPage } from './pages/AIInsights/AIInsightsPage';
 import { NotificationsPage } from './pages/Notifications/NotificationsPage';
 import { ProjectWorkflowPage } from './pages/ProjectWorkflow/ProjectWorkflowPage';
+import { adminRoutes } from './routes/AdminRoutes';
 
 function App() {
   return (
@@ -38,6 +39,9 @@ function App() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/workflow" element={<ProjectWorkflowPage />} />
         </Route>
+
+        {/* Admin Portal */}
+        {adminRoutes}
       </Routes>
     </BrowserRouter>
   );

@@ -35,3 +35,17 @@ export const useSidebarStore = create<SidebarStore>((set) => ({
   collapsed: false,
   toggleSidebar: () => set((s) => ({ collapsed: !s.collapsed })),
 }));
+
+interface AdminSidebarStore {
+  isCollapsed: boolean;
+  isMobileOpen: boolean;
+  toggleCollapse: () => void;
+  setMobileOpen: (open: boolean) => void;
+}
+
+export const useAdminSidebarStore = create<AdminSidebarStore>((set) => ({
+  isCollapsed: false,
+  isMobileOpen: false,
+  toggleCollapse: () => set((s) => ({ isCollapsed: !s.isCollapsed })),
+  setMobileOpen: (open) => set({ isMobileOpen: open }),
+}));
