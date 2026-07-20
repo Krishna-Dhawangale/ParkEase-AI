@@ -14,10 +14,10 @@ const iconMap: Record<string, any> = {
 
 const colorMap: Record<string, { bg: string; icon: string; border: string }> = {
   amber: { bg: 'bg-amber-50 dark:bg-amber-900/10', icon: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-800/30' },
-  brand: { bg: 'bg-[#0F766E]/5 dark:bg-[#14B8A6]/10', icon: 'text-[#0F766E] dark:text-[#14B8A6]', border: 'border-[#0F766E]/20 dark:border-[#14B8A6]/30' },
+  brand: { bg: 'bg-[var(--brand)]/5 dark:bg-[var(--brand-light)]/10', icon: 'text-[var(--brand)] dark:text-[var(--brand-light)]', border: 'border-[var(--brand)]/20 dark:border-[var(--brand-light)]/30' },
   info: { bg: 'bg-blue-50 dark:bg-blue-900/10', icon: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800/30' },
   success: { bg: 'bg-green-50 dark:bg-green-900/10', icon: 'text-green-600 dark:text-green-400', border: 'border-green-200 dark:border-green-800/30' },
-  secondary: { bg: 'bg-[#F8FAFC] dark:bg-[#334155]/50', icon: 'text-[#6B7280]', border: 'border-[#E5E7EB] dark:border-[#334155]' },
+  secondary: { bg: 'bg-[var(--bg-primary)] dark:bg-[var(--border)]/50', icon: 'text-[var(--text-secondary)]', border: 'border-[var(--border)] dark:border-[var(--border)]' },
 };
 
 const impactLabels: Record<string, { text: string; color: string }> = {
@@ -53,12 +53,12 @@ export function AIInsightsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-light)] flex items-center justify-center">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#111827] dark:text-white tracking-tight">AI Insights</h1>
-            <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] mt-0.5">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">AI Insights</h1>
+            <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">
               Intelligent recommendations from ParkEase Neural Engine™
             </p>
           </div>
@@ -113,8 +113,8 @@ export function AIInsightsPage() {
             className={cn(
               'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all',
               filter === f.id
-                ? 'bg-[#0F766E] text-white'
-                : 'bg-white dark:bg-[#1E293B] border border-[#E5E7EB] dark:border-[#334155] text-[#6B7280] hover:text-[#111827]'
+                ? 'bg-[var(--brand)] text-white'
+                : 'bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             )}
           >
             {f.label}
@@ -151,31 +151,31 @@ export function AIInsightsPage() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                      <h3 className="font-bold text-[#111827] dark:text-white text-sm">{insight.title}</h3>
+                      <h3 className="font-bold text-[var(--text-primary)] dark:text-white text-sm">{insight.title}</h3>
                       <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-bold', impact.color)}>
                         {impact.text}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0F766E]/10 text-[#0F766E] dark:bg-[#14B8A6]/10 dark:text-[#14B8A6] capitalize">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[var(--brand)]/10 text-[var(--brand)] dark:bg-[var(--brand-light)]/10 dark:text-[var(--brand-light)] capitalize">
                         {insight.type}
                       </span>
                     </div>
-                    <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] leading-relaxed">
+                    <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] leading-relaxed">
                       {insight.message}
                     </p>
 
                     {/* Confidence Bar */}
                     <div className="mt-3 flex items-center gap-3">
                       <div className="flex items-center gap-1.5">
-                        <Target className="w-3 h-3 text-[#0F766E]" />
-                        <span className="text-xs text-[#6B7280]">Confidence:</span>
-                        <span className="text-xs font-bold text-[#0F766E] dark:text-[#14B8A6]">{insight.confidence}%</span>
+                        <Target className="w-3 h-3 text-[var(--brand)]" />
+                        <span className="text-xs text-[var(--text-secondary)]">Confidence:</span>
+                        <span className="text-xs font-bold text-[var(--brand)] dark:text-[var(--brand-light)]">{insight.confidence}%</span>
                       </div>
-                      <div className="flex-1 max-w-24 h-1.5 bg-[#E5E7EB] dark:bg-[#334155] rounded-full overflow-hidden">
+                      <div className="flex-1 max-w-24 h-1.5 bg-[var(--border)] dark:bg-[var(--border)] rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${insight.confidence}%` }}
                           transition={{ delay: 0.3 + i * 0.08, duration: 0.6 }}
-                          className="h-full rounded-full bg-[#0F766E]"
+                          className="h-full rounded-full bg-[var(--brand)]"
                         />
                       </div>
                     </div>
@@ -186,7 +186,7 @@ export function AIInsightsPage() {
                     animate={{ rotate: expandedId === insight.id ? 90 : 0 }}
                     className="flex-shrink-0"
                   >
-                    <ChevronRight className="w-4 h-4 text-[#9CA3AF]" />
+                    <ChevronRight className="w-4 h-4 text-[var(--text-secondary)]" />
                   </motion.div>
                 </div>
               </div>
@@ -201,19 +201,19 @@ export function AIInsightsPage() {
                     transition={{ duration: 0.25 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-5 pb-5 pt-0 border-t border-[#E5E7EB] dark:border-[#334155] space-y-3">
+                    <div className="px-5 pb-5 pt-0 border-t border-[var(--border)] dark:border-[var(--border)] space-y-3">
                       <div className="pt-3 grid sm:grid-cols-3 gap-3">
-                        <div className="p-3 rounded-xl bg-[#F8FAFC] dark:bg-[#0F172A]">
-                          <div className="text-[11px] text-[#6B7280] mb-0.5">Data Points Analyzed</div>
-                          <div className="font-bold text-[#111827] dark:text-white">847</div>
+                        <div className="p-3 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
+                          <div className="text-[11px] text-[var(--text-secondary)] mb-0.5">Data Points Analyzed</div>
+                          <div className="font-bold text-[var(--text-primary)] dark:text-white">847</div>
                         </div>
-                        <div className="p-3 rounded-xl bg-[#F8FAFC] dark:bg-[#0F172A]">
-                          <div className="text-[11px] text-[#6B7280] mb-0.5">Processing Time</div>
-                          <div className="font-bold text-[#111827] dark:text-white">142ms</div>
+                        <div className="p-3 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
+                          <div className="text-[11px] text-[var(--text-secondary)] mb-0.5">Processing Time</div>
+                          <div className="font-bold text-[var(--text-primary)] dark:text-white">142ms</div>
                         </div>
-                        <div className="p-3 rounded-xl bg-[#F8FAFC] dark:bg-[#0F172A]">
-                          <div className="text-[11px] text-[#6B7280] mb-0.5">Model Version</div>
-                          <div className="font-bold text-[#111827] dark:text-white">v3.2.1</div>
+                        <div className="p-3 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
+                          <div className="text-[11px] text-[var(--text-secondary)] mb-0.5">Model Version</div>
+                          <div className="font-bold text-[var(--text-primary)] dark:text-white">v3.2.1</div>
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -236,11 +236,11 @@ export function AIInsightsPage() {
       {/* Empty state when filtered */}
       {filteredInsights.length === 0 && (
         <div className="text-center py-16">
-          <div className="w-14 h-14 rounded-2xl bg-[#F8FAFC] dark:bg-[#334155] flex items-center justify-center mx-auto mb-4">
-            <Lightbulb className="w-7 h-7 text-[#9CA3AF]" />
+          <div className="w-14 h-14 rounded-2xl bg-[var(--bg-primary)] dark:bg-[var(--border)] flex items-center justify-center mx-auto mb-4">
+            <Lightbulb className="w-7 h-7 text-[var(--text-secondary)]" />
           </div>
-          <h3 className="font-bold text-[#111827] dark:text-white mb-1">No insights found</h3>
-          <p className="text-sm text-[#6B7280]">Try a different filter or refresh.</p>
+          <h3 className="font-bold text-[var(--text-primary)] dark:text-white mb-1">No insights found</h3>
+          <p className="text-sm text-[var(--text-secondary)]">Try a different filter or refresh.</p>
           <button onClick={() => setFilter('all')} className="btn-primary mt-4">View All Insights</button>
         </div>
       )}

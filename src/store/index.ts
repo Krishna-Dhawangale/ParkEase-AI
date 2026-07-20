@@ -35,3 +35,40 @@ export const useSidebarStore = create<SidebarStore>((set) => ({
   collapsed: false,
   toggleSidebar: () => set((s) => ({ collapsed: !s.collapsed })),
 }));
+
+import type { AuthUser } from '../types/auth';
+
+interface AuthStore {
+  isAuthenticated: boolean;
+  user: AuthUser | null;
+  token: string | null;
+  login: (token: string, user: AuthUser) => void;
+  logout: () => void;
+}
+
+const initialToken = localStorage.getItem('parkease-token');
+const initialUserStr = localStorage.getItem('parkease-user');
+let initialUser: AuthUser | null = null;
+if (initialUserStr) {
+  try {
+    initialUser = JSON.parse(initialUserStr);
+  } catch (e) {
+    // Ignore parse error
+  }
+}
+
+export const useAuthStore = create<AuthStore>((set) => ({
+  isAuthenticated: !!initialToken && !!initialUser,
+  user: initialUser,
+  token: initialToken,
+  login: (token, user) => {
+    localStorage.setItem('parkease-token', token);
+    localStorage.setItem('parkease-user', JSON.stringify(user));
+    set({ isAuthenticated: true, user, token });
+  },
+  logout: () => {
+    localStorage.removeItem('parkease-token');
+    localStorage.removeItem('parkease-user');
+    set({ isAuthenticated: false, user: null, token: null });
+  },
+}));

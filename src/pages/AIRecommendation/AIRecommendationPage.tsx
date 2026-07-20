@@ -51,7 +51,7 @@ function ConfidenceMeter({ value }: { value: number }) {
         >
           <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
           <RadialBar
-            background={{ fill: '#E5E7EB' }}
+            background={{ fill: 'var(--border)' }}
             dataKey="value"
             cornerRadius={10}
             angleAxisId={0}
@@ -59,8 +59,8 @@ function ConfidenceMeter({ value }: { value: number }) {
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-bold text-[#111827] dark:text-white">{value}%</span>
-        <span className="text-[10px] text-[#6B7280]">confidence</span>
+        <span className="text-2xl font-bold text-[var(--text-primary)] dark:text-white">{value}%</span>
+        <span className="text-[10px] text-[var(--text-secondary)]">confidence</span>
       </div>
     </div>
   );
@@ -82,13 +82,13 @@ export function AIRecommendationPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-7 h-7 rounded-xl bg-[#0F766E]/10 dark:bg-[#14B8A6]/10 flex items-center justify-center">
-              <Brain className="w-4 h-4 text-[#0F766E] dark:text-[#14B8A6]" />
+            <div className="w-7 h-7 rounded-xl bg-[var(--brand)]/10 dark:bg-[var(--brand-light)]/10 flex items-center justify-center">
+              <Brain className="w-4 h-4 text-[var(--brand)] dark:text-[var(--brand-light)]" />
             </div>
-            <span className="text-xs font-semibold text-[#0F766E] dark:text-[#14B8A6] uppercase tracking-wider">AI Recommendation Engine</span>
+            <span className="text-xs font-semibold text-[var(--brand)] dark:text-[var(--brand-light)] uppercase tracking-wider">AI Recommendation Engine</span>
           </div>
-          <h1 className="text-2xl font-bold text-[#111827] dark:text-white tracking-tight">Your Optimal Slot</h1>
-          <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] mt-0.5">
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">Your Optimal Slot</h1>
+          <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">
             ParkEase Neural Engine™ analyzed 847 parameters in 142ms
           </p>
         </div>
@@ -142,18 +142,18 @@ export function AIRecommendationPage() {
         </div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-[#E5E7EB] dark:divide-[#334155]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-[var(--border)] dark:divide-[var(--border)]">
           {[
-            { icon: MapPin, label: 'Walk Distance', value: `${recommendation.walkDistance}m`, sub: `${recommendation.walkTime} min walk`, color: 'text-[#0F766E] dark:text-[#14B8A6]' },
+            { icon: MapPin, label: 'Walk Distance', value: `${recommendation.walkDistance}m`, sub: `${recommendation.walkTime} min walk`, color: 'text-[var(--brand)] dark:text-[var(--brand-light)]' },
             { icon: Clock, label: 'Expected Exit', value: recommendation.expectedExit, sub: 'Today', color: 'text-blue-600 dark:text-blue-400' },
             { icon: TrendingUp, label: 'Congestion', value: recommendation.expectedCongestion, sub: 'Predicted', color: 'text-green-600 dark:text-green-400' },
             { icon: IndianRupee, label: 'Est. Cost', value: `₹${recommendation.estimatedCost}`, sub: 'for 2 hours', color: 'text-amber-600 dark:text-amber-400' },
           ].map((stat, i) => (
             <div key={stat.label} className="p-4 sm:p-5 flex flex-col items-center text-center">
               <stat.icon className={cn('w-5 h-5 mb-2', stat.color)} />
-              <div className="text-lg font-bold text-[#111827] dark:text-white">{stat.value}</div>
-              <div className="text-xs font-medium text-[#6B7280] dark:text-[#94A3B8]">{stat.label}</div>
-              <div className="text-[11px] text-[#9CA3AF]">{stat.sub}</div>
+              <div className="text-lg font-bold text-[var(--text-primary)] dark:text-white">{stat.value}</div>
+              <div className="text-xs font-medium text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">{stat.label}</div>
+              <div className="text-[11px] text-[var(--text-secondary)]">{stat.sub}</div>
             </div>
           ))}
         </div>
@@ -196,7 +196,7 @@ export function AIRecommendationPage() {
 
         {/* Feedback */}
         <div className="px-5 pb-5 flex items-center gap-3">
-          <span className="text-xs text-[#6B7280]">Was this recommendation helpful?</span>
+          <span className="text-xs text-[var(--text-secondary)]">Was this recommendation helpful?</span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setFeedbackGiven('up')}
@@ -204,7 +204,7 @@ export function AIRecommendationPage() {
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
                 feedbackGiven === 'up'
                   ? 'bg-green-50 border-green-200 text-green-600'
-                  : 'bg-white dark:bg-[#334155] border-[#E5E7EB] dark:border-[#475569] text-[#6B7280]'
+                  : 'bg-white dark:bg-[var(--border)] border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)]'
               )}
             >
               <ThumbsUp className="w-3.5 h-3.5" /> Yes
@@ -215,7 +215,7 @@ export function AIRecommendationPage() {
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
                 feedbackGiven === 'down'
                   ? 'bg-red-50 border-red-200 text-red-600'
-                  : 'bg-white dark:bg-[#334155] border-[#E5E7EB] dark:border-[#475569] text-[#6B7280]'
+                  : 'bg-white dark:bg-[var(--border)] border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)]'
               )}
             >
               <ThumbsDown className="w-3.5 h-3.5" /> No
@@ -232,13 +232,13 @@ export function AIRecommendationPage() {
           transition={{ delay: 0.15 }}
           className="card"
         >
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-[#E5E7EB] dark:border-[#334155]">
-            <div className="w-8 h-8 rounded-xl bg-[#0F766E]/10 dark:bg-[#14B8A6]/10 flex items-center justify-center">
-              <Cpu className="w-4 h-4 text-[#0F766E] dark:text-[#14B8A6]" />
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--border)] dark:border-[var(--border)]">
+            <div className="w-8 h-8 rounded-xl bg-[var(--brand)]/10 dark:bg-[var(--brand-light)]/10 flex items-center justify-center">
+              <Cpu className="w-4 h-4 text-[var(--brand)] dark:text-[var(--brand-light)]" />
             </div>
             <div>
-              <h3 className="font-bold text-[#111827] dark:text-white text-sm">Explainable AI</h3>
-              <p className="text-[11px] text-[#6B7280]">Why this slot was selected</p>
+              <h3 className="font-bold text-[var(--text-primary)] dark:text-white text-sm">Explainable AI</h3>
+              <p className="text-[11px] text-[var(--text-secondary)]">Why this slot was selected</p>
             </div>
           </div>
           <div className="p-5 space-y-4">
@@ -253,16 +253,16 @@ export function AIRecommendationPage() {
                 <span className="text-xl flex-shrink-0">{reason.icon}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-semibold text-[#111827] dark:text-white">{reason.title}</p>
-                    <span className="text-xs font-bold text-[#0F766E] dark:text-[#14B8A6]">{reason.weight}%</span>
+                    <p className="text-sm font-semibold text-[var(--text-primary)] dark:text-white">{reason.title}</p>
+                    <span className="text-xs font-bold text-[var(--brand)] dark:text-[var(--brand-light)]">{reason.weight}%</span>
                   </div>
-                  <p className="text-xs text-[#6B7280] dark:text-[#94A3B8] leading-relaxed">{reason.desc}</p>
-                  <div className="mt-2 h-1.5 bg-[#E5E7EB] dark:bg-[#334155] rounded-full overflow-hidden">
+                  <p className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)] leading-relaxed">{reason.desc}</p>
+                  <div className="mt-2 h-1.5 bg-[var(--border)] dark:bg-[var(--border)] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${reason.weight}%` }}
                       transition={{ delay: 0.3 + i * 0.08, duration: 0.6 }}
-                      className="h-full rounded-full bg-[#0F766E]"
+                      className="h-full rounded-full bg-[var(--brand)]"
                     />
                   </div>
                 </div>
@@ -279,37 +279,37 @@ export function AIRecommendationPage() {
           className="space-y-5"
         >
           <div className="card">
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-[#E5E7EB] dark:border-[#334155]">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--border)] dark:border-[var(--border)]">
               <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h3 className="font-bold text-[#111827] dark:text-white text-sm">Alternative Slots</h3>
-                <p className="text-[11px] text-[#6B7280]">Other AI suggestions</p>
+                <h3 className="font-bold text-[var(--text-primary)] dark:text-white text-sm">Alternative Slots</h3>
+                <p className="text-[11px] text-[var(--text-secondary)]">Other AI suggestions</p>
               </div>
             </div>
             <div className="p-4 space-y-3">
               {recommendation.alternativeSlots.map((alt, i) => (
-                <div key={alt.slot} className="flex items-center gap-3 p-3 rounded-xl bg-[#F8FAFC] dark:bg-[#0F172A] hover:bg-[#EEF2F7] dark:hover:bg-[#334155] transition-colors cursor-pointer">
-                  <div className="w-8 h-8 rounded-xl bg-white dark:bg-[#1E293B] border border-[#E5E7EB] dark:border-[#334155] flex items-center justify-center">
-                    <span className="text-xs font-bold text-[#0F766E] dark:text-[#14B8A6]">#{i + 2}</span>
+                <div key={alt.slot} className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)] hover:bg-[var(--bg-secondary)] dark:hover:bg-[var(--border)] transition-colors cursor-pointer">
+                  <div className="w-8 h-8 rounded-xl bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] dark:border-[var(--border)] flex items-center justify-center">
+                    <span className="text-xs font-bold text-[var(--brand)] dark:text-[var(--brand-light)]">#{i + 2}</span>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-[#111827] dark:text-white">Slot {alt.slot}</span>
+                      <span className="text-sm font-bold text-[var(--text-primary)] dark:text-white">Slot {alt.slot}</span>
                       {alt.type !== 'Standard' && (
                         <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-600">⚡ {alt.type}</span>
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-0.5">
-                      <span className="text-[11px] text-[#6B7280]">{alt.confidence}% confidence</span>
-                      <span className="text-[11px] text-[#6B7280]">{alt.walk}m walk</span>
+                      <span className="text-[11px] text-[var(--text-secondary)]">{alt.confidence}% confidence</span>
+                      <span className="text-[11px] text-[var(--text-secondary)]">{alt.walk}m walk</span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-bold text-[#111827] dark:text-white">₹{alt.cost}</div>
+                    <div className="text-sm font-bold text-[var(--text-primary)] dark:text-white">₹{alt.cost}</div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-[#6B7280]" />
+                  <ChevronRight className="w-4 h-4 text-[var(--text-secondary)]" />
                 </div>
               ))}
             </div>
@@ -317,7 +317,7 @@ export function AIRecommendationPage() {
 
           {/* Vehicle Compatibility */}
           <div className="card p-5">
-            <h3 className="font-bold text-[#111827] dark:text-white text-sm mb-4">Vehicle Compatibility</h3>
+            <h3 className="font-bold text-[var(--text-primary)] dark:text-white text-sm mb-4">Vehicle Compatibility</h3>
             <div className="space-y-2">
               {[
                 { label: 'Vehicle: KA 05 MN 4521', compatible: true },
@@ -329,15 +329,15 @@ export function AIRecommendationPage() {
                 <div key={item.label} className="flex items-center gap-2.5">
                   <div className={cn(
                     'w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0',
-                    item.compatible ? 'bg-green-50 dark:bg-green-900/20' : 'bg-[#F8FAFC] dark:bg-[#334155]'
+                    item.compatible ? 'bg-green-50 dark:bg-green-900/20' : 'bg-[var(--bg-primary)] dark:bg-[var(--border)]'
                   )}>
                     {item.compatible ? (
                       <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
                     ) : (
-                      <AlertTriangle className="w-3 h-3 text-[#9CA3AF]" />
+                      <AlertTriangle className="w-3 h-3 text-[var(--text-secondary)]" />
                     )}
                   </div>
-                  <span className={cn('text-xs', item.compatible ? 'text-[#111827] dark:text-white' : 'text-[#9CA3AF]')}>{item.label}</span>
+                  <span className={cn('text-xs', item.compatible ? 'text-[var(--text-primary)] dark:text-white' : 'text-[var(--text-secondary)]')}>{item.label}</span>
                 </div>
               ))}
             </div>

@@ -17,7 +17,7 @@ const occupancyDistribution = [
   { name: 'Occupied', value: 312, color: '#DC2626' },
   { name: 'Available', value: 143, color: '#16A34A' },
   { name: 'Reserved', value: 34, color: '#F59E0B' },
-  { name: 'Maintenance', value: 11, color: '#6B7280' },
+  { name: 'Maintenance', value: 11, color: 'var(--text-secondary)' },
 ];
 
 const floorOccupancy = [
@@ -59,10 +59,10 @@ export function AdminDashboardPage() {
             <Shield className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#111827] dark:text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">
               Admin Command Center
             </h1>
-            <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] flex items-center gap-1.5">
+            <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] flex items-center gap-1.5">
               <span className="live-dot" /> Live monitoring · Central Metro Hub
             </p>
           </div>
@@ -88,10 +88,10 @@ export function AdminDashboardPage() {
       >
         <div className="flex items-center gap-2">
           <Heart className="w-5 h-5 text-green-600" />
-          <span className="font-bold text-[#111827] dark:text-white">System Health:</span>
+          <span className="font-bold text-[var(--text-primary)] dark:text-white">System Health:</span>
           <span className="text-lg font-bold text-green-600">{stats.healthScore}/100</span>
         </div>
-        <div className="h-2 flex-1 min-w-32 bg-[#E5E7EB] dark:bg-[#334155] rounded-full overflow-hidden">
+        <div className="h-2 flex-1 min-w-32 bg-[var(--border)] dark:bg-[var(--border)] rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${stats.healthScore}%` }}
@@ -108,7 +108,7 @@ export function AdminDashboardPage() {
           ].map(item => (
             <div key={item.label} className="flex items-center gap-1">
               {item.ok ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <XCircle className="w-3 h-3 text-red-500" />}
-              <span className="text-[#6B7280]">{item.label}: <span className={cn('font-semibold', item.ok ? 'text-green-600' : 'text-red-600')}>{item.value}</span></span>
+              <span className="text-[var(--text-secondary)]">{item.label}: <span className={cn('font-semibold', item.ok ? 'text-green-600' : 'text-red-600')}>{item.value}</span></span>
             </div>
           ))}
         </div>
@@ -125,7 +125,7 @@ export function AdminDashboardPage() {
           { icon: Clock, label: 'Avg Time', value: `${stats.avgParkingTime}h`, color: 'brand' },
         ].map((kpi, i) => {
           const colorMap: Record<string, string> = {
-            brand: 'bg-[#0F766E]/10 text-[#0F766E] dark:bg-[#14B8A6]/10 dark:text-[#14B8A6]',
+            brand: 'bg-[var(--brand)]/10 text-[var(--brand)] dark:bg-[var(--brand-light)]/10 dark:text-[var(--brand-light)]',
             danger: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400',
             success: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400',
             amber: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400',
@@ -142,8 +142,8 @@ export function AdminDashboardPage() {
               <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center mx-auto mb-2', colorMap[kpi.color]?.split(' ').slice(0, 2).join(' '))}>
                 <kpi.icon className={cn('w-4 h-4', colorMap[kpi.color]?.split(' ').slice(2).join(' '))} />
               </div>
-              <div className="text-xl font-bold text-[#111827] dark:text-white">{kpi.value}</div>
-              <div className="text-[11px] text-[#6B7280]">{kpi.label}</div>
+              <div className="text-xl font-bold text-[var(--text-primary)] dark:text-white">{kpi.value}</div>
+              <div className="text-[11px] text-[var(--text-secondary)]">{kpi.label}</div>
             </motion.div>
           );
         })}
@@ -158,7 +158,7 @@ export function AdminDashboardPage() {
           transition={{ delay: 0.15 }}
           className="card p-5"
         >
-          <h3 className="font-bold text-[#111827] dark:text-white mb-4">Slot Distribution</h3>
+          <h3 className="font-bold text-[var(--text-primary)] dark:text-white mb-4">Slot Distribution</h3>
           <div className="flex items-center justify-center">
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
@@ -176,8 +176,8 @@ export function AdminDashboardPage() {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(v: number, name: string) => [`${v} slots`, name]}
-                  contentStyle={{ borderRadius: 12, border: '1px solid #E5E7EB', fontSize: 12, fontFamily: 'Plus Jakarta Sans' }}
+                  formatter={(v: any, name: any) => [`${v} slots`, name]}
+                  contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', fontSize: 12, fontFamily: 'Plus Jakarta Sans' }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -186,7 +186,7 @@ export function AdminDashboardPage() {
             {occupancyDistribution.map(d => (
               <div key={d.name} className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
-                <span className="text-xs text-[#6B7280]">{d.name}: <span className="font-semibold text-[#111827] dark:text-white">{d.value}</span></span>
+                <span className="text-xs text-[var(--text-secondary)]">{d.name}: <span className="font-semibold text-[var(--text-primary)] dark:text-white">{d.value}</span></span>
               </div>
             ))}
           </div>
@@ -200,26 +200,26 @@ export function AdminDashboardPage() {
           className="lg:col-span-2 card p-5"
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-[#111827] dark:text-white">Live Occupancy & Revenue</h3>
+            <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Live Occupancy & Revenue</h3>
             <span className="badge badge-brand">Today</span>
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={mockOccupancyData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="adminOccGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0F766E" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="#0F766E" stopOpacity={0} />
+                  <stop offset="0%" stopColor="var(--brand)" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="var(--brand)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="adminRevGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.15} />
                   <stop offset="100%" stopColor="#F59E0B" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" opacity={0.5} />
-              <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} interval={2} />
-              <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #E5E7EB', fontSize: 12, fontFamily: 'Plus Jakarta Sans' }} />
-              <Area type="monotone" dataKey="occupancy" stroke="#0F766E" strokeWidth={2} fill="url(#adminOccGrad)" dot={false} name="Occupancy %" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
+              <XAxis dataKey="time" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} interval={2} />
+              <YAxis tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', fontSize: 12, fontFamily: 'Plus Jakarta Sans' }} />
+              <Area type="monotone" dataKey="occupancy" stroke="var(--brand)" strokeWidth={2} fill="url(#adminOccGrad)" dot={false} name="Occupancy %" />
               <Area type="monotone" dataKey="revenue" stroke="#F59E0B" strokeWidth={2} fill="url(#adminRevGrad)" dot={false} name="Revenue ₹" />
             </AreaChart>
           </ResponsiveContainer>
@@ -236,8 +236,8 @@ export function AdminDashboardPage() {
           className="card p-5"
         >
           <div className="flex items-center gap-2 mb-4">
-            <Layers className="w-4 h-4 text-[#0F766E]" />
-            <h3 className="font-bold text-[#111827] dark:text-white">Floor Occupancy</h3>
+            <Layers className="w-4 h-4 text-[var(--brand)]" />
+            <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Floor Occupancy</h3>
           </div>
           <div className="space-y-3">
             {floorOccupancy.map(f => {
@@ -245,10 +245,10 @@ export function AdminDashboardPage() {
               return (
                 <div key={f.floor}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-semibold text-[#111827] dark:text-white">{f.floor}</span>
-                    <span className="text-xs text-[#6B7280]">{f.occupancy}/{f.total} ({pct}%)</span>
+                    <span className="text-sm font-semibold text-[var(--text-primary)] dark:text-white">{f.floor}</span>
+                    <span className="text-xs text-[var(--text-secondary)]">{f.occupancy}/{f.total} ({pct}%)</span>
                   </div>
-                  <div className="h-3 bg-[#E5E7EB] dark:bg-[#334155] rounded-full overflow-hidden">
+                  <div className="h-3 bg-[var(--border)] dark:bg-[var(--border)] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
@@ -277,21 +277,21 @@ export function AdminDashboardPage() {
           transition={{ delay: 0.3 }}
           className="card"
         >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E7EB] dark:border-[#334155]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] dark:border-[var(--border)]">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-600" />
-              <h3 className="font-bold text-[#111827] dark:text-white">Alerts</h3>
+              <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Alerts</h3>
             </div>
             <span className="badge badge-warning">{alerts.length} active</span>
           </div>
-          <div className="divide-y divide-[#E5E7EB] dark:divide-[#334155]">
+          <div className="divide-y divide-[var(--border)] dark:divide-[var(--border)]">
             {alerts.map((alert, i) => (
               <motion.div
                 key={alert.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.35 + i * 0.06 }}
-                className="px-5 py-3 hover:bg-[#F8FAFC] dark:hover:bg-[#334155]/30 transition-colors cursor-pointer"
+                className="px-5 py-3 hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)]/30 transition-colors cursor-pointer"
               >
                 <div className="flex items-start gap-3">
                   <div className={cn(
@@ -302,10 +302,10 @@ export function AdminDashboardPage() {
                     alert.severity === 'info' && 'bg-green-500',
                   )} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-[#111827] dark:text-white">{alert.title}</p>
-                    <p className="text-[11px] text-[#6B7280] truncate">{alert.desc}</p>
+                    <p className="text-xs font-semibold text-[var(--text-primary)] dark:text-white">{alert.title}</p>
+                    <p className="text-[11px] text-[var(--text-secondary)] truncate">{alert.desc}</p>
                   </div>
-                  <span className="text-[10px] text-[#9CA3AF] whitespace-nowrap">{alert.time}</span>
+                  <span className="text-[10px] text-[var(--text-secondary)] whitespace-nowrap">{alert.time}</span>
                 </div>
               </motion.div>
             ))}
@@ -319,12 +319,12 @@ export function AdminDashboardPage() {
           transition={{ delay: 0.35 }}
           className="card"
         >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E7EB] dark:border-[#334155]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] dark:border-[var(--border)]">
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-[#0F766E]" />
-              <h3 className="font-bold text-[#111827] dark:text-white">Staff Activity</h3>
+              <Users className="w-4 h-4 text-[var(--brand)]" />
+              <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Staff Activity</h3>
             </div>
-            <span className="text-xs text-[#6B7280]">3 online</span>
+            <span className="text-xs text-[var(--text-secondary)]">3 online</span>
           </div>
           <div className="p-4 space-y-3">
             {employeeActivity.map((emp, i) => (
@@ -336,19 +336,19 @@ export function AdminDashboardPage() {
                 className="flex items-center gap-3"
               >
                 <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-[#0F766E]/10 dark:bg-[#14B8A6]/10 flex items-center justify-center text-xs font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                  <div className="w-8 h-8 rounded-full bg-[var(--brand)]/10 dark:bg-[var(--brand-light)]/10 flex items-center justify-center text-xs font-bold text-[var(--brand)] dark:text-[var(--brand-light)]">
                     {emp.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div className={cn(
-                    'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-[#1E293B]',
-                    emp.status === 'online' ? 'bg-green-500' : 'bg-[#9CA3AF]'
+                    'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-[var(--bg-card)]',
+                    emp.status === 'online' ? 'bg-green-500' : 'bg-[var(--text-secondary)]'
                   )} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-[#111827] dark:text-white">{emp.name} · <span className="text-[#6B7280] font-normal">{emp.role}</span></p>
-                  <p className="text-[11px] text-[#6B7280] truncate">{emp.action}</p>
+                  <p className="text-xs font-semibold text-[var(--text-primary)] dark:text-white">{emp.name} · <span className="text-[var(--text-secondary)] font-normal">{emp.role}</span></p>
+                  <p className="text-[11px] text-[var(--text-secondary)] truncate">{emp.action}</p>
                 </div>
-                <span className="text-[10px] text-[#9CA3AF] whitespace-nowrap">{emp.time}</span>
+                <span className="text-[10px] text-[var(--text-secondary)] whitespace-nowrap">{emp.time}</span>
               </motion.div>
             ))}
           </div>
@@ -362,7 +362,7 @@ export function AdminDashboardPage() {
         transition={{ delay: 0.4 }}
         className="card p-5"
       >
-        <h3 className="font-bold text-[#111827] dark:text-white mb-4">Security & Access Control</h3>
+        <h3 className="font-bold text-[var(--text-primary)] dark:text-white mb-4">Security & Access Control</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Entry Gate 1', status: 'Open', icon: Unlock, color: 'success' },
@@ -380,7 +380,7 @@ export function AdminDashboardPage() {
                 gate.color === 'success' && 'text-green-600',
                 gate.color === 'amber' && 'text-amber-600',
               )} />
-              <div className="text-xs font-semibold text-[#111827] dark:text-white">{gate.label}</div>
+              <div className="text-xs font-semibold text-[var(--text-primary)] dark:text-white">{gate.label}</div>
               <div className={cn(
                 'text-[11px] font-bold mt-0.5',
                 gate.color === 'success' && 'text-green-600',
