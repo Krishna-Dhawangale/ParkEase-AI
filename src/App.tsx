@@ -15,6 +15,11 @@ import { NotificationsPage } from './pages/Notifications/NotificationsPage';
 import { ProjectWorkflowPage } from './pages/ProjectWorkflow/ProjectWorkflowPage';
 import { adminRoutes } from './routes/AdminRoutes';
 
+// Auth Pages
+import { UserAuthPage } from './pages/Auth/UserAuthPage';
+import { AdminAuthPage } from './pages/Auth/AdminAuthPage';
+import { OwnerAuthPage } from './pages/Auth/OwnerAuthPage';
+
 function App() {
   return (
     <BrowserRouter>

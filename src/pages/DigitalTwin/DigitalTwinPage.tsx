@@ -252,7 +252,7 @@ export function DigitalTwinPage() {
             {selected ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: twinStatusConfig[selected.status as TwinObjectStatus]?.bg || '#f1f5f9', border: \`2px solid \${twinStatusConfig[selected.status as TwinObjectStatus]?.color || '#94a3b8'}\` }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: twinStatusConfig[selected.status as TwinObjectStatus]?.bg || '#f1f5f9', border: `2px solid ${twinStatusConfig[selected.status as TwinObjectStatus]?.color || '#94a3b8'}` }}>
                      <Car className="w-5 h-5" style={{ color: twinStatusConfig[selected.status as TwinObjectStatus]?.color }} />
                   </div>
                   <div>
