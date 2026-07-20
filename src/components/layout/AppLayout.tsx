@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Search, Brain, GitMerge, CalendarCheck,
   CreditCard, Ticket, User, Shield, BarChart3, Lightbulb,
   Bell, Menu, X, Sun, Moon, ChevronLeft, ChevronRight,
-  Car, Zap, LogOut, Settings, ChevronDown
+  Car, Zap, ChevronDown, Workflow
 } from 'lucide-react';
 import { useThemeStore, useSidebarStore, useAuthStore } from '../../store';
 import { cn } from '../../lib/utils';
@@ -20,6 +20,7 @@ type NavItem = {
 
 const userNavItems: NavItem[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+  { icon: Workflow, label: 'Project Workflow', path: '/workflow', badge: 'SRS' },
   { icon: Search, label: 'Find Parking', path: '/search' },
   { icon: Brain, label: 'AI Recommendation', path: '/ai-recommendation' },
   { icon: GitMerge, label: 'Digital Twin', path: '/digital-twin', badge: 'Live' },

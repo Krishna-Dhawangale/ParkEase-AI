@@ -234,13 +234,13 @@ export const mockFloors = [
 ];
 
 function generateFloorSlots(floor: number, count: number) {
-  const statuses = ['available', 'occupied', 'reserved', 'ev', 'vip', 'emergency', 'maintenance'];
+  const statuses = ['available', 'occupied', 'reserved', 'ev', 'vip', 'emergency', 'maintenance'] as const;
   const weights = [0.35, 0.40, 0.10, 0.08, 0.04, 0.01, 0.02];
   
   return Array.from({ length: count }, (_, i) => {
     const rand = Math.random();
     let cumulative = 0;
-    let status = 'available';
+    let status: (typeof statuses)[number] = 'available';
     for (let j = 0; j < weights.length; j++) {
       cumulative += weights[j];
       if (rand < cumulative) {
