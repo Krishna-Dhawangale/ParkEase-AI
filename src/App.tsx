@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
 import { LandingPage } from './pages/Landing/LandingPage';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
@@ -21,6 +21,11 @@ function App() {
       <Routes>
         {/* Public landing */}
         <Route path="/" element={<LandingPage />} />
+        
+        {/* Auth Routes */}
+        <Route path="/login/user" element={<UserAuthPage />} />
+        <Route path="/login/admin" element={<AdminAuthPage />} />
+        <Route path="/login/owner" element={<OwnerAuthPage />} />
         
         {/* App pages with sidebar layout */}
         <Route element={<AppLayout />}>

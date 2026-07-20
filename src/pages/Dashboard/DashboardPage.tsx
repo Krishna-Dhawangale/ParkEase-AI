@@ -153,7 +153,7 @@ export function DashboardPage() {
             <div className="section-kicker">Operations command center</div>
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#111827] dark:text-white">
-                Good morning, Girish.
+                Good morning, Girish 👋
               </h1>
               <p className="mt-2 text-sm sm:text-base text-[#6B7280] dark:text-[#94A3B8] max-w-xl">
                 One glance gives you live occupancy, revenue, and AI alerts so you can act before the rush hits.
