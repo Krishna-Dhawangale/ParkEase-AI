@@ -24,12 +24,12 @@ export function ProfilePage() {
   const [activeTab, setActiveTab] = useState('Overview');
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
+    <div className="page-shell max-w-5xl space-y-6">
       {/* Profile header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="card p-6"
+        className="page-hero"
       >
         <div className="flex flex-col sm:flex-row sm:items-center gap-5">
           <div className="relative">
@@ -75,13 +75,13 @@ export function ProfilePage() {
       </motion.div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar bg-white dark:bg-[#1E293B] border border-[#E5E7EB] dark:border-[#334155] rounded-2xl p-1">
+      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar portal-surface p-1.5">
         {tabs.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
-              'flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold whitespace-nowrap transition-all',
+              'pill-tab flex-1 py-2.5 px-4',
               activeTab === tab
                 ? 'bg-[#0F766E] text-white'
                 : 'text-[#6B7280] dark:text-[#94A3B8] hover:text-[#111827] dark:hover:text-white'

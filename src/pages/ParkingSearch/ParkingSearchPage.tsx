@@ -42,16 +42,33 @@ export function ParkingSearchPage() {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row h-full min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A]">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-transparent">
       {/* Left Panel */}
-      <div className="flex-1 lg:max-w-lg xl:max-w-xl overflow-y-auto">
-        <div className="p-4 sm:p-6 space-y-5">
+      <div className="flex-1 lg:max-w-xl xl:max-w-2xl overflow-y-auto">
+        <div className="page-shell space-y-5">
           {/* Header */}
-          <div>
-            <h1 className="text-2xl font-bold text-[#111827] dark:text-white tracking-tight">Find Parking</h1>
-            <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] mt-0.5">
-              AI-powered search across 500+ locations
-            </p>
+          <div className="page-hero space-y-4">
+            <div className="section-kicker">Find the best slot</div>
+            <div>
+              <h1 className="text-3xl font-bold text-[#111827] dark:text-white tracking-tight">Find Parking</h1>
+              <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] mt-1 max-w-lg">
+                AI-powered search across 500+ locations with live recommendations, cleaner filters, and better intent matching.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="card-flat p-3">
+                <div className="text-lg font-bold text-[#111827] dark:text-white">500+</div>
+                <div className="text-[11px] text-[#6B7280]">Locations</div>
+              </div>
+              <div className="card-flat p-3">
+                <div className="text-lg font-bold text-[#111827] dark:text-white">&lt;200ms</div>
+                <div className="text-[11px] text-[#6B7280]">AI match</div>
+              </div>
+              <div className="card-flat p-3">
+                <div className="text-lg font-bold text-[#111827] dark:text-white">4.8</div>
+                <div className="text-[11px] text-[#6B7280]">Avg rating</div>
+              </div>
+            </div>
           </div>
 
           {/* Search Bar */}
@@ -68,10 +85,10 @@ export function ParkingSearchPage() {
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all',
                   showFilters
                     ? 'bg-[#0F766E] text-white'
-                    : 'bg-white dark:bg-[#334155] border border-[#E5E7EB] dark:border-[#475569] text-[#6B7280]'
+                    : 'bg-white/80 dark:bg-white/5 border border-white/70 dark:border-white/10 text-[#6B7280]'
                 )}
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -141,10 +158,10 @@ export function ParkingSearchPage() {
                 key={f.id}
                 onClick={() => setActiveFilter(f.id)}
                 className={cn(
-                  'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all',
+                  'pill-tab',
                   activeFilter === f.id
                     ? 'bg-[#0F766E] text-white'
-                    : 'bg-white dark:bg-[#1E293B] border border-[#E5E7EB] dark:border-[#334155] text-[#6B7280]'
+                    : 'bg-white/80 dark:bg-white/5 border border-white/70 dark:border-white/10 text-[#6B7280]'
                 )}
               >
                 {f.label}
@@ -425,7 +442,7 @@ function PremiumMapView({ selectedId, facilities }: { selectedId: string | null;
       {/* Map overlay controls */}
       <div className="absolute top-4 right-4 flex flex-col gap-2">
         {['+', '-', '⊕'].map((ctrl, i) => (
-          <button key={i} className="w-9 h-9 card rounded-xl flex items-center justify-center text-sm font-bold text-[#6B7280] hover:text-[#0F766E] transition-colors">
+          <button key={i} className="w-9 h-9 card rounded-2xl flex items-center justify-center text-sm font-bold text-[#6B7280] hover:text-[#0F766E] transition-colors">
             {ctrl}
           </button>
         ))}

@@ -3,7 +3,7 @@ import { Outlet, useLocation, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Search, Brain, GitMerge, CalendarCheck,
-  CreditCard, Ticket, User, Shield, BarChart3, Lightbulb,
+  CreditCard, Ticket, User, BarChart3, Lightbulb,
   Bell, Menu, X, Sun, Moon, ChevronLeft, ChevronRight,
   Car, Zap, ChevronDown, Workflow
 } from 'lucide-react';
@@ -22,7 +22,6 @@ const navItems = [
 ];
 
 const secondaryNav = [
-  { icon: Shield, label: 'Admin', path: '/admin' },
   { icon: BarChart3, label: 'Analytics', path: '/analytics' },
   { icon: Lightbulb, label: 'AI Insights', path: '/ai-insights', badge: '6' },
   { icon: Bell, label: 'Notifications', path: '/notifications', badge: '3' },
@@ -183,12 +182,14 @@ export function AppLayout() {
   );
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] dark:bg-[#0F172A] overflow-hidden">
+    <div className="relative flex h-screen overflow-hidden bg-[#F4F7FB] text-[#111827] dark:bg-[#081120] dark:text-[#F1F5F9]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(37,99,235,0.10),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(245,158,11,0.08),_transparent_24%)]" />
+
       {/* Desktop Sidebar */}
       <motion.aside
         animate={{ width: collapsed ? 60 : 240 }}
         transition={{ duration: 0.25, ease: 'easeInOut' }}
-        className="hidden lg:flex flex-col flex-shrink-0 bg-white dark:bg-[#1E293B] border-r border-[#E5E7EB] dark:border-[#334155] relative z-20"
+        className="hidden lg:flex flex-col flex-shrink-0 border-r border-white/60 bg-white/75 backdrop-blur-2xl dark:border-white/10 dark:bg-[#0F172A]/75 relative z-20 shadow-[0_20px_60px_rgba(15,23,42,0.08)]"
       >
         <SidebarContent />
         <button
@@ -219,7 +220,7 @@ export function AppLayout() {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-              className="fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-[#1E293B] border-r border-[#E5E7EB] dark:border-[#334155] z-50 lg:hidden flex flex-col"
+              className="fixed left-0 top-0 bottom-0 w-64 bg-white/90 backdrop-blur-2xl dark:bg-[#0F172A]/95 border-r border-white/60 dark:border-white/10 z-50 lg:hidden flex flex-col"
             >
               <SidebarContent onItemClick={() => setMobileOpen(false)} />
               <button
@@ -236,7 +237,7 @@ export function AppLayout() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Navigation */}
-        <header className="flex-shrink-0 flex items-center gap-3 px-4 sm:px-6 h-14 bg-white dark:bg-[#1E293B] border-b border-[#E5E7EB] dark:border-[#334155] z-10">
+        <header className="flex-shrink-0 flex items-center gap-3 px-4 sm:px-6 h-16 bg-white/70 backdrop-blur-2xl border-b border-white/60 dark:bg-[#0F172A]/70 dark:border-white/10 z-10">
           <button
             onClick={() => setMobileOpen(true)}
             className="lg:hidden p-1.5 rounded-lg hover:bg-[#F8FAFC] dark:hover:bg-[#334155] transition-colors"
@@ -250,8 +251,8 @@ export function AppLayout() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" />
               <input
                 type="text"
-                placeholder="Search parking, bookings..."
-                className="w-full pl-8 pr-4 py-2 text-xs bg-[#F8FAFC] dark:bg-[#0F172A] border border-[#E5E7EB] dark:border-[#334155] rounded-xl placeholder:text-[#9CA3AF] text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20"
+                placeholder="Search parking, bookings, insights..."
+                className="w-full pl-8 pr-4 py-2 text-xs bg-white/80 dark:bg-white/5 border border-white/70 dark:border-white/10 rounded-xl placeholder:text-[#9CA3AF] text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20"
               />
               <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-[#9CA3AF] bg-[#E5E7EB] dark:bg-[#334155] px-1.5 py-0.5 rounded hidden md:block">⌘K</kbd>
             </div>
@@ -305,20 +306,21 @@ export function AppLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-[#0F172A]">
+        <main className="flex-1 overflow-y-auto bg-transparent">
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="h-full"
+            className="relative h-full"
           >
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/50 to-transparent dark:from-white/5" />
             <Outlet />
           </motion.div>
         </main>
 
         {/* Mobile bottom nav */}
-        <nav className="lg:hidden flex items-center justify-around py-2 bg-white dark:bg-[#1E293B] border-t border-[#E5E7EB] dark:border-[#334155] safe-area-bottom">
+        <nav className="lg:hidden flex items-center justify-around py-2 bg-white/85 backdrop-blur-2xl border-t border-white/60 dark:bg-[#0F172A]/90 dark:border-white/10 safe-area-bottom">
           {[
             { icon: LayoutDashboard, path: '/dashboard', label: 'Home' },
             { icon: Search, path: '/search', label: 'Search' },

@@ -9,7 +9,6 @@ import { BookingFlowPage } from './pages/BookingFlow/BookingFlowPage';
 import { PaymentPage } from './pages/Payment/PaymentPage';
 import { TicketPage } from './pages/Ticket/TicketPage';
 import { ProfilePage } from './pages/Profile/ProfilePage';
-import { AdminDashboardPage } from './pages/AdminDashboard/AdminDashboardPage';
 import { AnalyticsPage } from './pages/Analytics/AnalyticsPage';
 import { AIInsightsPage } from './pages/AIInsights/AIInsightsPage';
 import { NotificationsPage } from './pages/Notifications/NotificationsPage';
@@ -33,7 +32,6 @@ function App() {
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/ticket" element={<TicketPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/ai-insights" element={<AIInsightsPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />

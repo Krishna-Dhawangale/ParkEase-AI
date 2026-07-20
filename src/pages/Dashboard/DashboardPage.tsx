@@ -143,27 +143,38 @@ export function DashboardPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px]">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#111827] dark:text-white tracking-tight">
-            Good morning, Girish 👋
-          </h1>
-          <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] mt-0.5">
-            Here's what's happening at your parking facility today.
-          </p>
-        </div>
+    <div className="page-shell-wide space-y-6">
+      {/* Hero */}
+      <div className="page-hero">
+        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#14B8A6]/10 blur-3xl" />
+        <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-[#2563EB]/10 blur-3xl" />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl space-y-4">
+            <div className="section-kicker">Operations command center</div>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#111827] dark:text-white">
+                Good morning, Girish.
+              </h1>
+              <p className="mt-2 text-sm sm:text-base text-[#6B7280] dark:text-[#94A3B8] max-w-xl">
+                One glance gives you live occupancy, revenue, and AI alerts so you can act before the rush hits.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3 text-xs text-[#6B7280] dark:text-[#94A3B8]">
+              <span className="badge badge-brand">Live facility sync</span>
+              <span className="badge badge-success">96.2% AI accuracy</span>
+              <span className="badge badge-info">48 ms refresh</span>
+            </div>
+          </div>
 
-        <div className="flex items-center gap-2">
-          {/* Time range selector */}
-          <div className="flex items-center bg-white dark:bg-[#1E293B] border border-[#E5E7EB] dark:border-[#334155] rounded-xl p-1">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Time range selector */}
+            <div className="flex items-center bg-white/80 dark:bg-white/5 border border-white/70 dark:border-white/10 rounded-2xl p-1 backdrop-blur-xl">
             {['today', 'week', 'month'].map(range => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize',
+                  'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all capitalize',
                   timeRange === range
                     ? 'bg-[#0F766E] text-white'
                     : 'text-[#6B7280] dark:text-[#94A3B8] hover:text-[#111827] dark:hover:text-white'
@@ -172,16 +183,17 @@ export function DashboardPage() {
                 {range}
               </button>
             ))}
+            </div>
+
+            <button onClick={handleRefresh} className="btn-ghost">
+              <RefreshCw className={cn('w-4 h-4', refreshing && 'animate-spin')} />
+            </button>
+
+            <button className="btn-secondary hidden sm:flex">
+              <Download className="w-4 h-4" />
+              Export
+            </button>
           </div>
-
-          <button onClick={handleRefresh} className="btn-ghost">
-            <RefreshCw className={cn('w-4 h-4', refreshing && 'animate-spin')} />
-          </button>
-
-          <button className="btn-secondary hidden sm:flex">
-            <Download className="w-4 h-4" />
-            Export
-          </button>
         </div>
       </div>
 
@@ -201,7 +213,7 @@ export function DashboardPage() {
       </motion.div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {kpiCards.map((card, i) => {
           const colors = colorMap[card.color as keyof typeof colorMap];
           return (

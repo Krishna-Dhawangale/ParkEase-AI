@@ -50,6 +50,11 @@
   body {
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     background-color: var(--bg-primary);
+    background-image:
+      radial-gradient(circle at top left, rgba(20, 184, 166, 0.14), transparent 26%),
+      radial-gradient(circle at top right, rgba(37, 99, 235, 0.10), transparent 22%),
+      radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.08), transparent 20%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.48), transparent 24%);
     color: var(--text-primary);
     transition: background-color 0.3s ease, color 0.3s ease;
     min-height: 100vh;
@@ -86,27 +91,28 @@
 
 @layer components {
   .card {
-    @apply bg-white dark:bg-[#1E293B] border border-[#E5E7EB] dark:border-[#334155] rounded-2xl shadow-card;
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    @apply bg-white/85 dark:bg-[#0F172A]/85 border border-white/70 dark:border-white/10 rounded-3xl shadow-card backdrop-blur-xl;
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
   }
 
   .card:hover {
     @apply shadow-hover;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    border-color: rgba(20, 184, 166, 0.22);
   }
 
   .card-flat {
-    @apply bg-white dark:bg-[#1E293B] border border-[#E5E7EB] dark:border-[#334155] rounded-2xl;
+    @apply bg-white/80 dark:bg-[#0F172A]/80 border border-white/70 dark:border-white/10 rounded-3xl backdrop-blur-xl;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#0F766E] hover:bg-[#0a5a54] text-white font-semibold rounded-xl text-sm transition-all duration-200;
-    box-shadow: 0 1px 2px rgba(15, 118, 110, 0.2);
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#0F766E] to-[#14B8A6] hover:from-[#0B645E] hover:to-[#10A698] text-white font-semibold rounded-2xl text-sm transition-all duration-200;
+    box-shadow: 0 10px 24px rgba(15, 118, 110, 0.22);
   }
 
   .btn-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.26);
   }
 
   .btn-primary:active {
@@ -114,15 +120,15 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#F8FAFC] hover:bg-[#EEF2F7] dark:bg-[#1E293B] dark:hover:bg-[#334155] text-[#111827] dark:text-[#F1F5F9] font-semibold rounded-xl text-sm border border-[#E5E7EB] dark:border-[#334155] transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white/80 hover:bg-white dark:bg-white/5 dark:hover:bg-white/10 text-[#111827] dark:text-[#F1F5F9] font-semibold rounded-2xl text-sm border border-white/70 dark:border-white/10 backdrop-blur-xl transition-all duration-200;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-[#6B7280] hover:text-[#111827] dark:hover:text-[#F1F5F9] hover:bg-[#F8FAFC] dark:hover:bg-[#334155] rounded-xl text-sm font-medium transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-[#6B7280] hover:text-[#111827] dark:hover:text-[#F1F5F9] hover:bg-white/70 dark:hover:bg-white/10 rounded-2xl text-sm font-medium transition-all duration-200;
   }
 
   .input-field {
-    @apply w-full px-4 py-2.5 bg-[#F8FAFC] dark:bg-[#0F172A] border border-[#E5E7EB] dark:border-[#334155] rounded-xl text-sm text-[#111827] dark:text-[#F1F5F9] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 focus:border-[#0F766E] transition-all duration-200;
+    @apply w-full px-4 py-2.5 bg-white/80 dark:bg-white/5 border border-white/70 dark:border-white/10 rounded-2xl text-sm text-[#111827] dark:text-[#F1F5F9] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 focus:border-[#0F766E] backdrop-blur-xl transition-all duration-200;
   }
 
   .badge {
@@ -178,11 +184,16 @@
   }
 
   .sidebar-item {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#6B7280] dark:text-[#94A3B8] hover:text-[#111827] dark:hover:text-[#F1F5F9] hover:bg-[#F8FAFC] dark:hover:bg-[#334155] transition-all duration-200 cursor-pointer;
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-medium text-[#6B7280] dark:text-[#94A3B8] hover:text-[#111827] dark:hover:text-[#F1F5F9] hover:bg-white/80 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer backdrop-blur-xl;
   }
 
   .sidebar-item.active {
-    @apply text-[#0F766E] dark:text-[#14B8A6] bg-[#0F766E]/10 dark:bg-[#14B8A6]/10;
+    @apply text-[#0F766E] dark:text-[#14B8A6];
+    background-color: rgba(15, 118, 110, 0.12);
+  }
+
+  .dark .sidebar-item.active {
+    background-color: rgba(20, 184, 166, 0.12);
   }
 
   .stat-card {
@@ -199,6 +210,34 @@
 
   .page-container {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .portal-surface {
+    @apply bg-white/80 dark:bg-[#0F172A]/80 border border-white/70 dark:border-white/10 rounded-[2rem] shadow-card backdrop-blur-2xl;
+  }
+
+  .page-shell {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8;
+  }
+
+  .page-shell-wide {
+    @apply max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8;
+  }
+
+  .page-hero {
+    @apply portal-surface p-5 sm:p-6 lg:p-7 overflow-hidden relative;
+  }
+
+  .section-heading {
+    @apply flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between;
+  }
+
+  .section-kicker {
+    @apply text-[11px] font-bold uppercase tracking-[0.28em] text-[#0F766E] dark:text-[#14B8A6];
+  }
+
+  .pill-tab {
+    @apply px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all border border-transparent;
   }
 }
 
@@ -272,6 +311,16 @@
     radial-gradient(at 0% 50%, rgba(245, 158, 11, 0.06) 0px, transparent 50%),
     radial-gradient(at 80% 50%, rgba(15, 118, 110, 0.08) 0px, transparent 50%),
     radial-gradient(at 0% 100%, rgba(20, 184, 166, 0.1) 0px, transparent 50%);
+}
+
+.scene-3d {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.scene-3d > * {
+  transform-style: preserve-3d;
 }
 
 /* Chart tooltip styling */

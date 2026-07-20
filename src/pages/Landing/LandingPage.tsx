@@ -1,808 +1,114 @@
-import { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  Car, Brain, Cpu, MapPin, Star, ChevronRight, Check, Shield,
-  Zap, TrendingUp, BarChart3, Globe, Clock, Leaf, ArrowRight,
-  Play, ChevronDown, Moon, Sun, Quote, Building2, Phone, Mail,
-  MessageCircle, Globe2, ExternalLink, Share2
+  Activity, ArrowRight, BellRing, BrainCircuit, Building2, Car, Check,
+  ChevronDown, Code2, GitBranch as Github, Globe2, Menu, Moon, Navigation, Play, Route,
+  Search, ShieldCheck, Sun, X, Zap,
 } from 'lucide-react';
 import { useThemeStore } from '../../store';
 import { cn } from '../../lib/utils';
-import { ParkingIllustration } from './ParkingIllustration';
 
-const features = [
-  {
-    icon: Brain,
-    title: 'AI-Powered Recommendations',
-    desc: 'Our neural network analyzes 50+ parameters to recommend the perfect slot for you in under 200ms.',
-    color: 'brand',
-  },
-  {
-    icon: Cpu,
-    title: 'Digital Twin Technology',
-    desc: 'Real-time 3D visualization of every parking space. Monitor occupancy, cameras, and barriers live.',
-    color: 'info',
-  },
-  {
-    icon: Zap,
-    title: 'Instant EV Charging',
-    desc: 'Smart EV slot allocation with charging status monitoring. Reserve your charge before you arrive.',
-    color: 'amber',
-  },
-  {
-    icon: BarChart3,
-    title: 'Predictive Analytics',
-    desc: 'Forecast occupancy, revenue trends, and demand patterns with 96% accuracy up to 7 days ahead.',
-    color: 'success',
-  },
-  {
-    icon: Shield,
-    title: 'Enterprise Security',
-    desc: 'AI-powered camera surveillance, license plate recognition, and barrier automation built in.',
-    color: 'brand',
-  },
-  {
-    icon: Globe,
-    title: 'Smart City Ready',
-    desc: 'Integrate with city APIs, traffic systems, and transit networks. ISO 27001 & SOC 2 compliant.',
-    color: 'info',
-  },
-];
+type SlotStatus = 'available' | 'occupied' | 'reserved' | 'ev' | 'vip';
+const slotTone: Record<SlotStatus, string> = {
+  available: '#22C55E', occupied: '#F05252', reserved: '#3B82F6', ev: '#14B8A6', vip: '#8B5CF6',
+};
 
-const stats = [
-  { value: '12M+', label: 'Parking Sessions', icon: Car },
-  { value: '500+', label: 'Partner Locations', icon: Building2 },
-  { value: '96.2%', label: 'AI Accuracy', icon: Brain },
-  { value: '₹2.4B', label: 'Revenue Managed', icon: TrendingUp },
-];
-
-const testimonials = [
-  {
-    name: 'Rajesh Sharma',
-    role: 'Head of Operations, Kempegowda Airport',
-    quote: 'ParkEase AI transformed how we manage 5,000 parking bays. Revenue went up 34% and customer complaints dropped by 78%.',
-    avatar: 'RS',
-    rating: 5,
-  },
-  {
-    name: 'Dr. Priya Nair',
-    role: 'CTO, Manipal Hospital Group',
-    quote: 'The Digital Twin feature gave our admin team real-time visibility they never had before. The AI slot suggestions are eerily accurate.',
-    avatar: 'PN',
-    rating: 5,
-  },
-  {
-    name: 'Arjun Mehta',
-    role: 'Smart City Director, Pune Municipal Corporation',
-    quote: 'We evaluated 8 platforms. ParkEase AI was the only one with a truly enterprise-grade design and the analytics we needed for our smart city mandate.',
-    avatar: 'AM',
-    rating: 5,
-  },
-];
+const slots: SlotStatus[] = ['occupied', 'available', 'available', 'reserved', 'available', 'ev', 'occupied', 'available', 'vip', 'available', 'occupied', 'available', 'available', 'reserved', 'available', 'occupied', 'available', 'ev', 'available', 'occupied', 'vip', 'available', 'available', 'reserved'];
 
 const faqs = [
-  {
-    q: 'How does AI recommendation work?',
-    a: 'Our AI analyzes your vehicle type, destination, walking preference, parking duration, EV needs, real-time availability, and historical congestion patterns to recommend the optimal slot with explainable reasoning.',
-  },
-  {
-    q: 'What is the Digital Twin feature?',
-    a: 'Digital Twin creates a live virtual replica of your parking facility. It shows real-time slot status, vehicle positions, camera feeds, barrier states, and heatmaps — all updated in under 500ms.',
-  },
-  {
-    q: 'Can ParkEase AI integrate with existing systems?',
-    a: 'Yes. We offer REST APIs, webhooks, and SDKs for integration with PMS, ERP, city APIs, ANPR cameras, payment gateways, and access control systems.',
-  },
-  {
-    q: 'Is ParkEase AI suitable for small facilities?',
-    a: 'Absolutely. We offer plans starting from 50 slots up to 50,000+ slots. The AI adapts to your scale and grows with your facility.',
-  },
-  {
-    q: 'What payment methods are supported?',
-    a: 'UPI, Credit/Debit Cards, Net Banking, Wallets (Paytm, PhonePe, Google Pay), and FASTag. International cards and invoicing for enterprise accounts.',
-  },
+  ['How quickly can a facility go live?', 'A standard facility can be connected in days. ParkEase maps existing access controls, cameras, sensors, and payments into a live operational view without requiring a wholesale replacement.'],
+  ['Does ParkEase work with our existing cameras and barriers?', 'Yes. The platform is designed for mixed hardware environments, with APIs and adapters for ANPR, access control, payment gateways, and occupancy sensors.'],
+  ['How does the recommendation engine make a decision?', 'It weighs live availability, walking distance, vehicle needs, reservations, congestion, accessibility, and forecasted demand. Every suggestion includes a human-readable reason.'],
+  ['Can we run multiple locations from one workspace?', 'Yes. Regional teams can monitor individual facilities or an entire portfolio while retaining scoped access, audit trails, and local operating rules.'],
+  ['Is the platform suitable for public and private parking?', 'ParkEase supports airports, malls, hospitals, campuses, hotels, residential portfolios, and city parking programs from one shared platform.'],
 ];
 
-const logos = [
-  'Bangalore Airport', 'Nexus Malls', 'Apollo Hospitals', 
-  'BMRCL Metro', 'Prestige Group', 'Infosys Campus',
+const cases = [
+  { sector: 'Airport', name: 'Kempegowda International', metric: '+34%', detail: 'parking revenue in 90 days', tone: 'bg-blue-500', icon: Route },
+  { sector: 'Retail', name: 'Nexus Mall Portfolio', metric: '-41%', detail: 'search-to-park time', tone: 'bg-amber-500', icon: Building2 },
+  { sector: 'Hospital', name: 'Manipal Health Network', metric: '2.6x', detail: 'faster emergency access', tone: 'bg-rose-500', icon: Activity },
+  { sector: 'University', name: 'Eastbridge Campus', metric: '91%', detail: 'permit compliance', tone: 'bg-violet-500', icon: BrainCircuit },
 ];
 
-const workflow = [
-  { step: '01', title: 'Search', desc: 'Enter destination and find nearby parking facilities instantly' },
-  { step: '02', title: 'AI Match', desc: 'AI recommends the best slot based on your needs and live data' },
-  { step: '03', title: 'Reserve', desc: 'Book your slot in under 30 seconds with one-tap reservation' },
-  { step: '04', title: 'Navigate', desc: 'Get turn-by-turn directions to your reserved slot' },
-  { step: '05', title: 'Park & Pay', desc: 'Automated entry, contactless payment, and smart exit' },
-];
-
-export function LandingPage() {
-  const navigate = useNavigate();
-  const { theme, toggleTheme } = useThemeStore();
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const { scrollY } = useScroll();
-  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
-  const heroY = useTransform(scrollY, [0, 400], [0, -60]);
-
+function useCountUp(target: number, duration = 1200) {
+  const [value, setValue] = useState(0);
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveTestimonial(prev => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    const start = performance.now();
+    let frame = 0;
+    const tick = (time: number) => {
+      const progress = Math.min((time - start) / duration, 1);
+      setValue(Math.round(target * (1 - Math.pow(1 - progress, 3))));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [target, duration]);
+  return value;
+}
 
+function Mark() {
+  return <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#0F766E] shadow-[0_7px_18px_rgba(15,118,110,.22)]"><Car className="h-4 w-4 text-white" /></div>;
+}
+
+function Sparkline({ data, color = '#14B8A6' }: { data: number[]; color?: string }) {
+  const max = Math.max(...data); const min = Math.min(...data); const span = max - min || 1;
+  const points = data.map((value, index) => `${(index / (data.length - 1)) * 100},${32 - ((value - min) / span) * 26}`).join(' ');
+  return <svg viewBox="0 0 100 36" className="h-10 w-full overflow-visible" aria-label="Trend chart"><polyline points={points} fill="none" stroke={color} strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" /><polyline points={`0,36 ${points} 100,36`} fill={`${color}18`} stroke="none" /></svg>;
+}
+
+function TwinPreview({ compact = false }: { compact?: boolean }) {
+  const [floor, setFloor] = useState('B1');
+  const [heatmap, setHeatmap] = useState(false);
+  const [pulse, setPulse] = useState(0);
+  useEffect(() => { const timer = window.setInterval(() => setPulse((value) => (value + 1) % 3), 2200); return () => window.clearInterval(timer); }, []);
+  const available = 63 - pulse;
   return (
-    <div className={cn('min-h-screen', theme === 'dark' ? 'dark' : '')}>
-      <div className="bg-[#F8FAFC] dark:bg-[#0F172A] text-[#111827] dark:text-[#F1F5F9]">
-
-        {/* Navigation */}
-        <nav className="sticky top-0 z-50 bg-black/30 backdrop-blur-xl border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center">
-                <Car className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-[15px] text-white">
-                ParkEase <span className="text-[#14B8A6]">AI</span>
-              </span>
-            </div>
-
-            <div className="hidden md:flex items-center gap-6">
-              {['Features', 'Digital Twin', 'Pricing', 'Enterprise', 'Blog'].map(item => (
-                <a key={item} href="#" className="text-sm text-white/60 hover:text-white transition-colors font-medium">
-                  {item}
-                </a>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button onClick={toggleTheme} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
-                {theme === 'light' ? <Moon className="w-4 h-4 text-white/60" /> : <Sun className="w-4 h-4 text-[#F59E0B]" />}
-              </button>
-              <button onClick={() => navigate('/dashboard')} className="hidden sm:flex text-sm text-white/80 hover:text-white font-medium transition-colors">Sign In</button>
-              <button onClick={() => navigate('/dashboard')} className="px-4 py-2 rounded-xl font-semibold text-sm text-white bg-[#0F766E] hover:bg-[#0D6B63] transition-all flex items-center gap-1.5">
-                Get Started
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        </nav>
-
-        {/* Hero Section – Cinematic Full-Bleed */}
-        <section className="relative min-h-screen flex items-center overflow-hidden">
-          {/* Background Image */}
-          <div className="absolute inset-0">
-            <img
-              src="/hero-bg.png"
-              alt="Premium vehicle on scenic mountain road"
-              className="w-full h-full object-cover"
-            />
-            {/* Gradient overlays for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
-          </div>
-
-          {/* Content */}
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-0 w-full">
-            <div className="max-w-2xl">
-              <motion.div style={{ opacity: heroOpacity, y: heroY }} className="space-y-7">
-                {/* AI Badge */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20"
-                >
-                  <Brain className="w-3.5 h-3.5 text-[#14B8A6]" />
-                  <span className="text-xs font-semibold text-white/90">Powered by ParkEase Neural Engine™</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#14B8A6] animate-pulse" />
-                </motion.div>
-
-                {/* Headline */}
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tighter text-white">
-                    Find It.{' '}
-                    <span className="block text-[#14B8A6]">Reserve It.</span>
-                    Park Smarter.
-                  </h1>
-                </motion.div>
-
-                {/* Subheading */}
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-lg text-white/70 leading-relaxed max-w-lg"
-                >
-                  AI-powered parking recommendations, real-time Digital Twin monitoring, 
-                  and smart analytics for airports, malls, hospitals, and smart cities.
-                </motion.p>
-
-                {/* CTA Buttons */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="flex flex-wrap items-center gap-3"
-                >
-                  <button
-                    onClick={() => navigate('/dashboard')}
-                    className="px-7 py-3.5 rounded-2xl font-semibold text-base text-white bg-[#0F766E] hover:bg-[#0D6B63] transition-all shadow-lg shadow-[#0F766E]/25 flex items-center gap-2"
-                  >
-                    <Zap className="w-4 h-4" />
-                    Start Free Trial
-                  </button>
-                  <button className="px-7 py-3.5 rounded-2xl font-semibold text-base text-white bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/20 transition-all flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                      <Play className="w-2.5 h-2.5 text-white ml-0.5" />
-                    </div>
-                    Watch Demo
-                  </button>
-                </motion.div>
-
-                {/* Trust signals */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="flex flex-wrap items-center gap-5 text-xs text-white/50"
-                >
-                  {['No credit card required', 'SOC 2 Certified', '99.9% uptime SLA'].map(trust => (
-                    <div key={trust} className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-[#14B8A6]" />
-                      <span>{trust}</span>
-                    </div>
-                  ))}
-                </motion.div>
-
-                {/* Stats row */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="flex items-center gap-6 pt-5 border-t border-white/10"
-                >
-                  {stats.map((stat) => (
-                    <div key={stat.label} className="flex flex-col">
-                      <span className="text-2xl font-bold text-white">{stat.value}</span>
-                      <span className="text-xs text-white/40">{stat.label}</span>
-                    </div>
-                  ))}
-                </motion.div>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Scroll indicator */}
-          <motion.div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2"
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-          >
-            <ChevronDown className="w-5 h-5 text-white/50" />
-          </motion.div>
-        </section>
-
-        {/* Trusted By */}
-        <section className="py-12 border-y border-[#E5E7EB] dark:border-[#334155] bg-white dark:bg-[#1E293B]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-8">Trusted by leading organizations</p>
-            <div className="flex items-center justify-center flex-wrap gap-8 lg:gap-12">
-              {logos.map((logo, i) => (
-                <motion.div
-                  key={logo}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="flex items-center gap-2 text-[#9CA3AF] dark:text-[#475569] hover:text-[#6B7280] dark:hover:text-[#64748B] transition-colors"
-                >
-                  <Building2 className="w-4 h-4" />
-                  <span className="text-sm font-semibold whitespace-nowrap">{logo}</span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Features */}
-        <section className="py-24 bg-[#F8FAFC] dark:bg-[#0F172A]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0F766E]/10 dark:bg-[#14B8A6]/10 border border-[#0F766E]/20 mb-4">
-                <span className="text-xs font-semibold text-[#0F766E] dark:text-[#14B8A6]">Enterprise Features</span>
-              </div>
-              <h2 className="text-4xl font-bold text-[#111827] dark:text-white mb-4 tracking-tight">
-                Everything you need to manage<br />parking at enterprise scale
-              </h2>
-              <p className="text-[#6B7280] dark:text-[#94A3B8] max-w-2xl mx-auto">
-                From a single 50-slot facility to a multi-location 50,000-slot network — ParkEase AI scales with your ambition.
-              </p>
-            </motion.div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {features.map((feature, i) => (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="card p-6 group"
-                >
-                  <div className={cn(
-                    'w-10 h-10 rounded-2xl flex items-center justify-center mb-4',
-                    feature.color === 'brand' && 'bg-[#0F766E]/10 dark:bg-[#14B8A6]/10',
-                    feature.color === 'info' && 'bg-blue-50 dark:bg-blue-900/20',
-                    feature.color === 'amber' && 'bg-amber-50 dark:bg-amber-900/20',
-                    feature.color === 'success' && 'bg-green-50 dark:bg-green-900/20',
-                  )}>
-                    <feature.icon className={cn(
-                      'w-5 h-5',
-                      feature.color === 'brand' && 'text-[#0F766E] dark:text-[#14B8A6]',
-                      feature.color === 'info' && 'text-blue-600 dark:text-blue-400',
-                      feature.color === 'amber' && 'text-amber-600 dark:text-amber-400',
-                      feature.color === 'success' && 'text-green-600 dark:text-green-400',
-                    )} />
-                  </div>
-                  <h3 className="font-bold text-[#111827] dark:text-white mb-2">{feature.title}</h3>
-                  <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] leading-relaxed">{feature.desc}</p>
-                  <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-[#0F766E] dark:text-[#14B8A6] opacity-0 group-hover:opacity-100 transition-opacity">
-                    Learn more <ChevronRight className="w-3.5 h-3.5" />
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Workflow */}
-        <section className="py-24 bg-white dark:bg-[#1E293B]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <h2 className="text-4xl font-bold text-[#111827] dark:text-white mb-4 tracking-tight">
-                How ParkEase AI works
-              </h2>
-              <p className="text-[#6B7280] dark:text-[#94A3B8]">Five steps. Under 60 seconds. Zero frustration.</p>
-            </motion.div>
-
-            <div className="relative">
-              {/* Connector line */}
-              <div className="hidden lg:block absolute top-8 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E5E7EB] dark:via-[#334155] to-transparent" />
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-                {workflow.map((step, i) => (
-                  <motion.div
-                    key={step.step}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.12 }}
-                    className="flex flex-col items-center text-center"
-                  >
-                    <div className="relative mb-4 flex items-center justify-center">
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0F766E] to-[#14B8A6] text-white font-bold text-lg flex items-center justify-center shadow-lg">
-                        {step.step}
-                      </div>
-                    </div>
-                    <h3 className="font-bold text-[#111827] dark:text-white mb-2">{step.title}</h3>
-                    <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] leading-relaxed">{step.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Digital Twin Preview */}
-        <section className="py-24 bg-[#F8FAFC] dark:bg-[#0F172A] overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -40 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="space-y-6"
-              >
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30">
-                  <Cpu className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">Digital Twin Technology</span>
-                </div>
-                <h2 className="text-4xl font-bold text-[#111827] dark:text-white tracking-tight">
-                  See every slot.<br />Control everything.
-                </h2>
-                <p className="text-[#6B7280] dark:text-[#94A3B8] leading-relaxed">
-                  Our Digital Twin creates a live virtual replica of your entire facility. 
-                  Monitor occupancy, animate vehicle movement, detect conflicts, 
-                  and manage barriers — all from a single interface.
-                </p>
-                <div className="space-y-3">
-                  {[
-                    'Real-time slot status with 500ms refresh',
-                    'AI-detected conflicts and automatic resolution',
-                    'Multi-floor navigation with heatmaps',
-                    'Live camera and barrier control integration',
-                  ].map(point => (
-                    <div key={point} className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-[#0F766E]/10 dark:bg-[#14B8A6]/10 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3 h-3 text-[#0F766E] dark:text-[#14B8A6]" />
-                      </div>
-                      <span className="text-sm text-[#6B7280] dark:text-[#94A3B8]">{point}</span>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={() => navigate('/digital-twin')}
-                  className="btn-primary"
-                >
-                  Explore Digital Twin
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: 40 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="relative"
-              >
-                <div className="card p-6 overflow-hidden">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
-                      <span className="text-xs font-semibold text-[#111827] dark:text-white">Digital Twin – Live</span>
-                    </div>
-                    <div className="flex gap-1">
-                      {['G', '1', '2', '3'].map(f => (
-                        <button key={f} className={cn(
-                          'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
-                          f === 'G' ? 'bg-[#0F766E] text-white' : 'bg-[#F8FAFC] dark:bg-[#334155] text-[#6B7280]'
-                        )}>
-                          {f === 'G' ? 'GF' : `F${f}`}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Mini digital twin preview */}
-                  <MiniTwinPreview />
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* Live Stats */}
-        <section className="py-16 gradient-brand">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-white">
-              {[
-                { value: '99.9%', label: 'Platform Uptime', sub: 'Last 12 months' },
-                { value: '<200ms', label: 'AI Response Time', sub: 'Recommendation latency' },
-                { value: '42%', label: 'Search Time Saved', sub: 'vs manual search' },
-                { value: '₹4,200', label: 'Avg Revenue Gain', sub: 'Per slot per year' },
-              ].map((stat, i) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="text-4xl font-bold mb-1">{stat.value}</div>
-                  <div className="font-semibold text-white/90 mb-1">{stat.label}</div>
-                  <div className="text-sm text-white/60">{stat.sub}</div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section className="py-24 bg-white dark:bg-[#1E293B]">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="mb-12"
-            >
-              <h2 className="text-4xl font-bold text-[#111827] dark:text-white mb-4 tracking-tight">
-                Trusted by industry leaders
-              </h2>
-              <p className="text-[#6B7280] dark:text-[#94A3B8]">From airports to smart cities, ParkEase AI delivers results.</p>
-            </motion.div>
-
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTestimonial}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-                className="card p-8"
-              >
-                <Quote className="w-8 h-8 text-[#0F766E]/30 dark:text-[#14B8A6]/30 mx-auto mb-6" />
-                <p className="text-xl text-[#111827] dark:text-white font-medium leading-relaxed mb-6">
-                  "{testimonials[activeTestimonial].quote}"
-                </p>
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-10 h-10 rounded-full gradient-brand flex items-center justify-center text-white text-sm font-bold">
-                    {testimonials[activeTestimonial].avatar}
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-[#111827] dark:text-white text-sm">{testimonials[activeTestimonial].name}</p>
-                    <p className="text-xs text-[#6B7280] dark:text-[#94A3B8]">{testimonials[activeTestimonial].role}</p>
-                  </div>
-                  <div className="ml-auto flex gap-0.5">
-                    {Array.from({ length: testimonials[activeTestimonial].rating }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-[#F59E0B] fill-[#F59E0B]" />
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-
-            <div className="flex justify-center gap-2 mt-6">
-              {testimonials.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveTestimonial(i)}
-                  className={cn(
-                    'w-2 h-2 rounded-full transition-all',
-                    i === activeTestimonial ? 'bg-[#0F766E] dark:bg-[#14B8A6] w-5' : 'bg-[#E5E7EB] dark:bg-[#334155]'
-                  )}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section className="py-24 bg-[#F8FAFC] dark:bg-[#0F172A]">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-12"
-            >
-              <h2 className="text-4xl font-bold text-[#111827] dark:text-white mb-4 tracking-tight">
-                Frequently asked questions
-              </h2>
-            </motion.div>
-
-            <div className="space-y-3">
-              {faqs.map((faq, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.08 }}
-                  className="card overflow-hidden"
-                >
-                  <button
-                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="w-full flex items-center justify-between p-5 text-left"
-                  >
-                    <span className="font-semibold text-[#111827] dark:text-white text-sm">{faq.q}</span>
-                    <motion.div
-                      animate={{ rotate: openFaq === i ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronDown className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
-                    </motion.div>
-                  </button>
-                  <AnimatePresence>
-                    {openFaq === i && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="overflow-hidden"
-                      >
-                        <p className="px-5 pb-5 text-sm text-[#6B7280] dark:text-[#94A3B8] leading-relaxed border-t border-[#E5E7EB] dark:border-[#334155] pt-3">
-                          {faq.a}
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="py-24 bg-white dark:bg-[#1E293B]">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="relative rounded-3xl gradient-brand p-12 overflow-hidden"
-            >
-              <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-white/5" />
-                <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-white/5" />
-              </div>
-              <div className="relative">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 mb-6">
-                  <Leaf className="w-3.5 h-3.5 text-white" />
-                  <span className="text-xs font-semibold text-white">Save fuel. Reduce CO₂. Park Green.</span>
-                </div>
-                <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">
-                  Ready to transform your<br />parking operations?
-                </h2>
-                <p className="text-white/80 mb-8 max-w-lg mx-auto">
-                  Join 500+ organizations using ParkEase AI to deliver smarter, greener, and more profitable parking experiences.
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                  <button
-                    onClick={() => navigate('/dashboard')}
-                    className="px-8 py-3.5 bg-white text-[#0F766E] font-semibold rounded-xl hover:bg-[#F8FAFC] transition-all text-sm flex items-center gap-2 shadow-lg"
-                  >
-                    <Zap className="w-4 h-4" />
-                    Start Free Trial
-                  </button>
-                  <button className="px-8 py-3.5 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-xl transition-all text-sm flex items-center gap-2 border border-white/30">
-                    <Phone className="w-4 h-4" />
-                    Book a Demo
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="bg-[#111827] dark:bg-[#0F172A] text-white py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
-              <div className="col-span-2 lg:col-span-1 space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center">
-                    <Car className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="font-bold">ParkEase AI</span>
-                </div>
-                <p className="text-sm text-white/50 leading-relaxed">
-                  The world's most intelligent smart parking platform for enterprise and smart cities.
-                </p>
-                <div className="flex gap-3">
-                  {[MessageCircle, Globe2, ExternalLink, Share2].map((Icon, i) => (
-                    <a key={i} href="#" className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
-                      <Icon className="w-4 h-4 text-white/70" />
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              {[
-                { title: 'Product', links: ['Features', 'Digital Twin', 'AI Engine', 'Analytics', 'Pricing'] },
-                { title: 'Solutions', links: ['Airports', 'Hospitals', 'Malls', 'Smart Cities', 'Campuses'] },
-                { title: 'Company', links: ['About', 'Blog', 'Careers', 'Press', 'Partners'] },
-                { title: 'Legal', links: ['Privacy', 'Terms', 'Security', 'Compliance', 'Cookies'] },
-              ].map(col => (
-                <div key={col.title}>
-                  <p className="text-sm font-semibold mb-4">{col.title}</p>
-                  <ul className="space-y-2.5">
-                    {col.links.map(link => (
-                      <li key={link}>
-                        <a href="#" className="text-sm text-white/50 hover:text-white transition-colors">{link}</a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-white/40">© 2026 ParkEase AI. All rights reserved.</p>
-              <div className="flex items-center gap-4 text-sm text-white/40">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  All systems operational
-                </div>
-                <span>•</span>
-                <a href="mailto:hello@parkease.ai" className="flex items-center gap-1 hover:text-white/70 transition-colors">
-                  <Mail className="w-3 h-3" />
-                  hello@parkease.ai
-                </a>
-              </div>
-            </div>
-          </div>
-        </footer>
-
+    <div className={cn('overflow-hidden rounded-[18px] border border-slate-200 bg-[#F7FAFC] text-slate-900 shadow-[0_20px_60px_rgba(15,23,42,.12)] dark:border-white/10 dark:bg-[#0B1322] dark:text-white', compact && 'rounded-xl')}>
+      <div className="flex items-center justify-between border-b border-slate-200 bg-white/90 px-3 py-2.5 dark:border-white/10 dark:bg-white/5">
+        <div className="flex items-center gap-2"><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" /></span><span className="text-[11px] font-bold">Mall of Delhi · Live</span></div>
+        <div className="flex gap-1">{['B2', 'B1', 'G'].map((level) => <button key={level} onClick={() => setFloor(level)} className={cn('rounded-md px-2 py-1 text-[10px] font-bold transition', floor === level ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10')}>{level}</button>)}</div>
       </div>
+      <div className={cn('relative p-3', compact ? 'min-h-[250px]' : 'min-h-[390px]')}>
+        <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'radial-gradient(rgba(100,116,139,.22) 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
+        <div className="relative mx-auto h-full max-w-[560px] rounded-md border-[7px] border-slate-300 bg-slate-600 p-4 shadow-inner dark:border-slate-600">
+          <div className="absolute left-[9%] right-[9%] top-[12%] h-[13%] rounded bg-slate-500"><motion.div animate={{ x: ['5%', '780%'] }} transition={{ duration: 6, repeat: Infinity, ease: 'linear' }} className="mt-2 h-2 w-5 rounded bg-amber-300 shadow" /></div>
+          <div className="absolute bottom-[12%] left-[9%] right-[9%] h-[13%] rounded bg-slate-500"><motion.div animate={{ x: ['780%', '5%'] }} transition={{ duration: 7, repeat: Infinity, ease: 'linear' }} className="mt-5 h-2 w-5 rounded bg-sky-300 shadow" /></div>
+          <div className="absolute left-[7%] top-[30%] grid w-[31%] grid-cols-4 gap-1.5">{slots.slice(0, 12).map((status, index) => <motion.div key={index} animate={status === 'available' && index === pulse ? { boxShadow: ['0 0 0 0 rgba(34,197,94,0)', '0 0 0 5px rgba(34,197,94,.26)', '0 0 0 0 rgba(34,197,94,0)'] } : {}} transition={{ repeat: Infinity, duration: 1.8 }} className="aspect-[.63] rounded-sm border" style={{ background: `${slotTone[status]}60`, borderColor: slotTone[status] }} />)}</div>
+          <div className="absolute right-[7%] top-[30%] grid w-[31%] grid-cols-4 gap-1.5">{slots.slice(12).map((status, index) => <div key={index} className="aspect-[.63] rounded-sm border" style={{ background: `${slotTone[status]}60`, borderColor: slotTone[status] }} />)}</div>
+          <div className="absolute left-1/2 top-1/2 grid h-[30%] w-[20%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded border border-slate-400 bg-slate-200 text-[9px] font-bold text-slate-600 shadow-lg">LIFT<br />LOBBY</div>
+          <motion.div animate={{ rotate: [0, 8, 0] }} transition={{ duration: 3, repeat: Infinity }} className="absolute left-[4%] bottom-[6%] flex h-7 w-14 items-center justify-center border-2 border-amber-300 bg-slate-800 text-[8px] font-bold text-amber-200">GATE</motion.div>
+          {[['18%', '18%'], ['81%', '19%'], ['18%', '82%']].map(([left, top], index) => <div key={index} className="absolute" style={{ left, top }}><span className="block h-3 w-3 rounded-full border-2 border-white bg-blue-500 shadow" /><span className="absolute -left-2 -top-2 h-7 w-7 animate-ping rounded-full border border-blue-300/70" /></div>)}
+          <AnimatePresence>{heatmap && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 rounded bg-[radial-gradient(circle_at_25%_40%,rgba(239,68,68,.58),transparent_18%),radial-gradient(circle_at_78%_58%,rgba(245,158,11,.55),transparent_20%),radial-gradient(circle_at_55%_20%,rgba(34,197,94,.35),transparent_22%)] mix-blend-screen" />}</AnimatePresence>
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded bg-emerald-500 px-2 py-1 text-[8px] font-bold text-white shadow">ENTRY</div>
+        </div>
+        <div className="absolute right-4 top-4 rounded-lg border border-slate-200 bg-white/90 p-2.5 text-[10px] shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-900/85"><p className="font-bold">AI recommendation</p><p className="mt-1 text-slate-500 dark:text-slate-400">B1 · North 08</p><div className="mt-1.5 h-1.5 w-24 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10"><motion.div animate={{ width: ['70%', '93%', '81%'] }} transition={{ duration: 3, repeat: Infinity }} className="h-full rounded-full bg-emerald-500" /></div></div>
+        <button onClick={() => setHeatmap((value) => !value)} className={cn('absolute bottom-4 right-4 rounded-lg border px-2.5 py-1.5 text-[10px] font-bold shadow-sm transition', heatmap ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-slate-200 bg-white text-slate-600 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300')}>Heatmap {heatmap ? 'on' : 'off'}</button>
+      </div>
+      <div className="grid grid-cols-3 border-t border-slate-200 bg-white/80 text-center dark:border-white/10 dark:bg-white/[.03]"><div className="p-2.5"><p className="text-[10px] text-slate-500">Available</p><p className="text-sm font-bold text-emerald-600">{available}</p></div><div className="border-x border-slate-200 p-2.5 dark:border-white/10"><p className="text-[10px] text-slate-500">Occupancy</p><p className="text-sm font-bold">74%</p></div><div className="p-2.5"><p className="text-[10px] text-slate-500">Cameras</p><p className="text-sm font-bold text-blue-600">12/12</p></div></div>
     </div>
   );
 }
 
-// Mini digital twin SVG preview for landing page
-function MiniTwinPreview() {
-  const rows = 4;
-  const cols = 8;
-  const statuses = ['available', 'occupied', 'reserved', 'ev', 'available', 'occupied', 'available', 'vip'];
-  const colors: Record<string, string> = {
-    available: '#16A34A',
-    occupied: '#DC2626',
-    reserved: '#F59E0B',
-    ev: '#2563EB',
-    vip: '#7C3AED',
-    maintenance: '#6B7280',
-  };
-
-  return (
-    <div className="relative overflow-hidden">
-      <div className="bg-[#F8FAFC] dark:bg-[#0F172A] rounded-xl p-4">
-        {/* Drive lane at top */}
-        <div className="h-4 bg-[#E5E7EB] dark:bg-[#334155] rounded-lg mb-3 flex items-center px-2">
-          {[0,1,2].map(i => (
-            <motion.div
-              key={i}
-              animate={{ x: ['0%', '300%'] }}
-              transition={{ delay: i * 1.5, duration: 4, repeat: Infinity, ease: 'linear' }}
-              className="w-6 h-2 bg-[#0F766E] rounded-sm mr-2 opacity-70 flex-shrink-0"
-            />
-          ))}
-        </div>
-        
-        {/* Parking slots grid */}
-        <div className="grid grid-cols-8 gap-1 mb-3">
-          {Array.from({ length: rows * cols }).map((_, idx) => {
-            const status = statuses[idx % statuses.length];
-            return (
-              <motion.div
-                key={idx}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: idx * 0.02 }}
-                className="h-6 rounded-md flex items-center justify-center"
-                style={{ backgroundColor: `${colors[status]}20`, border: `1px solid ${colors[status]}40` }}
-              >
-                <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: colors[status] }} />
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Drive lane at bottom */}
-        <div className="h-4 bg-[#E5E7EB] dark:bg-[#334155] rounded-lg flex items-center px-2">
-          <motion.div
-            animate={{ x: ['300%', '0%'] }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
-            className="w-6 h-2 bg-[#DC2626] rounded-sm opacity-70 flex-shrink-0"
-          />
-        </div>
-
-        {/* Legend */}
-        <div className="flex items-center flex-wrap gap-3 mt-3">
-          {Object.entries(colors).filter(([k]) => ['available','occupied','reserved','ev'].includes(k)).map(([status, color]) => (
-            <div key={status} className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: color }} />
-              <span className="text-[10px] text-[#6B7280] capitalize">{status}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+export function LandingPage() {
+  const navigate = useNavigate(); const { theme, toggleTheme } = useThemeStore();
+  const [menuOpen, setMenuOpen] = useState(false); const [faqQuery, setFaqQuery] = useState(''); const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const sessions = useCountUp(12); const facilities = useCountUp(500); const { scrollY } = useScroll(); const heroOffset = useTransform(scrollY, [0, 700], [0, 100]);
+  const matchedFaqs = useMemo(() => faqs.filter(([question, answer]) => `${question} ${answer}`.toLowerCase().includes(faqQuery.toLowerCase())), [faqQuery]);
+  const goTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  const reveal = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, amount: 0.15 }, transition: { duration: 0.55 } };
+  return <div className={cn('min-h-screen overflow-hidden bg-[#FBFCFE] text-[#0F172A] dark:bg-[#07101D] dark:text-[#F8FAFC]', theme === 'dark' && 'dark')}>
+    <div className="pointer-events-none fixed inset-0 opacity-[0.025] mix-blend-multiply dark:mix-blend-screen" style={{ backgroundImage: 'radial-gradient(rgba(15, 23, 42, .9) .65px, transparent .65px)', backgroundSize: '5px 5px' }} />
+    <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-[#FBFCFE]/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#07101D]/80"><div className="mx-auto flex h-16 max-w-[1360px] items-center justify-between px-5 lg:px-8"><button onClick={() => goTo('top')} className="flex items-center gap-2.5"><Mark /><span className="text-sm font-extrabold tracking-tight">ParkEase <span className="text-[#0F766E] dark:text-[#2DD4BF]">AI</span></span></button><div className="hidden items-center gap-6 md:flex">{[['Platform', 'platform'], ['Digital Twin', 'twin'], ['Customers', 'customers'], ['FAQ', 'faq']].map(([label, id]) => <button key={id} onClick={() => goTo(id)} className="text-sm font-medium text-slate-500 transition hover:text-slate-950 dark:text-slate-400 dark:hover:text-white">{label}</button>)}</div><div className="flex items-center gap-2"><button onClick={toggleTheme} aria-label="Toggle color theme" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10">{theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4 text-amber-300" />}</button><button onClick={() => navigate('/dashboard')} className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10 sm:block">Sign in</button><button onClick={() => navigate('/dashboard')} className="hidden items-center gap-2 rounded-lg bg-slate-950 px-3.5 py-2 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#0F766E] dark:bg-white dark:text-slate-950 sm:flex">Start free <ArrowRight className="h-3.5 w-3.5" /></button><button onClick={() => setMenuOpen((value) => !value)} className="rounded-lg p-2 md:hidden" aria-label="Toggle menu">{menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</button></div></div><AnimatePresence>{menuOpen && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="border-t border-slate-200 px-5 py-3 dark:border-white/10 md:hidden">{[['Platform', 'platform'], ['Digital Twin', 'twin'], ['Customers', 'customers'], ['FAQ', 'faq']].map(([label, id]) => <button key={id} onClick={() => { goTo(id); setMenuOpen(false); }} className="block w-full py-2 text-left text-sm font-medium text-slate-600 dark:text-slate-300">{label}</button>)}</motion.div>}</AnimatePresence></nav>
+    <main id="top">
+      <section className="relative mx-auto max-w-[1360px] px-5 pb-16 pt-16 sm:pt-24 lg:px-8 lg:pb-24"><div className="absolute -right-36 -top-36 h-[520px] w-[520px] rounded-full bg-teal-100/50 blur-3xl dark:bg-teal-900/15" /><div className="relative grid items-center gap-12 lg:grid-cols-[.9fr_1.1fr]"><motion.div {...reveal} className="max-w-xl"><div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Operating live across India</div><h1 className="text-balance text-5xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">Parking becomes a <span className="text-[#0F766E] dark:text-[#2DD4BF]">predictable</span> part of the journey.</h1><p className="mt-6 max-w-lg text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">ParkEase turns every bay, barrier, and arrival into a coordinated real-time system for the people who operate places at scale.</p><div className="mt-8 flex flex-wrap gap-3"><button onClick={() => navigate('/dashboard')} className="group flex items-center gap-2 rounded-lg bg-[#0F766E] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_26px_rgba(15,118,110,.22)] transition hover:-translate-y-0.5 hover:bg-[#0B625C]">Explore the platform <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></button><button onClick={() => goTo('twin')} className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"><Play className="h-3.5 w-3.5 fill-current" /> See it live</button></div><div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-xs font-medium text-slate-500 dark:text-slate-400"><span><Check className="mr-1.5 inline h-3.5 w-3.5 text-emerald-500" />SOC 2-ready controls</span><span><Check className="mr-1.5 inline h-3.5 w-3.5 text-emerald-500" />Open integrations</span><span><Check className="mr-1.5 inline h-3.5 w-3.5 text-emerald-500" />99.95% uptime</span></div></motion.div><motion.div style={{ y: heroOffset }} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.1 }}><TwinPreview /></motion.div></div></section>
+      <section className="border-y border-slate-200 bg-white/70 py-7 dark:border-white/10 dark:bg-white/[.025]"><div className="mx-auto grid max-w-[1360px] grid-cols-2 gap-5 px-5 sm:grid-cols-4 lg:px-8"><div><p className="text-2xl font-extrabold">{sessions}M<span className="text-teal-600">+</span></p><p className="mt-1 text-xs font-medium text-slate-500">parking sessions</p></div><div><p className="text-2xl font-extrabold">{facilities}<span className="text-teal-600">+</span></p><p className="mt-1 text-xs font-medium text-slate-500">connected facilities</p></div><div><p className="text-2xl font-extrabold">96.2<span className="text-teal-600">%</span></p><p className="mt-1 text-xs font-medium text-slate-500">recommendation precision</p></div><div><p className="text-2xl font-extrabold">&lt;200<span className="text-teal-600">ms</span></p><p className="mt-1 text-xs font-medium text-slate-500">decision time</p></div></div></section>
+      <section id="platform" className="mx-auto max-w-[1360px] px-5 py-24 lg:px-8"><motion.div {...reveal} className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#0F766E] dark:text-[#2DD4BF]">The operating system for parking</p><h2 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">Built for the moments that can’t wait.</h2><p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">Every surface has a different job: guide an arrival, surface a decision, protect an access point, or explain what changed.</p></motion.div><div className="mt-12 grid gap-4 lg:grid-cols-12"><motion.article {...reveal} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 p-6 text-white shadow-xl dark:border-white/10 lg:col-span-7"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-teal-300">Live command view</p><h3 className="mt-2 text-2xl font-bold">Know the next constraint before it becomes one.</h3></div><BellRing className="h-5 w-5 text-teal-300" /></div><div className="mt-8 grid grid-cols-[1.4fr_.8fr] gap-4"><div className="rounded-xl border border-white/10 bg-white/[.06] p-4"><div className="flex items-center justify-between text-xs text-slate-300"><span>Occupancy · last 60 min</span><span className="text-emerald-300">+8.4%</span></div><Sparkline data={[22, 20, 27, 26, 34, 39, 37, 49, 53, 58, 62]} color="#5EEAD4" /><div className="mt-3 flex gap-2"><span className="rounded bg-white/10 px-2 py-1 text-[10px]">North garage</span><span className="rounded bg-white/10 px-2 py-1 text-[10px]">Arrivals rising</span></div></div><div className="space-y-2 rounded-xl border border-white/10 bg-white/[.06] p-3">{['Barrier B-04', 'Camera C-12', 'EV bank'].map((label, index) => <div key={label} className="flex items-center justify-between rounded-lg bg-black/20 px-3 py-2"><span className="text-[11px]">{label}</span><span className={cn('h-2 w-2 rounded-full', index === 1 ? 'bg-amber-400' : 'bg-emerald-400')} /></div>)}</div></div></motion.article><motion.article {...reveal} transition={{ delay: .08 }} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[.035] lg:col-span-5"><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-blue-600 dark:text-blue-300">Explainable AI</p><h3 className="mt-2 text-xl font-bold">A recommendation your team can defend.</h3></div><BrainCircuit className="h-6 w-6 text-blue-500" /></div><div className="mt-8 rounded-xl bg-blue-50 p-4 dark:bg-blue-500/10"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-lg bg-blue-600 text-white"><Navigation className="h-5 w-5" /></div><div><p className="text-sm font-bold">Route vehicle to B1 · N08</p><p className="text-xs text-slate-500 dark:text-slate-400">2 min walk · near lift · low congestion</p></div></div><div className="mt-4 h-1.5 overflow-hidden rounded bg-blue-100 dark:bg-blue-200/10"><motion.div animate={{ width: ['86%', '94%', '90%'] }} transition={{ duration: 4, repeat: Infinity }} className="h-full rounded bg-blue-500" /></div></div></motion.article><motion.article {...reveal} transition={{ delay: .12 }} className="rounded-2xl border border-slate-200 bg-[#FFF8E8] p-6 dark:border-amber-200/10 dark:bg-amber-400/[.07] lg:col-span-4"><Zap className="h-5 w-5 text-amber-600" /><h3 className="mt-5 text-xl font-bold">Demand-aware pricing</h3><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Tune rates by event, forecast, and remaining capacity without pushing a spreadsheet.</p><div className="mt-6"><Sparkline data={[18, 20, 19, 24, 27, 35, 31, 42, 48]} color="#D97706" /></div></motion.article><motion.article {...reveal} transition={{ delay: .16 }} className="relative overflow-hidden rounded-2xl border border-slate-200 bg-[#EDF8F7] p-6 dark:border-emerald-200/10 dark:bg-emerald-400/[.06] lg:col-span-8"><div className="relative z-10 max-w-sm"><ShieldCheck className="h-5 w-5 text-emerald-600" /><h3 className="mt-5 text-xl font-bold">Automate access, preserve oversight.</h3><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Barrier events, plate reads, camera health, and access exceptions arrive in one audit-ready stream.</p></div><div className="absolute bottom-0 right-6 flex h-24 items-end gap-2 opacity-80">{[45, 68, 52, 90, 65, 82, 96].map((height, index) => <motion.div key={index} animate={{ height: [`${height - 18}%`, `${height}%`, `${height - 8}%`] }} transition={{ duration: 2.5 + index * .15, repeat: Infinity }} className="w-5 rounded-t bg-emerald-500/70" />)}</div></motion.article></div></section>
+      <section id="twin" className="border-y border-slate-200 bg-slate-100/70 py-24 dark:border-white/10 dark:bg-white/[.025]"><div className="mx-auto max-w-[1360px] px-5 lg:px-8"><div className="grid gap-10 lg:grid-cols-[.76fr_1.24fr] lg:items-center"><motion.div {...reveal}><p className="text-xs font-bold uppercase tracking-[.18em] text-[#0F766E] dark:text-[#2DD4BF]">Digital Twin</p><h2 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">The facility, as it is right now.</h2><p className="mt-5 text-base leading-7 text-slate-600 dark:text-slate-300">A spatial operating view joins live occupancy, camera health, vehicle movement, barriers, accessible spaces, EV usage, and predictive demand in one place.</p><dl className="mt-8 space-y-4">{[['Floor-aware', 'Move between levels without losing operational context.'], ['Sensor-native', 'See availability change as the physical world changes.'], ['Decision-ready', 'Overlay heat, routes, and AI recommendations only when they matter.']].map(([term, desc]) => <div key={term} className="border-l-2 border-teal-500 pl-4"><dt className="text-sm font-bold">{term}</dt><dd className="mt-1 text-sm text-slate-600 dark:text-slate-300">{desc}</dd></div>)}</dl><button onClick={() => navigate('/digital-twin')} className="mt-8 flex items-center gap-2 text-sm font-bold text-[#0F766E] dark:text-[#2DD4BF]">Open the live view <ArrowRight className="h-4 w-4" /></button></motion.div><motion.div {...reveal} transition={{ delay: .12 }}><TwinPreview /></motion.div></div></div></section>
+      <section id="customers" className="mx-auto max-w-[1360px] px-5 py-24 lg:px-8"><motion.div {...reveal} className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#0F766E] dark:text-[#2DD4BF]">Results in the real world</p><h2 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">Built around a better arrival.</h2></div><p className="max-w-sm text-sm leading-6 text-slate-600 dark:text-slate-300">Different environments. One common expectation: an experience that feels obvious before anyone asks for help.</p></motion.div><div className="mt-12 grid gap-4 md:grid-cols-2">{cases.map((item, index) => <motion.article {...reveal} transition={{ delay: index * .06 }} key={item.name} whileHover={{ y: -4 }} className={cn('group relative overflow-hidden rounded-2xl border border-slate-200 p-6 shadow-sm dark:border-white/10', index === 0 ? 'bg-slate-950 text-white md:col-span-2' : 'bg-white dark:bg-white/[.035]')}><div className="flex items-start justify-between"><div><p className={cn('text-xs font-bold uppercase tracking-[.16em]', index === 0 ? 'text-teal-300' : 'text-slate-500 dark:text-slate-400')}>{item.sector}</p><h3 className="mt-2 text-xl font-bold">{item.name}</h3></div><div className={cn('grid h-10 w-10 place-items-center rounded-lg text-white', item.tone)}><item.icon className="h-5 w-5" /></div></div><div className="mt-12 flex items-end justify-between"><div><p className="text-4xl font-extrabold tracking-tight">{item.metric}</p><p className={cn('mt-1 text-sm', index === 0 ? 'text-white/60' : 'text-slate-500 dark:text-slate-400')}>{item.detail}</p></div><ArrowRight className={cn('h-5 w-5 transition group-hover:translate-x-1', index === 0 ? 'text-teal-300' : 'text-slate-400')} /></div>{index === 0 && <div className="absolute bottom-0 right-0 h-24 w-1/2 bg-[linear-gradient(120deg,transparent,rgba(45,212,191,.18))]" />}</motion.article>)}</div></section>
+      <section id="faq" className="border-t border-slate-200 bg-white py-24 dark:border-white/10 dark:bg-[#091321]"><div className="mx-auto grid max-w-[1120px] gap-12 px-5 lg:grid-cols-[.7fr_1.3fr] lg:px-8"><motion.div {...reveal}><p className="text-xs font-bold uppercase tracking-[.18em] text-[#0F766E] dark:text-[#2DD4BF]">Frequently asked</p><h2 className="mt-4 text-4xl font-extrabold tracking-tight">Answers without the sales fog.</h2><p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">Search across the details teams ask during evaluation.</p><label className="relative mt-7 block"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" /><input value={faqQuery} onChange={(event) => setFaqQuery(event.target.value)} placeholder="Search questions" className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15 dark:border-white/15 dark:bg-white/5" /></label></motion.div><div>{matchedFaqs.map(([question, answer], index) => <div key={question} className="border-b border-slate-200 dark:border-white/10"><button onClick={() => setOpenFaq(openFaq === index ? null : index)} aria-expanded={openFaq === index} className="flex w-full items-center justify-between gap-4 py-5 text-left text-sm font-bold"><span>{question}</span><ChevronDown className={cn('h-4 w-4 flex-none text-slate-500 transition', openFaq === index && 'rotate-180')} /></button><AnimatePresence>{openFaq === index && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden"><p className="pb-5 text-sm leading-6 text-slate-600 dark:text-slate-300">{answer}</p></motion.div>}</AnimatePresence></div>)}{matchedFaqs.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-white/15">No matching answers. Try a different term.</div>}</div></div></section>
+      <section className="mx-auto max-w-[1360px] px-5 py-20 lg:px-8"><motion.div {...reveal} className="relative overflow-hidden rounded-2xl bg-[#0D2F2C] px-6 py-14 text-center text-white sm:px-12"><div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #2DD4BF 0, transparent 22%), radial-gradient(circle at 85% 80%, #2563EB 0, transparent 20%)' }} /><div className="relative"><p className="text-xs font-bold uppercase tracking-[.18em] text-teal-200">A more legible parking operation</p><h2 className="mx-auto mt-4 max-w-2xl text-4xl font-extrabold tracking-tight sm:text-5xl">Make the next arrival the easy one.</h2><p className="mx-auto mt-5 max-w-xl text-sm leading-6 text-white/70">Bring your facility data, access hardware, and customer journey into one coordinated operating layer.</p><button onClick={() => navigate('/dashboard')} className="mt-8 inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-bold text-[#0D2F2C] transition hover:-translate-y-0.5">Start exploring ParkEase <ArrowRight className="h-4 w-4" /></button></div></motion.div></section>
+    </main>
+    <footer className="border-t border-slate-200 bg-[#06101D] text-white dark:border-white/10"><div className="mx-auto max-w-[1360px] px-5 py-14 lg:px-8"><div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]"><div><div className="flex items-center gap-2.5"><Mark /><span className="text-sm font-extrabold">ParkEase AI</span></div><p className="mt-4 max-w-xs text-sm leading-6 text-white/55">The operating system for parking at places people depend on.</p><div className="mt-6 flex items-center gap-3"><a href="#" aria-label="GitHub" className="text-white/55 transition hover:text-white"><Github className="h-4 w-4" /></a><a href="#" aria-label="Developer portal" className="text-white/55 transition hover:text-white"><Code2 className="h-4 w-4" /></a><a href="#" aria-label="Company site" className="text-white/55 transition hover:text-white"><Globe2 className="h-4 w-4" /></a></div></div>{[{ title: 'Product', links: ['Digital Twin', 'Operations', 'Payments', 'Analytics'] }, { title: 'Platform', links: ['API', 'Documentation', 'Engineering Blog', 'Roadmap'] }, { title: 'Company', links: ['Customers', 'Careers', 'Contact', 'GitHub'] }, { title: 'Trust', links: ['Status', 'Security', 'Privacy', 'Terms'] }].map((column) => <div key={column.title}><p className="text-xs font-bold uppercase tracking-[.14em] text-white/45">{column.title}</p><ul className="mt-4 space-y-3">{column.links.map((link) => <li key={link}><a href="#" className="text-sm text-white/65 transition hover:text-white">{link}</a></li>)}</ul></div>)}</div><div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between"><p>© 2026 ParkEase AI. Built for better arrivals.</p><p className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-emerald-400" />All systems operational</p></div></div></footer>
+  </div>;
 }

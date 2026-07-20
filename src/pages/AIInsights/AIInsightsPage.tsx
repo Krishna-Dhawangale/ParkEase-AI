@@ -49,9 +49,9 @@ export function AIInsightsPage() {
     : mockAIInsights.filter(i => i.type === filter);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
+    <div className="page-shell max-w-5xl space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="page-hero flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center">
             <Sparkles className="w-5 h-5 text-white" />
@@ -111,10 +111,10 @@ export function AIInsightsPage() {
             key={f.id}
             onClick={() => setFilter(f.id)}
             className={cn(
-              'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all',
+              'pill-tab',
               filter === f.id
                 ? 'bg-[#0F766E] text-white'
-                : 'bg-white dark:bg-[#1E293B] border border-[#E5E7EB] dark:border-[#334155] text-[#6B7280] hover:text-[#111827]'
+                : 'bg-white/80 dark:bg-white/5 border border-white/70 dark:border-white/10 text-[#6B7280] hover:text-[#111827]'
             )}
           >
             {f.label}

@@ -357,10 +357,19 @@ export function BookingFlowPage() {
   };
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-start py-8 px-4">
-      <div className="w-full max-w-lg">
-        {/* Progress stepper */}
-        <div className="flex items-center justify-between mb-8 relative">
+    <div className="page-shell flex flex-col items-center justify-start">
+      <div className="w-full max-w-xl">
+        <div className="page-hero mb-6">
+          <div className="section-kicker">Fast, guided checkout</div>
+          <h1 className="mt-2 text-3xl font-bold text-[#111827] dark:text-white tracking-tight">Book your parking in minutes</h1>
+          <p className="mt-2 text-sm text-[#6B7280] dark:text-[#94A3B8] max-w-lg">
+            Each step is designed to stay clear, calm, and easy to recover from, with the AI keeping the best option front and center.
+          </p>
+        </div>
+
+        <div className="portal-surface p-5 sm:p-6">
+          {/* Progress stepper */}
+          <div className="flex items-center justify-between mb-8 relative">
           {/* Progress line */}
           <div className="absolute top-5 left-5 right-5 h-0.5 bg-[#E5E7EB] dark:bg-[#334155] z-0">
             <motion.div
@@ -401,8 +410,8 @@ export function BookingFlowPage() {
           ))}
         </div>
 
-        {/* Step header */}
-        <div className="mb-6">
+          {/* Step header */}
+          <div className="mb-6">
           <h2 className="text-xl font-bold text-[#111827] dark:text-white">
             {steps[currentStep - 1]?.label}
           </h2>
@@ -411,8 +420,8 @@ export function BookingFlowPage() {
           </p>
         </div>
 
-        {/* Step content */}
-        <AnimatePresence mode="wait">
+          {/* Step content */}
+          <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
             initial={{ opacity: 0, x: 20 }}
@@ -422,7 +431,8 @@ export function BookingFlowPage() {
           >
             {renderStep()}
           </motion.div>
-        </AnimatePresence>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
