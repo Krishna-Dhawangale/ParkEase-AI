@@ -20,10 +20,10 @@ const iconMap: Record<string, any> = {
 
 const colorMap: Record<string, { bg: string; icon: string }> = {
   success: { bg: 'bg-green-50 dark:bg-green-900/20', icon: 'text-green-600 dark:text-green-400' },
-  brand: { bg: 'bg-[#0F766E]/10 dark:bg-[#14B8A6]/10', icon: 'text-[#0F766E] dark:text-[#14B8A6]' },
+  brand: { bg: 'bg-[var(--brand)]/10 dark:bg-[var(--brand-light)]/10', icon: 'text-[var(--brand)] dark:text-[var(--brand-light)]' },
   info: { bg: 'bg-blue-50 dark:bg-blue-900/20', icon: 'text-blue-600 dark:text-blue-400' },
   amber: { bg: 'bg-amber-50 dark:bg-amber-900/20', icon: 'text-amber-600 dark:text-amber-400' },
-  secondary: { bg: 'bg-[#F8FAFC] dark:bg-[#334155]', icon: 'text-[#6B7280]' },
+  secondary: { bg: 'bg-[var(--bg-primary)] dark:bg-[var(--border)]', icon: 'text-[var(--text-secondary)]' },
   danger: { bg: 'bg-red-50 dark:bg-red-900/20', icon: 'text-red-600 dark:text-red-400' },
 };
 
@@ -60,13 +60,13 @@ export function NotificationsPage() {
   ];
 
   return (
-    <div className="page-shell max-w-3xl space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
       {/* Header */}
-      <div className="page-hero flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-10 h-10 rounded-2xl bg-[#0F766E]/10 dark:bg-[#14B8A6]/10 flex items-center justify-center">
-              <Bell className="w-5 h-5 text-[#0F766E] dark:text-[#14B8A6]" />
+            <div className="w-10 h-10 rounded-2xl bg-[var(--brand)]/10 dark:bg-[var(--brand-light)]/10 flex items-center justify-center">
+              <Bell className="w-5 h-5 text-[var(--brand)] dark:text-[var(--brand-light)]" />
             </div>
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
@@ -75,8 +75,8 @@ export function NotificationsPage() {
             )}
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#111827] dark:text-white tracking-tight">Notifications</h1>
-            <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] mt-0.5">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">Notifications</h1>
+            <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">
               {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All caught up!'}
             </p>
           </div>
@@ -102,10 +102,10 @@ export function NotificationsPage() {
             key={f.id}
             onClick={() => setFilter(f.id)}
             className={cn(
-              'pill-tab',
+              'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all',
               filter === f.id
-                ? 'bg-[#0F766E] text-white'
-                : 'bg-white/80 dark:bg-white/5 border border-white/70 dark:border-white/10 text-[#6B7280]'
+                ? 'bg-[var(--brand)] text-white'
+                : 'bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)]'
             )}
           >
             {f.label}
@@ -130,7 +130,7 @@ export function NotificationsPage() {
                 onClick={() => markRead(notification.id)}
                 className={cn(
                   'card p-4 flex items-start gap-4 cursor-pointer group',
-                  !notification.read && 'border-l-4 border-l-[#0F766E] dark:border-l-[#14B8A6]'
+                  !notification.read && 'border-l-4 border-l-[var(--brand)] dark:border-l-[var(--brand-light)]'
                 )}
               >
                 {/* Icon */}
@@ -143,18 +143,18 @@ export function NotificationsPage() {
                   <div className="flex items-center gap-2">
                     <h3 className={cn(
                       'text-sm truncate',
-                      notification.read ? 'font-medium text-[#6B7280] dark:text-[#94A3B8]' : 'font-bold text-[#111827] dark:text-white'
+                      notification.read ? 'font-medium text-[var(--text-secondary)] dark:text-[var(--text-secondary)]' : 'font-bold text-[var(--text-primary)] dark:text-white'
                     )}>
                       {notification.title}
                     </h3>
                     {!notification.read && (
-                      <div className="w-2 h-2 rounded-full bg-[#0F766E] dark:bg-[#14B8A6] flex-shrink-0" />
+                      <div className="w-2 h-2 rounded-full bg-[var(--brand)] dark:bg-[var(--brand-light)] flex-shrink-0" />
                     )}
                   </div>
-                  <p className="text-xs text-[#6B7280] dark:text-[#94A3B8] mt-0.5 line-clamp-2">
+                  <p className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5 line-clamp-2">
                     {notification.message}
                   </p>
-                  <span className="text-[11px] text-[#9CA3AF] mt-1 block">{notification.time}</span>
+                  <span className="text-[11px] text-[var(--text-secondary)] mt-1 block">{notification.time}</span>
                 </div>
 
                 {/* Actions */}
@@ -162,10 +162,10 @@ export function NotificationsPage() {
                   {!notification.read && (
                     <button
                       onClick={e => { e.stopPropagation(); markRead(notification.id); }}
-                      className="p-1.5 rounded-lg hover:bg-[#F8FAFC] dark:hover:bg-[#334155] transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)] transition-colors"
                       title="Mark as read"
                     >
-                      <Check className="w-3.5 h-3.5 text-[#6B7280]" />
+                      <Check className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
                     </button>
                   )}
                   <button
@@ -173,7 +173,7 @@ export function NotificationsPage() {
                     className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
                     title="Delete"
                   >
-                    <Trash2 className="w-3.5 h-3.5 text-[#9CA3AF] hover:text-red-500" />
+                    <Trash2 className="w-3.5 h-3.5 text-[var(--text-secondary)] hover:text-red-500" />
                   </button>
                 </div>
               </motion.div>
@@ -189,13 +189,13 @@ export function NotificationsPage() {
           animate={{ opacity: 1 }}
           className="text-center py-16"
         >
-          <div className="w-16 h-16 rounded-3xl bg-[#F8FAFC] dark:bg-[#334155] flex items-center justify-center mx-auto mb-4">
-            <Bell className="w-8 h-8 text-[#9CA3AF]" />
+          <div className="w-16 h-16 rounded-3xl bg-[var(--bg-primary)] dark:bg-[var(--border)] flex items-center justify-center mx-auto mb-4">
+            <Bell className="w-8 h-8 text-[var(--text-secondary)]" />
           </div>
-          <h3 className="text-lg font-bold text-[#111827] dark:text-white mb-1">
+          <h3 className="text-lg font-bold text-[var(--text-primary)] dark:text-white mb-1">
             {filter === 'unread' ? 'All caught up!' : 'No notifications'}
           </h3>
-          <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] mb-4">
+          <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mb-4">
             {filter === 'unread'
               ? 'You\'ve read all your notifications. Great job!'
               : 'When something happens, you\'ll see it here.'}

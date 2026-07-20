@@ -1,114 +1,407 @@
-import { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  Activity, ArrowRight, BellRing, BrainCircuit, Building2, Car, Check,
-  ChevronDown, Code2, GitBranch as Github, Globe2, Menu, Moon, Navigation, Play, Route,
-  Search, ShieldCheck, Sun, X, Zap,
+  Car, Brain, Lock, Mail, User, Eye, EyeOff, Check,
+  ArrowRight, Shield, AlertCircle
 } from 'lucide-react';
-import { useThemeStore } from '../../store';
+import { useThemeStore, useAuthStore } from '../../store';
 import { cn } from '../../lib/utils';
 
-type SlotStatus = 'available' | 'occupied' | 'reserved' | 'ev' | 'vip';
-const slotTone: Record<SlotStatus, string> = {
-  available: '#22C55E', occupied: '#F05252', reserved: '#3B82F6', ev: '#14B8A6', vip: '#8B5CF6',
-};
+export function LandingPage() {
+  const navigate = useNavigate();
+  const loginUser = useAuthStore((s) => s.login);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
-const slots: SlotStatus[] = ['occupied', 'available', 'available', 'reserved', 'available', 'ev', 'occupied', 'available', 'vip', 'available', 'occupied', 'available', 'available', 'reserved', 'available', 'occupied', 'available', 'ev', 'available', 'occupied', 'vip', 'available', 'available', 'reserved'];
-
-const faqs = [
-  ['How quickly can a facility go live?', 'A standard facility can be connected in days. ParkEase maps existing access controls, cameras, sensors, and payments into a live operational view without requiring a wholesale replacement.'],
-  ['Does ParkEase work with our existing cameras and barriers?', 'Yes. The platform is designed for mixed hardware environments, with APIs and adapters for ANPR, access control, payment gateways, and occupancy sensors.'],
-  ['How does the recommendation engine make a decision?', 'It weighs live availability, walking distance, vehicle needs, reservations, congestion, accessibility, and forecasted demand. Every suggestion includes a human-readable reason.'],
-  ['Can we run multiple locations from one workspace?', 'Yes. Regional teams can monitor individual facilities or an entire portfolio while retaining scoped access, audit trails, and local operating rules.'],
-  ['Is the platform suitable for public and private parking?', 'ParkEase supports airports, malls, hospitals, campuses, hotels, residential portfolios, and city parking programs from one shared platform.'],
-];
-
-const cases = [
-  { sector: 'Airport', name: 'Kempegowda International', metric: '+34%', detail: 'parking revenue in 90 days', tone: 'bg-blue-500', icon: Route },
-  { sector: 'Retail', name: 'Nexus Mall Portfolio', metric: '-41%', detail: 'search-to-park time', tone: 'bg-amber-500', icon: Building2 },
-  { sector: 'Hospital', name: 'Manipal Health Network', metric: '2.6x', detail: 'faster emergency access', tone: 'bg-rose-500', icon: Activity },
-  { sector: 'University', name: 'Eastbridge Campus', metric: '91%', detail: 'permit compliance', tone: 'bg-violet-500', icon: BrainCircuit },
-];
-
-function useCountUp(target: number, duration = 1200) {
-  const [value, setValue] = useState(0);
+  // If already authenticated, redirect to dashboard immediately
   useEffect(() => {
-    const start = performance.now();
-    let frame = 0;
-    const tick = (time: number) => {
-      const progress = Math.min((time - start) / duration, 1);
-      setValue(Math.round(target * (1 - Math.pow(1 - progress, 3))));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [target, duration]);
-  return value;
-}
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
-function Mark() {
-  return <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#0F766E] shadow-[0_7px_18px_rgba(15,118,110,.22)]"><Car className="h-4 w-4 text-white" /></div>;
-}
+  // Video and Playback States
+  const introVideoRef = useRef<HTMLVideoElement>(null);
+  const [videoProgress, setVideoProgress] = useState(0); // 0 to 100 %
+  const [screenState, setScreenState] = useState<'intro' | 'transition' | 'auth'>('intro');
+  const [isSignUp, setIsSignUp] = useState(false);
 
-function Sparkline({ data, color = '#14B8A6' }: { data: number[]; color?: string }) {
-  const max = Math.max(...data); const min = Math.min(...data); const span = max - min || 1;
-  const points = data.map((value, index) => `${(index / (data.length - 1)) * 100},${32 - ((value - min) / span) * 26}`).join(' ');
-  return <svg viewBox="0 0 100 36" className="h-10 w-full overflow-visible" aria-label="Trend chart"><polyline points={points} fill="none" stroke={color} strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" /><polyline points={`0,36 ${points} 100,36`} fill={`${color}18`} stroke="none" /></svg>;
-}
+  // Form inputs
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [titleFinished, setTitleFinished] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
-function TwinPreview({ compact = false }: { compact?: boolean }) {
-  const [floor, setFloor] = useState('B1');
-  const [heatmap, setHeatmap] = useState(false);
-  const [pulse, setPulse] = useState(0);
-  useEffect(() => { const timer = window.setInterval(() => setPulse((value) => (value + 1) % 3), 2200); return () => window.clearInterval(timer); }, []);
-  const available = 63 - pulse;
+  // Time progress listener for the first video
+  const handleTimeUpdate = () => {
+    if (introVideoRef.current) {
+      const duration = introVideoRef.current.duration;
+      const current = introVideoRef.current.currentTime;
+      if (duration > 0) {
+        setVideoProgress((current / duration) * 100);
+      }
+    }
+  };
+
+  const startAuthTransition = () => {
+    setScreenState('transition');
+    setTimeout(() => {
+      setScreenState('auth');
+    }, 800); // match fade transition timing
+  };
+
+  const handleAuthSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!email || !password) {
+      setError('Please fill in all fields.');
+      return;
+    }
+
+    if (isSignUp && !fullName) {
+      setError('Please enter your full name.');
+      return;
+    }
+
+    setLoading(true);
+
+    // Simple simulation of authentication
+    setTimeout(() => {
+      setLoading(false);
+
+      if (!isSignUp) {
+        if (email === 'admin@parkease.ai' && password !== 'admin123') {
+          setError('Invalid password for Admin account. Use admin123.');
+          return;
+        }
+        if (email === 'user@parkease.ai' && password !== 'user123') {
+          setError('Invalid password for User account. Use user123.');
+          return;
+        }
+      }
+
+      const mockUserRole = email === 'admin@parkease.ai' ? 'ADMIN' : 'USER';
+      loginUser('demo-token', {
+        id: 'demo-user',
+        email,
+        role: mockUserRole,
+        firstName: 'Demo',
+        lastName: 'User',
+        isEmailVerified: true,
+        createdAt: new Date().toISOString()
+      });
+      navigate(mockUserRole === 'ADMIN' ? '/admin' : '/dashboard');
+    }, 1500);
+  };
+
+  // Determine if title & button should animate into view
+  const triggerIntroElements = videoProgress >= 38;
+
   return (
-    <div className={cn('overflow-hidden rounded-[18px] border border-slate-200 bg-[#F7FAFC] text-slate-900 shadow-[0_20px_60px_rgba(15,23,42,.12)] dark:border-white/10 dark:bg-[#0B1322] dark:text-white', compact && 'rounded-xl')}>
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white/90 px-3 py-2.5 dark:border-white/10 dark:bg-white/5">
-        <div className="flex items-center gap-2"><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" /></span><span className="text-[11px] font-bold">Mall of Delhi · Live</span></div>
-        <div className="flex gap-1">{['B2', 'B1', 'G'].map((level) => <button key={level} onClick={() => setFloor(level)} className={cn('rounded-md px-2 py-1 text-[10px] font-bold transition', floor === level ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10')}>{level}</button>)}</div>
-      </div>
-      <div className={cn('relative p-3', compact ? 'min-h-[250px]' : 'min-h-[390px]')}>
-        <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'radial-gradient(rgba(100,116,139,.22) 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
-        <div className="relative mx-auto h-full max-w-[560px] rounded-md border-[7px] border-slate-300 bg-slate-600 p-4 shadow-inner dark:border-slate-600">
-          <div className="absolute left-[9%] right-[9%] top-[12%] h-[13%] rounded bg-slate-500"><motion.div animate={{ x: ['5%', '780%'] }} transition={{ duration: 6, repeat: Infinity, ease: 'linear' }} className="mt-2 h-2 w-5 rounded bg-amber-300 shadow" /></div>
-          <div className="absolute bottom-[12%] left-[9%] right-[9%] h-[13%] rounded bg-slate-500"><motion.div animate={{ x: ['780%', '5%'] }} transition={{ duration: 7, repeat: Infinity, ease: 'linear' }} className="mt-5 h-2 w-5 rounded bg-sky-300 shadow" /></div>
-          <div className="absolute left-[7%] top-[30%] grid w-[31%] grid-cols-4 gap-1.5">{slots.slice(0, 12).map((status, index) => <motion.div key={index} animate={status === 'available' && index === pulse ? { boxShadow: ['0 0 0 0 rgba(34,197,94,0)', '0 0 0 5px rgba(34,197,94,.26)', '0 0 0 0 rgba(34,197,94,0)'] } : {}} transition={{ repeat: Infinity, duration: 1.8 }} className="aspect-[.63] rounded-sm border" style={{ background: `${slotTone[status]}60`, borderColor: slotTone[status] }} />)}</div>
-          <div className="absolute right-[7%] top-[30%] grid w-[31%] grid-cols-4 gap-1.5">{slots.slice(12).map((status, index) => <div key={index} className="aspect-[.63] rounded-sm border" style={{ background: `${slotTone[status]}60`, borderColor: slotTone[status] }} />)}</div>
-          <div className="absolute left-1/2 top-1/2 grid h-[30%] w-[20%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded border border-slate-400 bg-slate-200 text-[9px] font-bold text-slate-600 shadow-lg">LIFT<br />LOBBY</div>
-          <motion.div animate={{ rotate: [0, 8, 0] }} transition={{ duration: 3, repeat: Infinity }} className="absolute left-[4%] bottom-[6%] flex h-7 w-14 items-center justify-center border-2 border-amber-300 bg-slate-800 text-[8px] font-bold text-amber-200">GATE</motion.div>
-          {[['18%', '18%'], ['81%', '19%'], ['18%', '82%']].map(([left, top], index) => <div key={index} className="absolute" style={{ left, top }}><span className="block h-3 w-3 rounded-full border-2 border-white bg-blue-500 shadow" /><span className="absolute -left-2 -top-2 h-7 w-7 animate-ping rounded-full border border-blue-300/70" /></div>)}
-          <AnimatePresence>{heatmap && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 rounded bg-[radial-gradient(circle_at_25%_40%,rgba(239,68,68,.58),transparent_18%),radial-gradient(circle_at_78%_58%,rgba(245,158,11,.55),transparent_20%),radial-gradient(circle_at_55%_20%,rgba(34,197,94,.35),transparent_22%)] mix-blend-screen" />}</AnimatePresence>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded bg-emerald-500 px-2 py-1 text-[8px] font-bold text-white shadow">ENTRY</div>
-        </div>
-        <div className="absolute right-4 top-4 rounded-lg border border-slate-200 bg-white/90 p-2.5 text-[10px] shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-900/85"><p className="font-bold">AI recommendation</p><p className="mt-1 text-slate-500 dark:text-slate-400">B1 · North 08</p><div className="mt-1.5 h-1.5 w-24 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10"><motion.div animate={{ width: ['70%', '93%', '81%'] }} transition={{ duration: 3, repeat: Infinity }} className="h-full rounded-full bg-emerald-500" /></div></div>
-        <button onClick={() => setHeatmap((value) => !value)} className={cn('absolute bottom-4 right-4 rounded-lg border px-2.5 py-1.5 text-[10px] font-bold shadow-sm transition', heatmap ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-slate-200 bg-white text-slate-600 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300')}>Heatmap {heatmap ? 'on' : 'off'}</button>
-      </div>
-      <div className="grid grid-cols-3 border-t border-slate-200 bg-white/80 text-center dark:border-white/10 dark:bg-white/[.03]"><div className="p-2.5"><p className="text-[10px] text-slate-500">Available</p><p className="text-sm font-bold text-emerald-600">{available}</p></div><div className="border-x border-slate-200 p-2.5 dark:border-white/10"><p className="text-[10px] text-slate-500">Occupancy</p><p className="text-sm font-bold">74%</p></div><div className="p-2.5"><p className="text-[10px] text-slate-500">Cameras</p><p className="text-sm font-bold text-blue-600">12/12</p></div></div>
+    <div className="relative w-full h-screen overflow-hidden bg-black font-sans text-white select-none">
+      <AnimatePresence mode="wait">
+        {screenState !== 'auth' ? (
+          <motion.div
+            key="intro-screen"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="absolute inset-0 w-full h-full"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            {/* First Video Background */}
+            <video
+              ref={introVideoRef}
+              src="/intro.mp4"
+              autoPlay
+              muted
+              playsInline
+              onTimeUpdate={handleTimeUpdate}
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            />
+
+            {/* Dark Overlay (Fades in when intro text animates) */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: triggerIntroElements ? 0.40 : 0 }}
+              transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-0 bg-black pointer-events-none"
+            />
+
+            {/* Cinematic Hero Content */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center z-10">
+              <AnimatePresence>
+                {triggerIntroElements && (
+                  <div className="max-w-2xl flex flex-col items-center justify-center">
+                    {/* Unified Entrance Container */}
+                    <motion.div
+                      initial={{ opacity: 0.15, y: 500, scale: 0.98 }}
+                      animate={{ opacity: 1, y: -40, scale: 1 }}
+                      transition={{ delay: 0.2, duration: 5.5, ease: [0.76, 0, 0.24, 1] }}
+                      onAnimationComplete={() => setTitleFinished(true)}
+                      className="w-full flex flex-col items-center justify-center"
+                    >
+                      {/* Inner Idle floating wrapper */}
+                      <motion.div
+                        animate={
+                          titleFinished && !isHovered && screenState === 'intro'
+                            ? { y: [0, -2, -0.5, -1.8, 0] }
+                            : { y: 0 }
+                        }
+                        transition={
+                          titleFinished && !isHovered && screenState === 'intro'
+                            ? {
+                              duration: 12,
+                              ease: "easeInOut",
+                              repeat: Infinity,
+                            }
+                            : { duration: 0.5, ease: "easeOut" }
+                        }
+                        className="w-full flex flex-col items-center justify-center"
+                      >
+                        {/* Brand / Logo */}
+                        <div className="flex items-center gap-4 mb-6 cinematic-shadow">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[24px] bg-gradient-to-br from-[var(--brand)] to-[var(--brand-light)] flex items-center justify-center shadow-lg shadow-[var(--brand)]/40">
+                            <Car className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
+                          </div>
+                          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[90px] font-sora font-extrabold tracking-tighter text-white">
+                            ParkEase AI
+                          </h1>
+                        </div>
+
+                        {/* Subtitle / Description */}
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 1.5, duration: 3.5, ease: [0.76, 0, 0.24, 1] }}
+                          className="font-inter font-medium text-[rgba(255,255,255,0.82)] text-base sm:text-lg max-w-[650px] leading-[1.5] text-center cinematic-shadow"
+                        >
+                          A world-class Smart Parking Management Platform powered by advanced AI and Digital Twin visualization.
+                        </motion.p>
+                      </motion.div>
+                    </motion.div>
+
+                    {/* Get Started Button */}
+                    <div className="h-20 mt-8 flex items-center justify-center">
+                      <motion.button
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={titleFinished ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
+                        transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                        onClick={startAuthTransition}
+                        className={cn(
+                          "group flex items-center gap-2 px-8 py-3.5 rounded-2xl text-base font-semibold text-white bg-[var(--brand)] hover:bg-[var(--brand-light)] active:scale-95 transition-all shadow-lg shadow-[var(--brand)]/30",
+                          !titleFinished && "pointer-events-none opacity-0"
+                        )}
+                        style={{
+                          visibility: titleFinished ? 'visible' : 'hidden'
+                        }}
+                      >
+                        Get Started
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </motion.button>
+                    </div>
+                  </div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="auth-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0 w-full h-full"
+          >
+            {/* Looping Second Video Background */}
+            <video
+              src="/auth-bg.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            />
+
+            {/* Dark Mask for Authentication overlay */}
+            <div className="absolute inset-0 bg-black/50" />
+
+            {/* Back button or top brand badge */}
+            <div className="absolute top-6 left-6 flex items-center gap-2 z-20">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-light)] flex items-center justify-center">
+                <Car className="w-4.5 h-4.5 text-white" />
+              </div>
+              <span className="font-bold text-[14px] text-white">ParkEase AI</span>
+            </div>
+
+            {/* Center Authentication Glass Panel */}
+            <div className="absolute inset-0 flex items-center justify-center px-4 z-10">
+              <motion.div
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className="w-full max-w-md bg-white/10 dark:bg-black/40 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden"
+              >
+                {/* Form header */}
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold tracking-tight text-white">
+                    {isSignUp ? 'Create your account' : 'Welcome back'}
+                  </h2>
+                  <p className="text-xs text-white/60 mt-1">
+                    {isSignUp ? 'Sign up to access the smart portal' : 'Enter credentials to access the platform'}
+                  </p>
+                </div>
+
+                {/* Switch Tabs */}
+                <div className="flex bg-white/10 rounded-xl p-1 mb-5">
+                  <button
+                    onClick={() => { setIsSignUp(false); setError(''); }}
+                    className={cn(
+                      'flex-1 py-2 rounded-lg text-xs font-bold transition-all',
+                      !isSignUp ? 'bg-[var(--brand)] text-white shadow-md' : 'text-white/60 hover:text-white'
+                    )}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => { setIsSignUp(true); setError(''); }}
+                    className={cn(
+                      'flex-1 py-2 rounded-lg text-xs font-bold transition-all',
+                      isSignUp ? 'bg-[var(--brand)] text-white shadow-md' : 'text-white/60 hover:text-white'
+                    )}
+                  >
+                    Create Account
+                  </button>
+                </div>
+
+                {/* Demo Credentials Helper */}
+                {!isSignUp && (
+                  <div className="mb-4 p-3 rounded-xl bg-white/5 border border-white/10 text-white/70 text-xs space-y-1.5 font-sans text-left">
+                    <div className="font-semibold text-white">Demo Accounts:</div>
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <div>
+                        <span className="text-white/40 block">Admin Email:</span>
+                        <code className="text-teal-300 font-mono">admin@parkease.ai</code>
+                      </div>
+                      <div>
+                        <span className="text-white/40 block">Password:</span>
+                        <code className="text-teal-300 font-mono">admin123</code>
+                      </div>
+                      <div>
+                        <span className="text-white/40 block">User Email:</span>
+                        <code className="text-teal-300 font-mono">user@parkease.ai</code>
+                      </div>
+                      <div>
+                        <span className="text-white/40 block">Password:</span>
+                        <code className="text-teal-300 font-mono">user123</code>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error Display */}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mb-4 p-3 rounded-xl bg-red-950/40 border border-red-500/40 text-red-200 text-xs flex items-center gap-2"
+                    >
+                      <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      <span>{error}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Authentication Form */}
+                <form onSubmit={handleAuthSubmit} className="space-y-4">
+                  {isSignUp && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="space-y-1.5"
+                    >
+                      <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">Full Name</label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                        <input
+                          type="text"
+                          value={fullName}
+                          onChange={e => setFullName(e.target.value)}
+                          placeholder="Girish Kumar"
+                          className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">Email Address</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="admin@parkease.ai"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-10 text-sm text-white placeholder-white/30 outline-none transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-[var(--brand)] hover:bg-[var(--brand-light)] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[var(--brand)]/20 flex items-center justify-center gap-2 mt-4"
+                  >
+                    {loading ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        {isSignUp ? 'Sign Up' : 'Sign In'}
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Bottom Secure indicator */}
+                <div className="flex items-center justify-center gap-1.5 mt-5 text-[10px] text-white/40">
+                  <Shield className="w-3.5 h-3.5" />
+                  Secured by ParkEase AI Core Shield
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
-}
-
-export function LandingPage() {
-  const navigate = useNavigate(); const { theme, toggleTheme } = useThemeStore();
-  const [menuOpen, setMenuOpen] = useState(false); const [faqQuery, setFaqQuery] = useState(''); const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const sessions = useCountUp(12); const facilities = useCountUp(500); const { scrollY } = useScroll(); const heroOffset = useTransform(scrollY, [0, 700], [0, 100]);
-  const matchedFaqs = useMemo(() => faqs.filter(([question, answer]) => `${question} ${answer}`.toLowerCase().includes(faqQuery.toLowerCase())), [faqQuery]);
-  const goTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  const reveal = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, amount: 0.15 }, transition: { duration: 0.55 } };
-  return <div className={cn('min-h-screen overflow-hidden bg-[#FBFCFE] text-[#0F172A] dark:bg-[#07101D] dark:text-[#F8FAFC]', theme === 'dark' && 'dark')}>
-    <div className="pointer-events-none fixed inset-0 opacity-[0.025] mix-blend-multiply dark:mix-blend-screen" style={{ backgroundImage: 'radial-gradient(rgba(15, 23, 42, .9) .65px, transparent .65px)', backgroundSize: '5px 5px' }} />
-    <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-[#FBFCFE]/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#07101D]/80"><div className="mx-auto flex h-16 max-w-[1360px] items-center justify-between px-5 lg:px-8"><button onClick={() => goTo('top')} className="flex items-center gap-2.5"><Mark /><span className="text-sm font-extrabold tracking-tight">ParkEase <span className="text-[#0F766E] dark:text-[#2DD4BF]">AI</span></span></button><div className="hidden items-center gap-6 md:flex">{[['Platform', 'platform'], ['Digital Twin', 'twin'], ['Customers', 'customers'], ['FAQ', 'faq']].map(([label, id]) => <button key={id} onClick={() => goTo(id)} className="text-sm font-medium text-slate-500 transition hover:text-slate-950 dark:text-slate-400 dark:hover:text-white">{label}</button>)}</div><div className="flex items-center gap-2"><button onClick={toggleTheme} aria-label="Toggle color theme" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10">{theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4 text-amber-300" />}</button><button onClick={() => navigate('/dashboard')} className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10 sm:block">Sign in</button><button onClick={() => navigate('/dashboard')} className="hidden items-center gap-2 rounded-lg bg-slate-950 px-3.5 py-2 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#0F766E] dark:bg-white dark:text-slate-950 sm:flex">Start free <ArrowRight className="h-3.5 w-3.5" /></button><button onClick={() => setMenuOpen((value) => !value)} className="rounded-lg p-2 md:hidden" aria-label="Toggle menu">{menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</button></div></div><AnimatePresence>{menuOpen && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="border-t border-slate-200 px-5 py-3 dark:border-white/10 md:hidden">{[['Platform', 'platform'], ['Digital Twin', 'twin'], ['Customers', 'customers'], ['FAQ', 'faq']].map(([label, id]) => <button key={id} onClick={() => { goTo(id); setMenuOpen(false); }} className="block w-full py-2 text-left text-sm font-medium text-slate-600 dark:text-slate-300">{label}</button>)}</motion.div>}</AnimatePresence></nav>
-    <main id="top">
-      <section className="relative mx-auto max-w-[1360px] px-5 pb-16 pt-16 sm:pt-24 lg:px-8 lg:pb-24"><div className="absolute -right-36 -top-36 h-[520px] w-[520px] rounded-full bg-teal-100/50 blur-3xl dark:bg-teal-900/15" /><div className="relative grid items-center gap-12 lg:grid-cols-[.9fr_1.1fr]"><motion.div {...reveal} className="max-w-xl"><div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Operating live across India</div><h1 className="text-balance text-5xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">Parking becomes a <span className="text-[#0F766E] dark:text-[#2DD4BF]">predictable</span> part of the journey.</h1><p className="mt-6 max-w-lg text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">ParkEase turns every bay, barrier, and arrival into a coordinated real-time system for the people who operate places at scale.</p><div className="mt-8 flex flex-wrap gap-3"><button onClick={() => navigate('/dashboard')} className="group flex items-center gap-2 rounded-lg bg-[#0F766E] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_26px_rgba(15,118,110,.22)] transition hover:-translate-y-0.5 hover:bg-[#0B625C]">Explore the platform <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></button><button onClick={() => goTo('twin')} className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"><Play className="h-3.5 w-3.5 fill-current" /> See it live</button></div><div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-xs font-medium text-slate-500 dark:text-slate-400"><span><Check className="mr-1.5 inline h-3.5 w-3.5 text-emerald-500" />SOC 2-ready controls</span><span><Check className="mr-1.5 inline h-3.5 w-3.5 text-emerald-500" />Open integrations</span><span><Check className="mr-1.5 inline h-3.5 w-3.5 text-emerald-500" />99.95% uptime</span></div></motion.div><motion.div style={{ y: heroOffset }} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.1 }}><TwinPreview /></motion.div></div></section>
-      <section className="border-y border-slate-200 bg-white/70 py-7 dark:border-white/10 dark:bg-white/[.025]"><div className="mx-auto grid max-w-[1360px] grid-cols-2 gap-5 px-5 sm:grid-cols-4 lg:px-8"><div><p className="text-2xl font-extrabold">{sessions}M<span className="text-teal-600">+</span></p><p className="mt-1 text-xs font-medium text-slate-500">parking sessions</p></div><div><p className="text-2xl font-extrabold">{facilities}<span className="text-teal-600">+</span></p><p className="mt-1 text-xs font-medium text-slate-500">connected facilities</p></div><div><p className="text-2xl font-extrabold">96.2<span className="text-teal-600">%</span></p><p className="mt-1 text-xs font-medium text-slate-500">recommendation precision</p></div><div><p className="text-2xl font-extrabold">&lt;200<span className="text-teal-600">ms</span></p><p className="mt-1 text-xs font-medium text-slate-500">decision time</p></div></div></section>
-      <section id="platform" className="mx-auto max-w-[1360px] px-5 py-24 lg:px-8"><motion.div {...reveal} className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#0F766E] dark:text-[#2DD4BF]">The operating system for parking</p><h2 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">Built for the moments that can’t wait.</h2><p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">Every surface has a different job: guide an arrival, surface a decision, protect an access point, or explain what changed.</p></motion.div><div className="mt-12 grid gap-4 lg:grid-cols-12"><motion.article {...reveal} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 p-6 text-white shadow-xl dark:border-white/10 lg:col-span-7"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-teal-300">Live command view</p><h3 className="mt-2 text-2xl font-bold">Know the next constraint before it becomes one.</h3></div><BellRing className="h-5 w-5 text-teal-300" /></div><div className="mt-8 grid grid-cols-[1.4fr_.8fr] gap-4"><div className="rounded-xl border border-white/10 bg-white/[.06] p-4"><div className="flex items-center justify-between text-xs text-slate-300"><span>Occupancy · last 60 min</span><span className="text-emerald-300">+8.4%</span></div><Sparkline data={[22, 20, 27, 26, 34, 39, 37, 49, 53, 58, 62]} color="#5EEAD4" /><div className="mt-3 flex gap-2"><span className="rounded bg-white/10 px-2 py-1 text-[10px]">North garage</span><span className="rounded bg-white/10 px-2 py-1 text-[10px]">Arrivals rising</span></div></div><div className="space-y-2 rounded-xl border border-white/10 bg-white/[.06] p-3">{['Barrier B-04', 'Camera C-12', 'EV bank'].map((label, index) => <div key={label} className="flex items-center justify-between rounded-lg bg-black/20 px-3 py-2"><span className="text-[11px]">{label}</span><span className={cn('h-2 w-2 rounded-full', index === 1 ? 'bg-amber-400' : 'bg-emerald-400')} /></div>)}</div></div></motion.article><motion.article {...reveal} transition={{ delay: .08 }} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[.035] lg:col-span-5"><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-blue-600 dark:text-blue-300">Explainable AI</p><h3 className="mt-2 text-xl font-bold">A recommendation your team can defend.</h3></div><BrainCircuit className="h-6 w-6 text-blue-500" /></div><div className="mt-8 rounded-xl bg-blue-50 p-4 dark:bg-blue-500/10"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-lg bg-blue-600 text-white"><Navigation className="h-5 w-5" /></div><div><p className="text-sm font-bold">Route vehicle to B1 · N08</p><p className="text-xs text-slate-500 dark:text-slate-400">2 min walk · near lift · low congestion</p></div></div><div className="mt-4 h-1.5 overflow-hidden rounded bg-blue-100 dark:bg-blue-200/10"><motion.div animate={{ width: ['86%', '94%', '90%'] }} transition={{ duration: 4, repeat: Infinity }} className="h-full rounded bg-blue-500" /></div></div></motion.article><motion.article {...reveal} transition={{ delay: .12 }} className="rounded-2xl border border-slate-200 bg-[#FFF8E8] p-6 dark:border-amber-200/10 dark:bg-amber-400/[.07] lg:col-span-4"><Zap className="h-5 w-5 text-amber-600" /><h3 className="mt-5 text-xl font-bold">Demand-aware pricing</h3><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Tune rates by event, forecast, and remaining capacity without pushing a spreadsheet.</p><div className="mt-6"><Sparkline data={[18, 20, 19, 24, 27, 35, 31, 42, 48]} color="#D97706" /></div></motion.article><motion.article {...reveal} transition={{ delay: .16 }} className="relative overflow-hidden rounded-2xl border border-slate-200 bg-[#EDF8F7] p-6 dark:border-emerald-200/10 dark:bg-emerald-400/[.06] lg:col-span-8"><div className="relative z-10 max-w-sm"><ShieldCheck className="h-5 w-5 text-emerald-600" /><h3 className="mt-5 text-xl font-bold">Automate access, preserve oversight.</h3><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Barrier events, plate reads, camera health, and access exceptions arrive in one audit-ready stream.</p></div><div className="absolute bottom-0 right-6 flex h-24 items-end gap-2 opacity-80">{[45, 68, 52, 90, 65, 82, 96].map((height, index) => <motion.div key={index} animate={{ height: [`${height - 18}%`, `${height}%`, `${height - 8}%`] }} transition={{ duration: 2.5 + index * .15, repeat: Infinity }} className="w-5 rounded-t bg-emerald-500/70" />)}</div></motion.article></div></section>
-      <section id="twin" className="border-y border-slate-200 bg-slate-100/70 py-24 dark:border-white/10 dark:bg-white/[.025]"><div className="mx-auto max-w-[1360px] px-5 lg:px-8"><div className="grid gap-10 lg:grid-cols-[.76fr_1.24fr] lg:items-center"><motion.div {...reveal}><p className="text-xs font-bold uppercase tracking-[.18em] text-[#0F766E] dark:text-[#2DD4BF]">Digital Twin</p><h2 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">The facility, as it is right now.</h2><p className="mt-5 text-base leading-7 text-slate-600 dark:text-slate-300">A spatial operating view joins live occupancy, camera health, vehicle movement, barriers, accessible spaces, EV usage, and predictive demand in one place.</p><dl className="mt-8 space-y-4">{[['Floor-aware', 'Move between levels without losing operational context.'], ['Sensor-native', 'See availability change as the physical world changes.'], ['Decision-ready', 'Overlay heat, routes, and AI recommendations only when they matter.']].map(([term, desc]) => <div key={term} className="border-l-2 border-teal-500 pl-4"><dt className="text-sm font-bold">{term}</dt><dd className="mt-1 text-sm text-slate-600 dark:text-slate-300">{desc}</dd></div>)}</dl><button onClick={() => navigate('/digital-twin')} className="mt-8 flex items-center gap-2 text-sm font-bold text-[#0F766E] dark:text-[#2DD4BF]">Open the live view <ArrowRight className="h-4 w-4" /></button></motion.div><motion.div {...reveal} transition={{ delay: .12 }}><TwinPreview /></motion.div></div></div></section>
-      <section id="customers" className="mx-auto max-w-[1360px] px-5 py-24 lg:px-8"><motion.div {...reveal} className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#0F766E] dark:text-[#2DD4BF]">Results in the real world</p><h2 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">Built around a better arrival.</h2></div><p className="max-w-sm text-sm leading-6 text-slate-600 dark:text-slate-300">Different environments. One common expectation: an experience that feels obvious before anyone asks for help.</p></motion.div><div className="mt-12 grid gap-4 md:grid-cols-2">{cases.map((item, index) => <motion.article {...reveal} transition={{ delay: index * .06 }} key={item.name} whileHover={{ y: -4 }} className={cn('group relative overflow-hidden rounded-2xl border border-slate-200 p-6 shadow-sm dark:border-white/10', index === 0 ? 'bg-slate-950 text-white md:col-span-2' : 'bg-white dark:bg-white/[.035]')}><div className="flex items-start justify-between"><div><p className={cn('text-xs font-bold uppercase tracking-[.16em]', index === 0 ? 'text-teal-300' : 'text-slate-500 dark:text-slate-400')}>{item.sector}</p><h3 className="mt-2 text-xl font-bold">{item.name}</h3></div><div className={cn('grid h-10 w-10 place-items-center rounded-lg text-white', item.tone)}><item.icon className="h-5 w-5" /></div></div><div className="mt-12 flex items-end justify-between"><div><p className="text-4xl font-extrabold tracking-tight">{item.metric}</p><p className={cn('mt-1 text-sm', index === 0 ? 'text-white/60' : 'text-slate-500 dark:text-slate-400')}>{item.detail}</p></div><ArrowRight className={cn('h-5 w-5 transition group-hover:translate-x-1', index === 0 ? 'text-teal-300' : 'text-slate-400')} /></div>{index === 0 && <div className="absolute bottom-0 right-0 h-24 w-1/2 bg-[linear-gradient(120deg,transparent,rgba(45,212,191,.18))]" />}</motion.article>)}</div></section>
-      <section id="faq" className="border-t border-slate-200 bg-white py-24 dark:border-white/10 dark:bg-[#091321]"><div className="mx-auto grid max-w-[1120px] gap-12 px-5 lg:grid-cols-[.7fr_1.3fr] lg:px-8"><motion.div {...reveal}><p className="text-xs font-bold uppercase tracking-[.18em] text-[#0F766E] dark:text-[#2DD4BF]">Frequently asked</p><h2 className="mt-4 text-4xl font-extrabold tracking-tight">Answers without the sales fog.</h2><p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">Search across the details teams ask during evaluation.</p><label className="relative mt-7 block"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" /><input value={faqQuery} onChange={(event) => setFaqQuery(event.target.value)} placeholder="Search questions" className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15 dark:border-white/15 dark:bg-white/5" /></label></motion.div><div>{matchedFaqs.map(([question, answer], index) => <div key={question} className="border-b border-slate-200 dark:border-white/10"><button onClick={() => setOpenFaq(openFaq === index ? null : index)} aria-expanded={openFaq === index} className="flex w-full items-center justify-between gap-4 py-5 text-left text-sm font-bold"><span>{question}</span><ChevronDown className={cn('h-4 w-4 flex-none text-slate-500 transition', openFaq === index && 'rotate-180')} /></button><AnimatePresence>{openFaq === index && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden"><p className="pb-5 text-sm leading-6 text-slate-600 dark:text-slate-300">{answer}</p></motion.div>}</AnimatePresence></div>)}{matchedFaqs.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-white/15">No matching answers. Try a different term.</div>}</div></div></section>
-      <section className="mx-auto max-w-[1360px] px-5 py-20 lg:px-8"><motion.div {...reveal} className="relative overflow-hidden rounded-2xl bg-[#0D2F2C] px-6 py-14 text-center text-white sm:px-12"><div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #2DD4BF 0, transparent 22%), radial-gradient(circle at 85% 80%, #2563EB 0, transparent 20%)' }} /><div className="relative"><p className="text-xs font-bold uppercase tracking-[.18em] text-teal-200">A more legible parking operation</p><h2 className="mx-auto mt-4 max-w-2xl text-4xl font-extrabold tracking-tight sm:text-5xl">Make the next arrival the easy one.</h2><p className="mx-auto mt-5 max-w-xl text-sm leading-6 text-white/70">Bring your facility data, access hardware, and customer journey into one coordinated operating layer.</p><button onClick={() => navigate('/dashboard')} className="mt-8 inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-bold text-[#0D2F2C] transition hover:-translate-y-0.5">Start exploring ParkEase <ArrowRight className="h-4 w-4" /></button></div></motion.div></section>
-    </main>
-    <footer className="border-t border-slate-200 bg-[#06101D] text-white dark:border-white/10"><div className="mx-auto max-w-[1360px] px-5 py-14 lg:px-8"><div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]"><div><div className="flex items-center gap-2.5"><Mark /><span className="text-sm font-extrabold">ParkEase AI</span></div><p className="mt-4 max-w-xs text-sm leading-6 text-white/55">The operating system for parking at places people depend on.</p><div className="mt-6 flex items-center gap-3"><a href="#" aria-label="GitHub" className="text-white/55 transition hover:text-white"><Github className="h-4 w-4" /></a><a href="#" aria-label="Developer portal" className="text-white/55 transition hover:text-white"><Code2 className="h-4 w-4" /></a><a href="#" aria-label="Company site" className="text-white/55 transition hover:text-white"><Globe2 className="h-4 w-4" /></a></div></div>{[{ title: 'Product', links: ['Digital Twin', 'Operations', 'Payments', 'Analytics'] }, { title: 'Platform', links: ['API', 'Documentation', 'Engineering Blog', 'Roadmap'] }, { title: 'Company', links: ['Customers', 'Careers', 'Contact', 'GitHub'] }, { title: 'Trust', links: ['Status', 'Security', 'Privacy', 'Terms'] }].map((column) => <div key={column.title}><p className="text-xs font-bold uppercase tracking-[.14em] text-white/45">{column.title}</p><ul className="mt-4 space-y-3">{column.links.map((link) => <li key={link}><a href="#" className="text-sm text-white/65 transition hover:text-white">{link}</a></li>)}</ul></div>)}</div><div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between"><p>© 2026 ParkEase AI. Built for better arrivals.</p><p className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-emerald-400" />All systems operational</p></div></div></footer>
-  </div>;
 }
