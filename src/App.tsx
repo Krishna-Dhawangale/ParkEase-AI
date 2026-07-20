@@ -13,12 +13,10 @@ import { AdminDashboardPage } from './pages/AdminDashboard/AdminDashboardPage';
 import { AnalyticsPage } from './pages/Analytics/AnalyticsPage';
 import { AIInsightsPage } from './pages/AIInsights/AIInsightsPage';
 import { NotificationsPage } from './pages/Notifications/NotificationsPage';
-import { useAuthStore } from './store';
-
-function ProtectedRoute() {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  return isAuthenticated ? <Outlet /> : <Navigate to="/" replace />;
-}
+import { RoleProtectedRoute } from './components/auth/RoleProtectedRoute';
+import { UserAuthPage } from './pages/Auth/UserAuthPage';
+import { AdminAuthPage } from './pages/Auth/AdminAuthPage';
+import { OwnerAuthPage } from './pages/Auth/OwnerAuthPage';
 
 function App() {
   return (
@@ -27,9 +25,21 @@ function App() {
         {/* Public landing */}
         <Route path="/" element={<LandingPage />} />
         
+        {/* Auth Routes */}
+        <Route path="/login/user" element={<UserAuthPage />} />
+        <Route path="/login/admin" element={<AdminAuthPage />} />
+        <Route path="/login/owner" element={<OwnerAuthPage />} />
+        
         {/* App pages with sidebar layout */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<AppLayout />}>
+        <Route element={<AppLayout />}>
+          {/* Shared Authenticated Routes */}
+          <Route element={<RoleProtectedRoute allowedRoles={['USER', 'OWNER', 'ADMIN']} />}>
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+          </Route>
+
+          {/* Regular User Routes */}
+          <Route element={<RoleProtectedRoute allowedRoles={['USER']} />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/search" element={<ParkingSearchPage />} />
             <Route path="/ai-recommendation" element={<AIRecommendationPage />} />
@@ -37,11 +47,18 @@ function App() {
             <Route path="/book" element={<BookingFlowPage />} />
             <Route path="/payment" element={<PaymentPage />} />
             <Route path="/ticket" element={<TicketPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
+
+          {/* Parking Owner Routes */}
+          <Route element={<RoleProtectedRoute allowedRoles={['OWNER']} />}>
+            <Route path="/owner/dashboard" element={<div className="p-8">Owner Dashboard WIP</div>} />
+          </Route>
+
+          {/* Admin Routes */}
+          <Route element={<RoleProtectedRoute allowedRoles={['ADMIN']} />}>
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/ai-insights" element={<AIInsightsPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
           </Route>
         </Route>
       </Routes>

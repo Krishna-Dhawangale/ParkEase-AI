@@ -85,8 +85,17 @@ export function LandingPage() {
         }
       }
 
-      loginUser(email);
-      navigate('/dashboard');
+      const mockUserRole = email === 'admin@parkease.ai' ? 'ADMIN' : 'USER';
+      loginUser('demo-token', {
+        id: 'demo-user',
+        email,
+        role: mockUserRole,
+        firstName: 'Demo',
+        lastName: 'User',
+        isEmailVerified: true,
+        createdAt: new Date().toISOString()
+      });
+      navigate(mockUserRole === 'ADMIN' ? '/admin' : '/dashboard');
     }, 1500);
   };
 
@@ -147,17 +156,17 @@ export function LandingPage() {
                         transition={
                           titleFinished && !isHovered && screenState === 'intro'
                             ? {
-                                duration: 12,
-                                ease: "easeInOut",
-                                repeat: Infinity,
-                              }
+                              duration: 12,
+                              ease: "easeInOut",
+                              repeat: Infinity,
+                            }
                             : { duration: 0.5, ease: "easeOut" }
                         }
                         className="w-full flex flex-col items-center justify-center"
                       >
                         {/* Brand / Logo */}
                         <div className="flex items-center gap-4 mb-6 cinematic-shadow">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[24px] bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center shadow-lg shadow-[#0F766E]/40">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[24px] bg-gradient-to-br from-[var(--brand)] to-[var(--brand-light)] flex items-center justify-center shadow-lg shadow-[var(--brand)]/40">
                             <Car className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
                           </div>
                           <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[90px] font-sora font-extrabold tracking-tighter text-white">
@@ -185,7 +194,7 @@ export function LandingPage() {
                         transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
                         onClick={startAuthTransition}
                         className={cn(
-                          "group flex items-center gap-2 px-8 py-3.5 rounded-2xl text-base font-semibold text-white bg-[#0F766E] hover:bg-[#0D6B63] active:scale-95 transition-all shadow-lg shadow-[#0F766E]/30",
+                          "group flex items-center gap-2 px-8 py-3.5 rounded-2xl text-base font-semibold text-white bg-[var(--brand)] hover:bg-[var(--brand-light)] active:scale-95 transition-all shadow-lg shadow-[var(--brand)]/30",
                           !titleFinished && "pointer-events-none opacity-0"
                         )}
                         style={{
@@ -224,7 +233,7 @@ export function LandingPage() {
 
             {/* Back button or top brand badge */}
             <div className="absolute top-6 left-6 flex items-center gap-2 z-20">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-light)] flex items-center justify-center">
                 <Car className="w-4.5 h-4.5 text-white" />
               </div>
               <span className="font-bold text-[14px] text-white">ParkEase AI</span>
@@ -254,7 +263,7 @@ export function LandingPage() {
                     onClick={() => { setIsSignUp(false); setError(''); }}
                     className={cn(
                       'flex-1 py-2 rounded-lg text-xs font-bold transition-all',
-                      !isSignUp ? 'bg-[#0F766E] text-white shadow-md' : 'text-white/60 hover:text-white'
+                      !isSignUp ? 'bg-[var(--brand)] text-white shadow-md' : 'text-white/60 hover:text-white'
                     )}
                   >
                     Sign In
@@ -263,7 +272,7 @@ export function LandingPage() {
                     onClick={() => { setIsSignUp(true); setError(''); }}
                     className={cn(
                       'flex-1 py-2 rounded-lg text-xs font-bold transition-all',
-                      isSignUp ? 'bg-[#0F766E] text-white shadow-md' : 'text-white/60 hover:text-white'
+                      isSignUp ? 'bg-[var(--brand)] text-white shadow-md' : 'text-white/60 hover:text-white'
                     )}
                   >
                     Create Account
@@ -326,7 +335,7 @@ export function LandingPage() {
                           value={fullName}
                           onChange={e => setFullName(e.target.value)}
                           placeholder="Girish Kumar"
-                          className="w-full bg-white/5 border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
+                          className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
                         />
                       </div>
                     </motion.div>
@@ -341,7 +350,7 @@ export function LandingPage() {
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                         placeholder="admin@parkease.ai"
-                        className="w-full bg-white/5 border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -355,7 +364,7 @@ export function LandingPage() {
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full bg-white/5 border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-10 text-sm text-white placeholder-white/30 outline-none transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-10 text-sm text-white placeholder-white/30 outline-none transition-all"
                       />
                       <button
                         type="button"
@@ -370,7 +379,7 @@ export function LandingPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#0F766E] hover:bg-[#0D6B63] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[#0F766E]/20 flex items-center justify-center gap-2 mt-4"
+                    className="w-full bg-[var(--brand)] hover:bg-[var(--brand-light)] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[var(--brand)]/20 flex items-center justify-center gap-2 mt-4"
                   >
                     {loading ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -45,9 +45,9 @@ function StepOne({ onNext }: { onNext: () => void }) {
   return (
     <div className="space-y-5">
       <div>
-        <label className="block text-sm font-semibold text-[#111827] dark:text-white mb-2">Where are you going?</label>
+        <label className="block text-sm font-semibold text-[var(--text-primary)] dark:text-white mb-2">Where are you going?</label>
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
@@ -57,7 +57,7 @@ function StepOne({ onNext }: { onNext: () => void }) {
         </div>
       </div>
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Popular Destinations</p>
+        <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Popular Destinations</p>
         {suggestions.map(s => (
           <button
             key={s}
@@ -65,13 +65,13 @@ function StepOne({ onNext }: { onNext: () => void }) {
             className={cn(
               'w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left',
               selected === s
-                ? 'border-[#0F766E] bg-[#0F766E]/5'
-                : 'border-[#E5E7EB] dark:border-[#334155] hover:border-[#0F766E]/30'
+                ? 'border-[var(--brand)] bg-[var(--brand)]/5'
+                : 'border-[var(--border)] dark:border-[var(--border)] hover:border-[var(--brand)]/30'
             )}
           >
-            <MapPin className={cn('w-4 h-4 flex-shrink-0', selected === s ? 'text-[#0F766E]' : 'text-[#9CA3AF]')} />
-            <span className="text-sm text-[#111827] dark:text-white">{s}</span>
-            {selected === s && <Check className="w-4 h-4 text-[#0F766E] ml-auto" />}
+            <MapPin className={cn('w-4 h-4 flex-shrink-0', selected === s ? 'text-[var(--brand)]' : 'text-[var(--text-secondary)]')} />
+            <span className="text-sm text-[var(--text-primary)] dark:text-white">{s}</span>
+            {selected === s && <Check className="w-4 h-4 text-[var(--brand)] ml-auto" />}
           </button>
         ))}
       </div>
@@ -86,34 +86,34 @@ function StepTwo({ onNext, onBack }: { onNext: () => void; onBack: () => void })
   const [selected, setSelected] = useState('');
   return (
     <div className="space-y-4">
-      <p className="text-sm text-[#6B7280] dark:text-[#94A3B8]">Choose your parking facility near the destination.</p>
+      <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">Choose your parking facility near the destination.</p>
       {parkingOptions.map(p => (
         <button
           key={p.id}
           onClick={() => setSelected(p.id)}
           className={cn(
             'w-full p-4 rounded-2xl border-2 text-left transition-all',
-            selected === p.id ? 'border-[#0F766E] bg-[#0F766E]/5' : 'border-[#E5E7EB] dark:border-[#334155]'
+            selected === p.id ? 'border-[var(--brand)] bg-[var(--brand)]/5' : 'border-[var(--border)] dark:border-[var(--border)]'
           )}
         >
           <div className="flex items-start justify-between mb-2">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-[#111827] dark:text-white text-sm">{p.name}</span>
+                <span className="font-bold text-[var(--text-primary)] dark:text-white text-sm">{p.name}</span>
                 {p.recommended && (
-                  <span className="px-1.5 py-0.5 text-[9px] font-bold bg-[#0F766E] text-white rounded-md">AI Pick</span>
+                  <span className="px-1.5 py-0.5 text-[9px] font-bold bg-[var(--brand)] text-white rounded-md">AI Pick</span>
                 )}
               </div>
-              <div className="text-xs text-[#6B7280] mt-0.5 flex items-center gap-1.5">
+              <div className="text-xs text-[var(--text-secondary)] mt-0.5 flex items-center gap-1.5">
                 <Navigation className="w-3 h-3" />{p.distance}
               </div>
             </div>
             <div className="text-right">
-              <div className="text-sm font-bold text-[#111827] dark:text-white">{p.price}</div>
+              <div className="text-sm font-bold text-[var(--text-primary)] dark:text-white">{p.price}</div>
               <div className="text-xs text-green-600">{p.available} free</div>
             </div>
           </div>
-          <div className="h-1.5 bg-[#E5E7EB] dark:bg-[#334155] rounded-full overflow-hidden">
+          <div className="h-1.5 bg-[var(--border)] dark:bg-[var(--border)] rounded-full overflow-hidden">
             <div className="h-full rounded-full bg-green-500" style={{ width: `${(p.available / 120) * 100}%` }} />
           </div>
         </button>
@@ -130,27 +130,27 @@ function StepThree({ onNext, onBack }: { onNext: () => void; onBack: () => void 
   const [selected, setSelected] = useState('');
   return (
     <div className="space-y-4">
-      <p className="text-sm text-[#6B7280] dark:text-[#94A3B8]">Select the vehicle you're driving today.</p>
+      <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">Select the vehicle you're driving today.</p>
       {vehicles.map(v => (
         <button
           key={v.id}
           onClick={() => setSelected(v.id)}
           className={cn(
             'w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-4',
-            selected === v.id ? 'border-[#0F766E] bg-[#0F766E]/5' : 'border-[#E5E7EB] dark:border-[#334155]'
+            selected === v.id ? 'border-[var(--brand)] bg-[var(--brand)]/5' : 'border-[var(--border)] dark:border-[var(--border)]'
           )}
         >
-          <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] dark:bg-[#334155] flex items-center justify-center flex-shrink-0">
-            <Car className="w-5 h-5 text-[#6B7280]" />
+          <div className="w-10 h-10 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--border)] flex items-center justify-center flex-shrink-0">
+            <Car className="w-5 h-5 text-[var(--text-secondary)]" />
           </div>
           <div className="flex-1">
-            <div className="font-bold text-[#111827] dark:text-white text-sm">{v.number}</div>
-            <div className="text-xs text-[#6B7280]">{v.brand} · {v.type} · {v.color}</div>
+            <div className="font-bold text-[var(--text-primary)] dark:text-white text-sm">{v.number}</div>
+            <div className="text-xs text-[var(--text-secondary)]">{v.brand} · {v.type} · {v.color}</div>
           </div>
-          {selected === v.id && <Check className="w-5 h-5 text-[#0F766E]" />}
+          {selected === v.id && <Check className="w-5 h-5 text-[var(--brand)]" />}
         </button>
       ))}
-      <button className="w-full p-4 rounded-2xl border-2 border-dashed border-[#E5E7EB] dark:border-[#334155] text-sm text-[#6B7280] hover:border-[#0F766E]/30 transition-all">
+      <button className="w-full p-4 rounded-2xl border-2 border-dashed border-[var(--border)] dark:border-[var(--border)] text-sm text-[var(--text-secondary)] hover:border-[var(--brand)]/30 transition-all">
         + Add New Vehicle
       </button>
       <div className="flex gap-3">
@@ -185,7 +185,7 @@ function StepFour({ onNext, onBack }: { onNext: () => void; onBack: () => void }
           ))}
         </div>
       </div>
-      <p className="text-xs text-center text-[#6B7280]">Not satisfied? <button className="text-[#0F766E] font-semibold">View alternatives →</button></p>
+      <p className="text-xs text-center text-[var(--text-secondary)]">Not satisfied? <button className="text-[var(--brand)] font-semibold">View alternatives →</button></p>
       <div className="flex gap-3">
         <button onClick={onBack} className="btn-secondary flex-1 py-3"><ChevronLeft className="w-4 h-4" /> Back</button>
         <button onClick={onNext} className="btn-primary flex-1 py-3">Confirm Slot <ChevronRight className="w-4 h-4" /></button>
@@ -201,15 +201,15 @@ function StepFive({ onNext, onBack }: { onNext: () => void; onBack: () => void }
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Date</label>
+        <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Date</label>
         <input type="date" value={date} onChange={e => setDate(e.target.value)} className="input-field" />
       </div>
       <div>
-        <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Entry Time</label>
+        <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Entry Time</label>
         <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="input-field" />
       </div>
       <div>
-        <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Duration</label>
+        <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Duration</label>
         <div className="grid grid-cols-4 gap-2">
           {['1', '2', '3', '4'].map(d => (
             <button
@@ -217,24 +217,24 @@ function StepFive({ onNext, onBack }: { onNext: () => void; onBack: () => void }
               onClick={() => setDuration(d)}
               className={cn(
                 'py-2.5 rounded-xl text-sm font-semibold border transition-all',
-                duration === d ? 'border-[#0F766E] bg-[#0F766E] text-white' : 'border-[#E5E7EB] dark:border-[#334155] text-[#6B7280]'
+                duration === d ? 'border-[var(--brand)] bg-[var(--brand)] text-white' : 'border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)]'
               )}
             >
               {d}h
             </button>
           ))}
         </div>
-        <input type="range" min="1" max="12" value={duration} onChange={e => setDuration(e.target.value)} className="w-full mt-2 accent-[#0F766E]" />
-        <p className="text-center text-xs text-[#0F766E] font-semibold mt-1">{duration} hour{parseInt(duration) > 1 ? 's' : ''} · Ends at {startTime || '--:--'}</p>
+        <input type="range" min="1" max="12" value={duration} onChange={e => setDuration(e.target.value)} className="w-full mt-2 accent-[var(--brand)]" />
+        <p className="text-center text-xs text-[var(--brand)] font-semibold mt-1">{duration} hour{parseInt(duration) > 1 ? 's' : ''} · Ends at {startTime || '--:--'}</p>
       </div>
-      <div className="p-4 rounded-2xl bg-[#0F766E]/5 dark:bg-[#14B8A6]/5 border border-[#0F766E]/20">
+      <div className="p-4 rounded-2xl bg-[var(--brand)]/5 dark:bg-[var(--brand-light)]/5 border border-[var(--brand)]/20">
         <div className="flex justify-between text-sm mb-1">
-          <span className="text-[#6B7280]">Parking charge</span>
-          <span className="font-bold text-[#111827] dark:text-white">₹{60 * parseInt(duration)}</span>
+          <span className="text-[var(--text-secondary)]">Parking charge</span>
+          <span className="font-bold text-[var(--text-primary)] dark:text-white">₹{60 * parseInt(duration)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-[#6B7280]">Duration</span>
-          <span className="font-bold text-[#111827] dark:text-white">{duration}h × ₹60/hr</span>
+          <span className="text-[var(--text-secondary)]">Duration</span>
+          <span className="font-bold text-[var(--text-primary)] dark:text-white">{duration}h × ₹60/hr</span>
         </div>
       </div>
       <div className="flex gap-3">
@@ -249,22 +249,22 @@ function StepSix({ onNext, onBack }: { onNext: () => void; onBack: () => void })
   const [selected, setSelected] = useState('upi');
   return (
     <div className="space-y-4">
-      <div className="p-4 rounded-2xl bg-[#F8FAFC] dark:bg-[#0F172A] space-y-2">
+      <div className="p-4 rounded-2xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)] space-y-2">
         <div className="flex justify-between text-xs">
-          <span className="text-[#6B7280]">Parking charge</span><span className="font-semibold text-[#111827] dark:text-white">₹120.00</span>
+          <span className="text-[var(--text-secondary)]">Parking charge</span><span className="font-semibold text-[var(--text-primary)] dark:text-white">₹120.00</span>
         </div>
         <div className="flex justify-between text-xs">
-          <span className="text-[#6B7280]">Platform fee</span><span className="font-semibold text-[#111827] dark:text-white">₹5.00</span>
+          <span className="text-[var(--text-secondary)]">Platform fee</span><span className="font-semibold text-[var(--text-primary)] dark:text-white">₹5.00</span>
         </div>
         <div className="flex justify-between text-xs text-green-600">
           <span>AI savings</span><span className="font-semibold">-₹15.00</span>
         </div>
         <div className="flex justify-between text-xs">
-          <span className="text-[#6B7280]">GST (18%)</span><span className="font-semibold text-[#111827] dark:text-white">₹19.80</span>
+          <span className="text-[var(--text-secondary)]">GST (18%)</span><span className="font-semibold text-[var(--text-primary)] dark:text-white">₹19.80</span>
         </div>
-        <div className="border-t border-[#E5E7EB] dark:border-[#334155] pt-2 flex justify-between">
-          <span className="font-bold text-[#111827] dark:text-white">Total</span>
-          <span className="font-bold text-lg text-[#0F766E]">₹129.80</span>
+        <div className="border-t border-[var(--border)] dark:border-[var(--border)] pt-2 flex justify-between">
+          <span className="font-bold text-[var(--text-primary)] dark:text-white">Total</span>
+          <span className="font-bold text-lg text-[var(--brand)]">₹129.80</span>
         </div>
       </div>
       <div className="space-y-2">
@@ -274,15 +274,15 @@ function StepSix({ onNext, onBack }: { onNext: () => void; onBack: () => void })
             onClick={() => setSelected(m.id)}
             className={cn(
               'w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all text-left',
-              selected === m.id ? 'border-[#0F766E] bg-[#0F766E]/5' : 'border-[#E5E7EB] dark:border-[#334155]'
+              selected === m.id ? 'border-[var(--brand)] bg-[var(--brand)]/5' : 'border-[var(--border)] dark:border-[var(--border)]'
             )}
           >
             <span className="text-xl">{m.icon}</span>
             <div>
-              <div className="text-sm font-semibold text-[#111827] dark:text-white">{m.label}</div>
-              <div className="text-[11px] text-[#6B7280]">{m.desc}</div>
+              <div className="text-sm font-semibold text-[var(--text-primary)] dark:text-white">{m.label}</div>
+              <div className="text-[11px] text-[var(--text-secondary)]">{m.desc}</div>
             </div>
-            {selected === m.id && <Check className="w-4 h-4 text-[#0F766E] ml-auto" />}
+            {selected === m.id && <Check className="w-4 h-4 text-[var(--brand)] ml-auto" />}
           </button>
         ))}
       </div>
@@ -307,8 +307,8 @@ function StepSeven() {
         <CheckCircle2 className="w-10 h-10 text-white" />
       </motion.div>
       <div>
-        <h3 className="text-2xl font-bold text-[#111827] dark:text-white">Booking Confirmed!</h3>
-        <p className="text-[#6B7280] dark:text-[#94A3B8] text-sm mt-1">Your slot has been reserved successfully</p>
+        <h3 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white">Booking Confirmed!</h3>
+        <p className="text-[var(--text-secondary)] dark:text-[var(--text-secondary)] text-sm mt-1">Your slot has been reserved successfully</p>
       </div>
       <div className="card p-5 text-left space-y-2.5">
         {[
@@ -320,8 +320,8 @@ function StepSeven() {
           ['Amount Paid', '₹129.80'],
         ].map(([label, value]) => (
           <div key={label} className="flex justify-between text-sm">
-            <span className="text-[#6B7280]">{label}</span>
-            <span className="font-semibold text-[#111827] dark:text-white">{value}</span>
+            <span className="text-[var(--text-secondary)]">{label}</span>
+            <span className="font-semibold text-[var(--text-primary)] dark:text-white">{value}</span>
           </div>
         ))}
       </div>
@@ -344,7 +344,7 @@ export function BookingFlowPage() {
   const goBack = () => setCurrentStep(s => Math.max(1, s - 1));
 
   const renderStep = () => {
-    switch(currentStep) {
+    switch (currentStep) {
       case 1: return <StepOne onNext={goNext} />;
       case 2: return <StepTwo onNext={goNext} onBack={goBack} />;
       case 3: return <StepThree onNext={goNext} onBack={goBack} />;
@@ -362,9 +362,9 @@ export function BookingFlowPage() {
         {/* Progress stepper */}
         <div className="flex items-center justify-between mb-8 relative">
           {/* Progress line */}
-          <div className="absolute top-5 left-5 right-5 h-0.5 bg-[#E5E7EB] dark:bg-[#334155] z-0">
+          <div className="absolute top-5 left-5 right-5 h-0.5 bg-[var(--border)] dark:bg-[var(--border)] z-0">
             <motion.div
-              className="h-full bg-[#0F766E] rounded-full"
+              className="h-full bg-[var(--brand)] rounded-full"
               initial={{ width: '0%' }}
               animate={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
               transition={{ duration: 0.3 }}
@@ -375,25 +375,25 @@ export function BookingFlowPage() {
             <div key={step.id} className="flex flex-col items-center z-10">
               <motion.div
                 animate={{
-                  backgroundColor: currentStep > step.id ? '#0F766E' : currentStep === step.id ? '#0F766E' : undefined,
+                  backgroundColor: currentStep > step.id ? 'var(--brand)' : currentStep === step.id ? 'var(--brand)' : undefined,
                   scale: currentStep === step.id ? 1.1 : 1,
                 }}
                 className={cn(
                   'w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all',
-                  currentStep > step.id && 'border-[#0F766E] bg-[#0F766E]',
-                  currentStep === step.id && 'border-[#0F766E] bg-[#0F766E] shadow-glow',
-                  currentStep < step.id && 'border-[#E5E7EB] dark:border-[#334155] bg-white dark:bg-[#1E293B]',
+                  currentStep > step.id && 'border-[var(--brand)] bg-[var(--brand)]',
+                  currentStep === step.id && 'border-[var(--brand)] bg-[var(--brand)] shadow-glow',
+                  currentStep < step.id && 'border-[var(--border)] dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)]',
                 )}
               >
                 {currentStep > step.id ? (
                   <Check className="w-4 h-4 text-white" />
                 ) : (
-                  <step.icon className={cn('w-4 h-4', currentStep >= step.id ? 'text-white' : 'text-[#9CA3AF]')} />
+                  <step.icon className={cn('w-4 h-4', currentStep >= step.id ? 'text-white' : 'text-[var(--text-secondary)]')} />
                 )}
               </motion.div>
               <span className={cn(
                 'text-[10px] font-semibold mt-1 hidden sm:block',
-                currentStep >= step.id ? 'text-[#0F766E] dark:text-[#14B8A6]' : 'text-[#9CA3AF]'
+                currentStep >= step.id ? 'text-[var(--brand)] dark:text-[var(--brand-light)]' : 'text-[var(--text-secondary)]'
               )}>
                 {step.label}
               </span>
@@ -403,10 +403,10 @@ export function BookingFlowPage() {
 
         {/* Step header */}
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-[#111827] dark:text-white">
+          <h2 className="text-xl font-bold text-[var(--text-primary)] dark:text-white">
             {steps[currentStep - 1]?.label}
           </h2>
-          <p className="text-xs text-[#6B7280] dark:text-[#94A3B8] mt-0.5">
+          <p className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">
             Step {currentStep} of {steps.length}
           </p>
         </div>

@@ -15,7 +15,7 @@ const slotConfig = {
   ev: { color: '#2563EB', bgColor: '#DBEAFE', label: 'EV', textColor: '#1d4ed8' },
   vip: { color: '#7C3AED', bgColor: '#EDE9FE', label: 'VIP', textColor: '#6d28d9' },
   emergency: { color: '#EA580C', bgColor: '#FFEDD5', label: 'Emergency', textColor: '#c2410c' },
-  maintenance: { color: '#6B7280', bgColor: '#F3F4F6', label: 'Maintenance', textColor: '#4B5563' },
+  maintenance: { color: 'var(--text-secondary)', bgColor: '#F3F4F6', label: 'Maintenance', textColor: '#4B5563' },
 };
 
 type SlotStatus = keyof typeof slotConfig;
@@ -58,28 +58,28 @@ export function DigitalTwinPage() {
   const PAD = 16;
 
   return (
-    <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-[#0F172A]">
+    <div className="flex flex-col h-full bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
       {/* Header */}
-      <div className="flex-shrink-0 px-4 sm:px-6 py-4 bg-white dark:bg-[#1E293B] border-b border-[#E5E7EB] dark:border-[#334155]">
+      <div className="flex-shrink-0 px-4 sm:px-6 py-4 bg-white dark:bg-[var(--bg-card)] border-b border-[var(--border)] dark:border-[var(--border)]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-0.5">
               <div className="live-dot" />
-              <span className="text-xs font-semibold text-[#0F766E] dark:text-[#14B8A6] uppercase tracking-wider">Digital Twin – Live</span>
+              <span className="text-xs font-semibold text-[var(--brand)] dark:text-[var(--brand-light)] uppercase tracking-wider">Digital Twin – Live</span>
             </div>
-            <h1 className="text-xl font-bold text-[#111827] dark:text-white tracking-tight">Central Metro Parking Hub</h1>
+            <h1 className="text-xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">Central Metro Parking Hub</h1>
           </div>
 
           <div className="flex items-center gap-2">
             {/* View mode */}
-            <div className="flex items-center bg-[#F8FAFC] dark:bg-[#0F172A] border border-[#E5E7EB] dark:border-[#334155] rounded-xl p-1">
+            <div className="flex items-center bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)] border border-[var(--border)] dark:border-[var(--border)] rounded-xl p-1">
               {(['2d', 'isometric'] as const).map(mode => (
                 <button
                   key={mode}
                   onClick={() => setViewMode(mode)}
                   className={cn(
                     'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-                    viewMode === mode ? 'bg-[#0F766E] text-white' : 'text-[#6B7280] dark:text-[#94A3B8]'
+                    viewMode === mode ? 'bg-[var(--brand)] text-white' : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)]'
                   )}
                 >
                   {mode === '2d' ? '2D' : '3D'}
@@ -93,8 +93,8 @@ export function DigitalTwinPage() {
               className={cn(
                 'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all',
                 showHeatmap
-                  ? 'bg-[#0F766E] text-white border-[#0F766E]'
-                  : 'bg-white dark:bg-[#1E293B] border-[#E5E7EB] dark:border-[#334155] text-[#6B7280]'
+                  ? 'bg-[var(--brand)] text-white border-[var(--brand)]'
+                  : 'bg-white dark:bg-[var(--bg-card)] border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)]'
               )}
             >
               <Thermometer className="w-3.5 h-3.5" />
@@ -106,7 +106,7 @@ export function DigitalTwinPage() {
               <button onClick={() => setZoom(Math.max(0.6, zoom - 0.2))} className="btn-ghost p-2">
                 <ZoomOut className="w-4 h-4" />
               </button>
-              <span className="text-xs font-semibold text-[#6B7280] w-8 text-center">{Math.round(zoom * 100)}%</span>
+              <span className="text-xs font-semibold text-[var(--text-secondary)] w-8 text-center">{Math.round(zoom * 100)}%</span>
               <button onClick={() => setZoom(Math.min(2, zoom + 0.2))} className="btn-ghost p-2">
                 <ZoomIn className="w-4 h-4" />
               </button>
@@ -119,8 +119,8 @@ export function DigitalTwinPage() {
 
         {/* Floor selector */}
         <div className="flex items-center gap-2 mt-3">
-          <Layers className="w-4 h-4 text-[#6B7280]" />
-          <span className="text-xs font-medium text-[#6B7280] mr-1">Floor:</span>
+          <Layers className="w-4 h-4 text-[var(--text-secondary)]" />
+          <span className="text-xs font-medium text-[var(--text-secondary)] mr-1">Floor:</span>
           {mockFloors.map((f, idx) => (
             <button
               key={f.id}
@@ -128,8 +128,8 @@ export function DigitalTwinPage() {
               className={cn(
                 'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border',
                 activeFloor === idx
-                  ? 'bg-[#0F766E] text-white border-[#0F766E]'
-                  : 'bg-white dark:bg-[#334155] border-[#E5E7EB] dark:border-[#475569] text-[#6B7280] dark:text-[#94A3B8]'
+                  ? 'bg-[var(--brand)] text-white border-[var(--brand)]'
+                  : 'bg-white dark:bg-[var(--border)] border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)] dark:text-[var(--text-secondary)]'
               )}
             >
               {f.name}
@@ -141,7 +141,7 @@ export function DigitalTwinPage() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Twin Visualization */}
-        <div className="flex-1 overflow-auto bg-[#EEF2F7] dark:bg-[#0F172A] p-4">
+        <div className="flex-1 overflow-auto bg-[var(--bg-secondary)] dark:bg-[var(--bg-primary)] p-4">
           {/* Stats row */}
           <div className="grid grid-cols-4 gap-3 mb-4">
             {[
@@ -152,7 +152,7 @@ export function DigitalTwinPage() {
             ].map(stat => (
               <div key={stat.label} className={cn('rounded-xl p-3 text-center', stat.bg)}>
                 <div className="text-xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
-                <div className="text-[11px] text-[#6B7280]">{stat.label}</div>
+                <div className="text-[11px] text-[var(--text-secondary)]">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -163,10 +163,10 @@ export function DigitalTwinPage() {
               {/* Facility label */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-[#111827] dark:text-white">{floor?.name}</span>
+                  <span className="text-xs font-bold text-[var(--text-primary)] dark:text-white">{floor?.name}</span>
                   <span className="badge badge-brand">{available} slots free</span>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-[#6B7280]">
+                <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
                   <div className="flex items-center gap-1"><Camera className="w-3.5 h-3.5" />8 cameras</div>
                   <div className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" />All secure</div>
                 </div>
@@ -187,16 +187,16 @@ export function DigitalTwinPage() {
               </div>
 
               {/* Drive lane - top */}
-              <div className="h-7 bg-[#E5E7EB] dark:bg-[#334155] rounded-xl mb-3 relative overflow-hidden flex items-center">
+              <div className="h-7 bg-[var(--border)] dark:bg-[var(--border)] rounded-xl mb-3 relative overflow-hidden flex items-center">
                 <div className="absolute inset-y-0 left-0 right-0 flex items-center">
                   <div className="flex items-center gap-4 px-4 w-full">
                     <div className="flex gap-2">
-                      {[0,1,2,3,4,5].map(i => (
+                      {[0, 1, 2, 3, 4, 5].map(i => (
                         <div key={i} className="w-6 h-1 bg-white/60 rounded-sm" />
                       ))}
                     </div>
                     <div className="flex-1" />
-                    <span className="text-[10px] font-bold text-[#9CA3AF]">DRIVE LANE →</span>
+                    <span className="text-[10px] font-bold text-[var(--text-secondary)]">DRIVE LANE →</span>
                   </div>
                 </div>
                 {/* Animated vehicle */}
@@ -205,7 +205,7 @@ export function DigitalTwinPage() {
                   animate={{ x: ['-100%', '110%'] }}
                   transition={{ duration: 6, repeat: Infinity, ease: 'linear', delay: 1 }}
                 >
-                  <div className="w-8 h-5 bg-[#0F766E] rounded-md opacity-80 flex items-center justify-center">
+                  <div className="w-8 h-5 bg-[var(--brand)] rounded-md opacity-80 flex items-center justify-center">
                     <Car className="w-3 h-3 text-white" />
                   </div>
                 </motion.div>
@@ -213,8 +213,8 @@ export function DigitalTwinPage() {
 
               {/* Slot grid - Row A */}
               <div className="mb-2">
-                <div className="text-[10px] font-bold text-[#6B7280] mb-1.5 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded bg-[#F8FAFC] dark:bg-[#334155] flex items-center justify-center text-[9px]">A</span>
+                <div className="text-[10px] font-bold text-[var(--text-secondary)] mb-1.5 flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded bg-[var(--bg-primary)] dark:bg-[var(--border)] flex items-center justify-center text-[9px]">A</span>
                   Row A
                 </div>
                 <div className="grid grid-cols-8 sm:grid-cols-10 lg:grid-cols-[repeat(20,1fr)] gap-1.5">
@@ -231,11 +231,11 @@ export function DigitalTwinPage() {
               </div>
 
               {/* Middle drive lane */}
-              <div className="h-7 bg-[#E5E7EB] dark:bg-[#334155] rounded-xl my-3 relative overflow-hidden flex items-center">
+              <div className="h-7 bg-[var(--border)] dark:bg-[var(--border)] rounded-xl my-3 relative overflow-hidden flex items-center">
                 <div className="absolute inset-0 flex items-center px-4 justify-between">
-                  <span className="text-[10px] font-bold text-[#9CA3AF]">← DRIVE LANE</span>
+                  <span className="text-[10px] font-bold text-[var(--text-secondary)]">← DRIVE LANE</span>
                   <div className="flex gap-2">
-                    {[0,1,2,3,4,5].map(i => (
+                    {[0, 1, 2, 3, 4, 5].map(i => (
                       <div key={i} className="w-6 h-1 bg-white/60 rounded-sm" />
                     ))}
                   </div>
@@ -253,8 +253,8 @@ export function DigitalTwinPage() {
 
               {/* Slot grid - Row B */}
               <div className="mb-2">
-                <div className="text-[10px] font-bold text-[#6B7280] mb-1.5 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded bg-[#F8FAFC] dark:bg-[#334155] flex items-center justify-center text-[9px]">B</span>
+                <div className="text-[10px] font-bold text-[var(--text-secondary)] mb-1.5 flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded bg-[var(--bg-primary)] dark:bg-[var(--border)] flex items-center justify-center text-[9px]">B</span>
                   Row B
                 </div>
                 <div className="grid grid-cols-8 sm:grid-cols-10 lg:grid-cols-[repeat(20,1fr)] gap-1.5">
@@ -271,9 +271,9 @@ export function DigitalTwinPage() {
               </div>
 
               {/* Exit lane */}
-              <div className="h-7 bg-[#E5E7EB] dark:bg-[#334155] rounded-xl mt-3 relative overflow-hidden flex items-center">
+              <div className="h-7 bg-[var(--border)] dark:bg-[var(--border)] rounded-xl mt-3 relative overflow-hidden flex items-center">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-[#9CA3AF]">← EXIT LANE →</span>
+                  <span className="text-[10px] font-bold text-[var(--text-secondary)]">← EXIT LANE →</span>
                 </div>
               </div>
             </div>
@@ -285,7 +285,7 @@ export function DigitalTwinPage() {
               {Object.entries(slotConfig).map(([key, cfg]) => (
                 <div key={key} className="flex items-center gap-1.5">
                   <div className="w-4 h-3 rounded-sm border" style={{ backgroundColor: cfg.bgColor, borderColor: cfg.color }} />
-                  <span className="text-xs text-[#6B7280]">{cfg.label}</span>
+                  <span className="text-xs text-[var(--text-secondary)]">{cfg.label}</span>
                 </div>
               ))}
             </div>
@@ -293,31 +293,31 @@ export function DigitalTwinPage() {
         </div>
 
         {/* Right: Slot Inspector + Camera Panel */}
-        <div className="hidden xl:flex flex-col w-72 border-l border-[#E5E7EB] dark:border-[#334155] bg-white dark:bg-[#1E293B] overflow-y-auto">
+        <div className="hidden xl:flex flex-col w-72 border-l border-[var(--border)] dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] overflow-y-auto">
           {/* Slot Details */}
-          <div className="p-4 border-b border-[#E5E7EB] dark:border-[#334155]">
-            <h3 className="font-bold text-[#111827] dark:text-white text-sm mb-3">Slot Inspector</h3>
+          <div className="p-4 border-b border-[var(--border)] dark:border-[var(--border)]">
+            <h3 className="font-bold text-[var(--text-primary)] dark:text-white text-sm mb-3">Slot Inspector</h3>
             {selectedSlot ? (
               <SlotDetails slot={selectedSlot} />
             ) : (
               <div className="text-center py-6">
-                <div className="w-10 h-10 rounded-2xl bg-[#F8FAFC] dark:bg-[#334155] flex items-center justify-center mx-auto mb-2">
-                  <Info className="w-5 h-5 text-[#9CA3AF]" />
+                <div className="w-10 h-10 rounded-2xl bg-[var(--bg-primary)] dark:bg-[var(--border)] flex items-center justify-center mx-auto mb-2">
+                  <Info className="w-5 h-5 text-[var(--text-secondary)]" />
                 </div>
-                <p className="text-xs text-[#9CA3AF]">Click on any slot to inspect it</p>
+                <p className="text-xs text-[var(--text-secondary)]">Click on any slot to inspect it</p>
               </div>
             )}
           </div>
 
           {/* Camera Feeds */}
-          <div className="p-4 border-b border-[#E5E7EB] dark:border-[#334155]">
+          <div className="p-4 border-b border-[var(--border)] dark:border-[var(--border)]">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-[#111827] dark:text-white text-sm">Camera Feeds</h3>
+              <h3 className="font-bold text-[var(--text-primary)] dark:text-white text-sm">Camera Feeds</h3>
               <span className="badge badge-success">8 Online</span>
             </div>
             <div className="grid grid-cols-2 gap-2">
               {['CAM 1', 'CAM 2', 'CAM 3', 'CAM 4'].map(cam => (
-                <div key={cam} className="aspect-video rounded-xl bg-[#1E293B] dark:bg-[#0F172A] flex flex-col items-center justify-center relative overflow-hidden">
+                <div key={cam} className="aspect-video rounded-xl bg-[var(--bg-card)] dark:bg-[var(--bg-primary)] flex flex-col items-center justify-center relative overflow-hidden">
                   <Camera className="w-4 h-4 text-white/40 mb-1" />
                   <span className="text-[9px] text-white/40 font-bold">{cam}</span>
                   {/* Simulated camera feed lines */}
@@ -334,7 +334,7 @@ export function DigitalTwinPage() {
 
           {/* System Health */}
           <div className="p-4">
-            <h3 className="font-bold text-[#111827] dark:text-white text-sm mb-3">System Health</h3>
+            <h3 className="font-bold text-[var(--text-primary)] dark:text-white text-sm mb-3">System Health</h3>
             <div className="space-y-2">
               {[
                 { label: 'Entry Barrier', status: 'online', icon: '🚧' },
@@ -347,7 +347,7 @@ export function DigitalTwinPage() {
                 <div key={item.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{item.icon}</span>
-                    <span className="text-xs text-[#6B7280] dark:text-[#94A3B8]">{item.label}</span>
+                    <span className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">{item.label}</span>
                   </div>
                   <span className={cn(
                     'text-[10px] font-bold px-2 py-0.5 rounded-full',
@@ -384,8 +384,8 @@ function ParkingSlot({ slot, showHeatmap, onClick, isSelected }: {
         backgroundColor: showHeatmap
           ? `rgba(220, 38, 38, ${heatOpacity})`
           : cfg.bgColor,
-        borderColor: isSelected ? '#0F766E' : cfg.color,
-        boxShadow: isSelected ? `0 0 0 2px #0F766E` : undefined,
+        borderColor: isSelected ? 'var(--brand)' : cfg.color,
+        boxShadow: isSelected ? `0 0 0 2px var(--brand)` : undefined,
       }}
       title={slot.id}
     >
@@ -415,7 +415,7 @@ function ParkingSlot({ slot, showHeatmap, onClick, isSelected }: {
 
       {/* Selected indicator */}
       {isSelected && (
-        <div className="absolute inset-0 ring-2 ring-[#0F766E] rounded-md" />
+        <div className="absolute inset-0 ring-2 ring-[var(--brand)] rounded-md" />
       )}
     </motion.button>
   );
@@ -428,13 +428,13 @@ function SlotDetails({ slot }: { slot: Slot }) {
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: cfg.bgColor, borderColor: cfg.color, border: '2px solid' }}>
           {slot.status === 'occupied' ? <Car className="w-5 h-5" style={{ color: cfg.color }} /> :
-           slot.status === 'ev' ? <Zap className="w-5 h-5" style={{ color: cfg.color }} /> :
-           slot.status === 'vip' ? <Crown className="w-5 h-5" style={{ color: cfg.color }} /> :
-           slot.status === 'maintenance' ? <Wrench className="w-5 h-5" style={{ color: cfg.color }} /> :
-           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cfg.color }} />}
+            slot.status === 'ev' ? <Zap className="w-5 h-5" style={{ color: cfg.color }} /> :
+              slot.status === 'vip' ? <Crown className="w-5 h-5" style={{ color: cfg.color }} /> :
+                slot.status === 'maintenance' ? <Wrench className="w-5 h-5" style={{ color: cfg.color }} /> :
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cfg.color }} />}
         </div>
         <div>
-          <div className="font-bold text-[#111827] dark:text-white text-sm">Slot {slot.number}</div>
+          <div className="font-bold text-[var(--text-primary)] dark:text-white text-sm">Slot {slot.number}</div>
           <div className="text-[11px]" style={{ color: cfg.color }}>{cfg.label}</div>
         </div>
       </div>
@@ -442,25 +442,25 @@ function SlotDetails({ slot }: { slot: Slot }) {
       <div className="space-y-2">
         {slot.vehicle && (
           <div className="flex justify-between text-xs">
-            <span className="text-[#6B7280]">Vehicle</span>
-            <span className="font-semibold text-[#111827] dark:text-white">{slot.vehicle}</span>
+            <span className="text-[var(--text-secondary)]">Vehicle</span>
+            <span className="font-semibold text-[var(--text-primary)] dark:text-white">{slot.vehicle}</span>
           </div>
         )}
         {slot.entryTime && (
           <div className="flex justify-between text-xs">
-            <span className="text-[#6B7280]">Entry</span>
-            <span className="font-semibold text-[#111827] dark:text-white">{slot.entryTime}</span>
+            <span className="text-[var(--text-secondary)]">Entry</span>
+            <span className="font-semibold text-[var(--text-primary)] dark:text-white">{slot.entryTime}</span>
           </div>
         )}
         {slot.reservedUntil && (
           <div className="flex justify-between text-xs">
-            <span className="text-[#6B7280]">Reserved until</span>
-            <span className="font-semibold text-[#111827] dark:text-white">{slot.reservedUntil}</span>
+            <span className="text-[var(--text-secondary)]">Reserved until</span>
+            <span className="font-semibold text-[var(--text-primary)] dark:text-white">{slot.reservedUntil}</span>
           </div>
         )}
         <div className="flex justify-between text-xs">
-          <span className="text-[#6B7280]">Slot ID</span>
-          <span className="font-semibold text-[#111827] dark:text-white">{slot.id}</span>
+          <span className="text-[var(--text-secondary)]">Slot ID</span>
+          <span className="font-semibold text-[var(--text-primary)] dark:text-white">{slot.id}</span>
         </div>
       </div>
 

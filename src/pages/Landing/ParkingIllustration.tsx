@@ -24,7 +24,7 @@ const slots = [
 ];
 
 const vehicles = [
-  { x: 80, y: 80, color: '#0F766E', id: 'v1' },
+  { x: 80, y: 80, color: 'var(--brand)', id: 'v1' },
   { x: 180, y: 80, color: '#2563EB', id: 'v2' },
 ];
 
@@ -41,20 +41,20 @@ export function ParkingIllustration() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs font-bold text-[#111827] dark:text-white">Central Hub – Live</span>
+            <span className="text-xs font-bold text-[var(--text-primary)] dark:text-white">Central Hub – Live</span>
           </div>
           <div className="flex gap-1">
             {['GF', 'F1', 'F2'].map((f, i) => (
-              <span key={f} className={`px-2 py-0.5 text-xs font-semibold rounded-md ${i === 0 ? 'bg-[#0F766E] text-white' : 'bg-[#F8FAFC] dark:bg-[#334155] text-[#6B7280]'}`}>{f}</span>
+              <span key={f} className={`px-2 py-0.5 text-xs font-semibold rounded-md ${i === 0 ? 'bg-[var(--brand)] text-white' : 'bg-[var(--bg-primary)] dark:bg-[var(--border)] text-[var(--text-secondary)]'}`}>{f}</span>
             ))}
           </div>
         </div>
 
         {/* SVG Parking View */}
-        <div className="bg-[#F8FAFC] dark:bg-[#0F172A] rounded-xl overflow-hidden">
+        <div className="bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)] rounded-xl overflow-hidden">
           <svg viewBox="0 0 340 200" className="w-full h-auto">
             {/* Road/driveway */}
-            <rect x="20" y="90" width="300" height="20" rx="4" fill="#E5E7EB" />
+            <rect x="20" y="90" width="300" height="20" rx="4" fill="var(--border)" />
             <rect x="20" y="92" width="300" height="1" fill="white" opacity="0.5" />
             {/* Lane marking */}
             {[0,1,2,3,4].map(i => (
@@ -126,19 +126,19 @@ export function ParkingIllustration() {
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
-              <rect x="60" y="155" width="80" height="20" rx="8" fill="#0F766E" />
+              <rect x="60" y="155" width="80" height="20" rx="8" fill="var(--brand)" />
               <text x="100" y="169" fontSize="8" fill="white" textAnchor="middle" fontWeight="bold">AI Recommended ✓</text>
             </motion.g>
 
             {/* Camera icons */}
             {[80, 200].map(cx => (
               <g key={cx}>
-                <circle cx={cx} cy={12} r={5} fill="#334155" />
+                <circle cx={cx} cy={12} r={5} fill="var(--border)" />
                 <circle cx={cx} cy={12} r={2} fill="#64748B" />
                 <motion.circle
                   cx={cx} cy={12} r={8}
                   fill="none"
-                  stroke="#0F766E"
+                  stroke="var(--brand)"
                   strokeWidth={1}
                   opacity={0.5}
                   animate={{ r: [5, 10], opacity: [0.5, 0] }}
@@ -157,9 +157,9 @@ export function ParkingIllustration() {
             { label: 'Reserved', value: '8', color: '#F59E0B' },
             { label: 'EV Slots', value: '3', color: '#2563EB' },
           ].map(stat => (
-            <div key={stat.label} className="text-center p-2 rounded-xl bg-[#F8FAFC] dark:bg-[#0F172A]">
+            <div key={stat.label} className="text-center p-2 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
               <div className="text-lg font-bold" style={{ color: stat.color }}>{stat.value}</div>
-              <div className="text-[10px] text-[#6B7280]">{stat.label}</div>
+              <div className="text-[10px] text-[var(--text-secondary)]">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -172,12 +172,12 @@ export function ParkingIllustration() {
         transition={{ duration: 3, repeat: Infinity, delay: 1 }}
       >
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-[#0F766E]/10 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-lg bg-[var(--brand)]/10 flex items-center justify-center">
             <span className="text-[10px]">🧠</span>
           </div>
           <div>
-            <div className="text-[10px] font-bold text-[#111827] dark:text-white">AI Confidence</div>
-            <div className="text-xs font-bold text-[#0F766E]">96.2%</div>
+            <div className="text-[10px] font-bold text-[var(--text-primary)] dark:text-white">AI Confidence</div>
+            <div className="text-xs font-bold text-[var(--brand)]">96.2%</div>
           </div>
         </div>
       </motion.div>
@@ -193,7 +193,7 @@ export function ParkingIllustration() {
             <span className="text-[10px]">💰</span>
           </div>
           <div>
-            <div className="text-[10px] font-bold text-[#111827] dark:text-white">Today's Revenue</div>
+            <div className="text-[10px] font-bold text-[var(--text-primary)] dark:text-white">Today's Revenue</div>
             <div className="text-xs font-bold text-green-600">₹48,720</div>
           </div>
         </div>
