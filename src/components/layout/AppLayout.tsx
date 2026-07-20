@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Search, Brain, GitMerge, CalendarCheck,
   CreditCard, Ticket, User, BarChart3, Lightbulb,
   Bell, Menu, X, Sun, Moon, ChevronLeft, ChevronRight,
-  Car, Zap, ChevronDown, Workflow
+  Car, Zap, ChevronDown, Workflow, Shield, Settings, LogOut
 } from 'lucide-react';
 import { useThemeStore, useSidebarStore, useAuthStore } from '../../store';
 import { cn } from '../../lib/utils';
@@ -29,10 +29,6 @@ const userNavItems: NavItem[] = [
   { icon: Ticket, label: 'My Tickets', path: '/ticket' },
 ];
 
-<<<<<<< ours
-const secondaryNav = [
-  { icon: BarChart3, label: 'Analytics', path: '/analytics' },
-=======
 const ownerNavItems: NavItem[] = [
   { icon: LayoutDashboard, label: 'Partner Dashboard', path: '/owner/dashboard' },
   { icon: Car, label: 'My Parking Lots', path: '/owner/parking' },
@@ -42,7 +38,6 @@ const ownerNavItems: NavItem[] = [
 const adminNavItems: NavItem[] = [
   { icon: Shield, label: 'Admin Dashboard', path: '/admin' },
   { icon: BarChart3, label: 'System Analytics', path: '/analytics' },
->>>>>>> theirs
   { icon: Lightbulb, label: 'AI Insights', path: '/ai-insights', badge: '6' },
 ];
 
@@ -94,7 +89,7 @@ export function AppLayout() {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className={cn(
-        'flex items-center gap-3 px-4 py-5 border-b border-[var(--border)] dark:border-[var(--border)]',
+        'flex items-center gap-3 px-4 py-5 border-b border-white/60 dark:border-white/10',
         collapsed && 'justify-center px-3'
       )}>
         <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center flex-shrink-0">
@@ -109,8 +104,8 @@ export function AppLayout() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <span className="font-bold text-[15px] text-[var(--text-primary)] dark:text-white whitespace-nowrap">
-                ParkEase <span className="text-[var(--brand)] dark:text-[var(--brand-light)]">AI</span>
+              <span className="font-bold text-[15px] text-[#111827] dark:text-white whitespace-nowrap">
+                ParkEase <span className="text-[#0F766E] dark:text-[#14B8A6]">AI</span>
               </span>
             </motion.div>
           )}
@@ -120,7 +115,7 @@ export function AppLayout() {
       {/* Main Nav */}
       <div className="flex-1 overflow-y-auto no-scrollbar py-4 px-3 space-y-0.5">
         {!collapsed && (
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-secondary)] px-3 mb-2">Main</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF] px-3 mb-2">Main</p>
         )}
         {currentNavItems.map((item) => (
           <NavLink
@@ -150,17 +145,17 @@ export function AppLayout() {
               )}
             </AnimatePresence>
             {!collapsed && item.badge && (
-              <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-[var(--brand)]/10 text-[var(--brand)] dark:bg-[var(--brand-light)]/20 dark:text-[var(--brand-light)]">
+              <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-[#0F766E]/10 text-[#0F766E] dark:bg-[#14B8A6]/20 dark:text-[#14B8A6]">
                 {item.badge}
               </span>
             )}
           </NavLink>
         ))}
 
-        <div className="my-3 border-t border-[var(--border)] dark:border-[var(--border)]" />
+        <div className="my-3 border-t border-white/60 dark:border-white/10" />
 
         {!collapsed && (
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-secondary)] px-3 mb-2">Tools</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF] px-3 mb-2">Tools</p>
         )}
         {secondaryNav.map((item) => (
             <NavLink
@@ -199,7 +194,7 @@ export function AppLayout() {
       </div>
 
       {/* Bottom - Theme & User */}
-      <div className="p-3 border-t border-[var(--border)] dark:border-[var(--border)] space-y-2">
+      <div className="p-3 border-t border-white/60 dark:border-white/10 space-y-2">
         <button
           onClick={toggleTheme}
           className={cn(
@@ -234,23 +229,23 @@ export function AppLayout() {
           <div className="relative animate-fade-in" ref={sidebarProfileDropdownRef}>
             <div
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)] transition-all cursor-pointer select-none",
-                sidebarProfileOpen && "bg-[var(--bg-primary)] dark:bg-[var(--border)]"
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/50 dark:hover:bg-white/5 transition-all cursor-pointer select-none",
+                sidebarProfileOpen && "bg-white/50 dark:bg-white/5"
               )}
               onClick={() => setSidebarProfileOpen(!sidebarProfileOpen)}
             >
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand-light)] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                 {isAdmin ? 'A' : 'U'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-[var(--text-primary)] dark:text-white truncate">
+                <p className="text-xs font-semibold text-[#111827] dark:text-white truncate">
                   {user?.firstName ? `${user.firstName} ${user.lastName}` : (isAdmin ? 'Admin User' : isOwner ? 'Partner' : 'Standard User')}
                 </p>
-                <p className="text-[10px] text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">
+                <p className="text-[10px] text-[#9CA3AF] dark:text-[#94A3B8]">
                   {isAdmin ? 'System Admin' : isOwner ? 'Parking Owner' : 'Customer'}
                 </p>
               </div>
-              <ChevronDown className={cn("w-3 h-3 text-[var(--text-secondary)] transition-transform duration-200", sidebarProfileOpen && "rotate-180")} />
+              <ChevronDown className={cn("w-3 h-3 text-[#9CA3AF] transition-transform duration-200", sidebarProfileOpen && "rotate-180")} />
             </div>
 
             <AnimatePresence>
@@ -260,16 +255,16 @@ export function AppLayout() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] dark:border-[var(--border)] rounded-2xl shadow-xl py-1.5 z-50 overflow-hidden"
+                  className="absolute bottom-full left-0 right-0 mb-2 bg-white/90 backdrop-blur-2xl dark:bg-[#0F172A]/95 border border-white/60 dark:border-white/10 rounded-2xl shadow-xl py-1.5 z-50 overflow-hidden"
                 >
                   <button
                     onClick={() => {
                       setSidebarProfileOpen(false);
                       navigate('/profile', { state: { activeTab: 'Overview' } });
                     }}
-                    className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-[var(--border)] rounded-xl transition-colors text-left"
+                    className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-white/10 rounded-xl transition-colors text-left"
                   >
-                    <User className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                    <User className="w-3.5 h-3.5 text-[#9CA3AF]" />
                     My Profile
                   </button>
 
@@ -278,13 +273,13 @@ export function AppLayout() {
                       setSidebarProfileOpen(false);
                       navigate('/profile', { state: { activeTab: 'Settings' } });
                     }}
-                    className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-[var(--border)] rounded-xl transition-colors text-left"
+                    className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-white/10 rounded-xl transition-colors text-left"
                   >
-                    <Settings className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                    <Settings className="w-3.5 h-3.5 text-[#9CA3AF]" />
                     Settings
                   </button>
 
-                  <div className="border-t border-[var(--border)] dark:border-[var(--border)] my-1" />
+                  <div className="border-t border-white/60 dark:border-white/10 my-1" />
 
                   <button
                     onClick={() => {
@@ -306,32 +301,24 @@ export function AppLayout() {
   );
 
   return (
-<<<<<<< ours
     <div className="relative flex h-screen overflow-hidden bg-[#F4F7FB] text-[#111827] dark:bg-[#081120] dark:text-[#F1F5F9]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(37,99,235,0.10),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(245,158,11,0.08),_transparent_24%)]" />
 
-=======
-    <div className="flex h-screen bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)] overflow-hidden">
->>>>>>> theirs
       {/* Desktop Sidebar */}
       <motion.aside
         animate={{ width: collapsed ? 60 : 240 }}
         transition={{ duration: 0.25, ease: 'easeInOut' }}
-<<<<<<< ours
         className="hidden lg:flex flex-col flex-shrink-0 border-r border-white/60 bg-white/75 backdrop-blur-2xl dark:border-white/10 dark:bg-[#0F172A]/75 relative z-20 shadow-[0_20px_60px_rgba(15,23,42,0.08)]"
-=======
-        className="hidden lg:flex flex-col flex-shrink-0 bg-white dark:bg-[var(--bg-card)] border-r border-[var(--border)] dark:border-[var(--border)] relative z-20"
->>>>>>> theirs
       >
         <SidebarContent />
         <button
           onClick={toggleSidebar}
-          className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] dark:border-[var(--border)] flex items-center justify-center shadow-soft hover:shadow-card transition-all z-30"
+          className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-white dark:bg-[#0F172A] border border-white/60 dark:border-white/10 flex items-center justify-center shadow-soft hover:shadow-card transition-all z-30"
         >
           {collapsed ? (
-            <ChevronRight className="w-3 h-3 text-[var(--text-secondary)]" />
+            <ChevronRight className="w-3 h-3 text-[#9CA3AF]" />
           ) : (
-            <ChevronLeft className="w-3 h-3 text-[var(--text-secondary)]" />
+            <ChevronLeft className="w-3 h-3 text-[#9CA3AF]" />
           )}
         </button>
       </motion.aside>
@@ -352,18 +339,14 @@ export function AppLayout() {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-<<<<<<< ours
               className="fixed left-0 top-0 bottom-0 w-64 bg-white/90 backdrop-blur-2xl dark:bg-[#0F172A]/95 border-r border-white/60 dark:border-white/10 z-50 lg:hidden flex flex-col"
-=======
-              className="fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-[var(--bg-card)] border-r border-[var(--border)] dark:border-[var(--border)] z-50 lg:hidden flex flex-col"
->>>>>>> theirs
             >
               <SidebarContent onItemClick={() => setMobileOpen(false)} />
               <button
                 onClick={() => setMobileOpen(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)]"
+                className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-white/50 dark:hover:bg-white/10"
               >
-                <X className="w-4 h-4 text-[var(--text-secondary)]" />
+                <X className="w-4 h-4 text-[#9CA3AF]" />
               </button>
             </motion.aside>
           </>
@@ -373,33 +356,24 @@ export function AppLayout() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Navigation */}
-<<<<<<< ours
         <header className="flex-shrink-0 flex items-center gap-3 px-4 sm:px-6 h-16 bg-white/70 backdrop-blur-2xl border-b border-white/60 dark:bg-[#0F172A]/70 dark:border-white/10 z-10">
-=======
-        <header className="flex-shrink-0 flex items-center gap-3 px-4 sm:px-6 h-14 bg-white dark:bg-[var(--bg-card)] border-b border-[var(--border)] dark:border-[var(--border)] z-10">
->>>>>>> theirs
           <button
             onClick={() => setMobileOpen(true)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)] transition-colors"
+            className="lg:hidden p-1.5 rounded-lg hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
           >
-            <Menu className="w-4 h-4 text-[var(--text-secondary)]" />
+            <Menu className="w-4 h-4 text-[#9CA3AF]" />
           </button>
 
           {/* Search */}
           <div className="flex-1 max-w-xs hidden sm:block">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-secondary)]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" />
               <input
                 type="text"
-<<<<<<< ours
                 placeholder="Search parking, bookings, insights..."
                 className="w-full pl-8 pr-4 py-2 text-xs bg-white/80 dark:bg-white/5 border border-white/70 dark:border-white/10 rounded-xl placeholder:text-[#9CA3AF] text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20"
-=======
-                placeholder="Search parking, bookings..."
-                className="w-full pl-8 pr-4 py-2 text-xs bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)] border border-[var(--border)] dark:border-[var(--border)] rounded-xl placeholder:text-[var(--text-secondary)] text-[var(--text-primary)] dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/20"
->>>>>>> theirs
               />
-              <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-[var(--text-secondary)] bg-[var(--border)] dark:bg-[var(--border)] px-1.5 py-0.5 rounded hidden md:block">⌘K</kbd>
+              <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-[#9CA3AF] bg-[#E5E7EB] dark:bg-white/10 px-1.5 py-0.5 rounded hidden md:block">⌘K</kbd>
             </div>
           </div>
 
@@ -413,10 +387,10 @@ export function AppLayout() {
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)] transition-colors"
+              className="p-2 rounded-xl hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
             >
               {theme === 'light' ? (
-                <Moon className="w-4 h-4 text-[var(--text-secondary)]" />
+                <Moon className="w-4 h-4 text-[#9CA3AF]" />
               ) : (
                 <Sun className="w-4 h-4 text-[#F59E0B]" />
               )}
@@ -425,9 +399,9 @@ export function AppLayout() {
             {/* Notifications */}
             <button
               onClick={() => navigate('/notifications')}
-              className="relative p-2 rounded-xl hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)] transition-colors"
+              className="relative p-2 rounded-xl hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
             >
-              <Bell className="w-4 h-4 text-[var(--text-secondary)]" />
+              <Bell className="w-4 h-4 text-[#9CA3AF]" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" />
             </button>
 
@@ -444,7 +418,7 @@ export function AppLayout() {
             <div className="relative" ref={avatarDropdownRef}>
               <button
                 onClick={() => setAvatarOpen(!avatarOpen)}
-                className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand-light)] flex items-center justify-center text-white text-xs font-bold hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/20"
+                className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center text-white text-xs font-bold hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20"
               >
                 {isAdmin ? 'A' : 'U'}
               </button>
@@ -456,17 +430,17 @@ export function AppLayout() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
-                    className="absolute right-0 mt-2 w-56 bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] dark:border-[var(--border)] rounded-2xl shadow-xl py-2 z-50 overflow-hidden"
+                    className="absolute right-0 mt-2 w-56 bg-white/90 backdrop-blur-2xl dark:bg-[#0F172A]/95 border border-white/60 dark:border-white/10 rounded-2xl shadow-xl py-2 z-50 overflow-hidden"
                   >
                     {/* User profile summary */}
-                    <div className="px-4 py-2.5 border-b border-[var(--border)] dark:border-[var(--border)]">
-                      <p className="text-xs font-semibold text-[var(--text-primary)] dark:text-white truncate">
+                    <div className="px-4 py-2.5 border-b border-white/60 dark:border-white/10">
+                      <p className="text-xs font-semibold text-[#111827] dark:text-white truncate">
                         {isAdmin ? 'Girish Kumar' : 'Standard User'}
                       </p>
-                      <p className="text-[10px] text-[var(--text-secondary)] dark:text-[var(--text-secondary)] truncate mt-0.5">
+                      <p className="text-[10px] text-[#9CA3AF] dark:text-[#94A3B8] truncate mt-0.5">
                         {user?.email || 'user@parkease.ai'}
                       </p>
-                      <span className="inline-block px-1.5 py-0.5 text-[9px] font-bold rounded bg-[var(--brand)]/10 text-[var(--brand)] dark:bg-[var(--brand-light)]/20 dark:text-[var(--brand-light)] mt-2">
+                      <span className="inline-block px-1.5 py-0.5 text-[9px] font-bold rounded bg-[#0F766E]/10 text-[#0F766E] dark:bg-[#14B8A6]/20 dark:text-[#14B8A6] mt-2">
                         {isAdmin ? 'Admin' : 'Customer'}
                       </span>
                     </div>
@@ -477,9 +451,9 @@ export function AppLayout() {
                           setAvatarOpen(false);
                           navigate('/profile', { state: { activeTab: 'Overview' } });
                         }}
-                        className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-[var(--border)] rounded-xl transition-colors text-left"
+                        className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-white/10 rounded-xl transition-colors text-left"
                       >
-                        <User className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                        <User className="w-3.5 h-3.5 text-[#9CA3AF]" />
                         My Profile
                       </button>
 
@@ -488,9 +462,9 @@ export function AppLayout() {
                           setAvatarOpen(false);
                           navigate('/profile', { state: { activeTab: 'Settings' } });
                         }}
-                        className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-[var(--border)] rounded-xl transition-colors text-left"
+                        className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-white/10 rounded-xl transition-colors text-left"
                       >
-                        <Settings className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                        <Settings className="w-3.5 h-3.5 text-[#9CA3AF]" />
                         Settings
                       </button>
 
@@ -498,11 +472,11 @@ export function AppLayout() {
                         onClick={() => {
                           toggleTheme();
                         }}
-                        className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-[var(--border)] rounded-xl transition-colors text-left"
+                        className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-white/10 rounded-xl transition-colors text-left"
                       >
                         {theme === 'light' ? (
                           <>
-                            <Moon className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                            <Moon className="w-3.5 h-3.5 text-[#9CA3AF]" />
                             Dark Mode
                           </>
                         ) : (
@@ -514,7 +488,7 @@ export function AppLayout() {
                       </button>
                     </div>
 
-                    <div className="border-t border-[var(--border)] dark:border-[var(--border)] my-1" />
+                    <div className="border-t border-white/60 dark:border-white/10 my-1" />
 
                     <div className="p-1">
                       <button
@@ -536,11 +510,7 @@ export function AppLayout() {
         </header>
 
         {/* Page Content */}
-<<<<<<< ours
         <main className="flex-1 overflow-y-auto bg-transparent">
-=======
-        <main className="flex-1 overflow-y-auto bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
->>>>>>> theirs
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, y: 8 }}
@@ -554,19 +524,8 @@ export function AppLayout() {
         </main>
 
         {/* Mobile bottom nav */}
-<<<<<<< ours
         <nav className="lg:hidden flex items-center justify-around py-2 bg-white/85 backdrop-blur-2xl border-t border-white/60 dark:bg-[#0F172A]/90 dark:border-white/10 safe-area-bottom">
-          {[
-            { icon: LayoutDashboard, path: '/dashboard', label: 'Home' },
-            { icon: Search, path: '/search', label: 'Search' },
-            { icon: Brain, path: '/ai-recommendation', label: 'AI' },
-            { icon: GitMerge, path: '/digital-twin', label: 'Twin' },
-            { icon: User, path: '/profile', label: 'Profile' },
-          ].map((item) => (
-=======
-        <nav className="lg:hidden flex items-center justify-around py-2 bg-white dark:bg-[var(--bg-card)] border-t border-[var(--border)] dark:border-[var(--border)] safe-area-bottom">
           {currentNavItems.slice(0, 4).concat([{ icon: User, path: '/profile', label: 'Profile' }]).map((item) => (
->>>>>>> theirs
             <NavLink
               key={item.path}
               to={item.path}
@@ -574,8 +533,8 @@ export function AppLayout() {
                 cn(
                   'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all',
                   isActive
-                    ? 'text-[var(--brand)] dark:text-[var(--brand-light)]'
-                    : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)]'
+                    ? 'text-[#0F766E] dark:text-[#14B8A6]'
+                    : 'text-[#9CA3AF] dark:text-[#94A3B8]'
                 )
               }
             >
