@@ -1,5 +1,6 @@
 import type { AuthResponse, AuthUser, LoginCredentials, RegisterCredentials } from '../types/auth';
 import { mockUsers } from './api.mock';
+import { resolveUserPermissions } from '../lib/rbac';
 
 // Helper to generate a fake JWT
 const generateFakeJwt = (user: AuthUser): string => {
@@ -8,6 +9,8 @@ const generateFakeJwt = (user: AuthUser): string => {
     sub: user.id,
     email: user.email,
     role: user.role,
+    subRole: user.subRole,
+    permissions: user.permissions,
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 1 day
   }));
@@ -43,13 +46,14 @@ export const AuthService = {
       id: `new-user-${Date.now()}`,
       email: credentials.email,
       role: credentials.role,
+      subRole: credentials.subRole,
+      permissions: resolveUserPermissions(credentials.role, credentials.subRole),
       firstName: credentials.firstName,
       lastName: credentials.lastName,
       isEmailVerified: false,
       createdAt: new Date().toISOString()
     };
 
-    // In a real app, we'd save this to the DB. For mock, we'll just push to the array.
     mockUsers.push(newUser);
 
     return {

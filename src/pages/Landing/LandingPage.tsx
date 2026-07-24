@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  Car, Brain, Lock, Mail, User, Eye, EyeOff, Check,
+  Car, Lock, Mail, User, Eye, EyeOff,
   ArrowRight, Shield, AlertCircle
 } from 'lucide-react';
-import { useThemeStore, useAuthStore } from '../../store';
+import { useAuthStore } from '../../store';
+import { resolveUserPermissions } from '../../lib/rbac';
 import { cn } from '../../lib/utils';
 
 export function LandingPage() {
@@ -70,7 +71,7 @@ export function LandingPage() {
 
     setLoading(true);
 
-    // Simple simulation of authentication
+    // Authentication simulation & store update
     setTimeout(() => {
       setLoading(false);
 
@@ -79,24 +80,45 @@ export function LandingPage() {
           setError('Invalid password for Admin account. Use admin123.');
           return;
         }
+        if (email === 'owner@parkease.ai' && password !== 'owner123') {
+          setError('Invalid password for Partner account. Use owner123.');
+          return;
+        }
         if (email === 'user@parkease.ai' && password !== 'user123') {
           setError('Invalid password for User account. Use user123.');
           return;
         }
       }
 
-      const mockUserRole = email === 'admin@parkease.ai' ? 'ADMIN' : 'USER';
+      const isSuperAdmin = email.includes('admin') || email === 'admin@parkease.ai';
+      const isOwner = email.includes('owner') || email === 'owner@parkease.ai';
+
+      const userRole = isSuperAdmin ? 'SUPER_ADMIN' : isOwner ? 'OWNER' : 'USER';
+      const permissions = resolveUserPermissions(userRole);
+
+      const names = fullName ? fullName.trim().split(' ') : [];
+      const fName = names[0] || (isSuperAdmin ? 'Admin' : isOwner ? 'Owner' : 'Demo');
+      const lName = names.slice(1).join(' ') || 'User';
+
       loginUser('demo-token', {
-        id: 'demo-user',
+        id: `user-${Date.now()}`,
         email,
-        role: mockUserRole,
-        firstName: 'Demo',
-        lastName: 'User',
+        role: userRole,
+        permissions,
+        firstName: fName,
+        lastName: lName,
         isEmailVerified: true,
         createdAt: new Date().toISOString()
       });
-      navigate(mockUserRole === 'ADMIN' ? '/admin' : '/dashboard');
-    }, 1500);
+
+      if (isSuperAdmin) {
+        navigate('/admin/dashboard');
+      } else if (isOwner) {
+        navigate('/owner/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    }, 1200);
   };
 
   // Determine if title & button should animate into view
@@ -125,7 +147,7 @@ export function LandingPage() {
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             />
 
-            {/* Dark Overlay (Fades in when intro text animates) */}
+            {/* Dark Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: triggerIntroElements ? 0.40 : 0 }}
@@ -156,17 +178,17 @@ export function LandingPage() {
                         transition={
                           titleFinished && !isHovered && screenState === 'intro'
                             ? {
-                              duration: 12,
-                              ease: "easeInOut",
-                              repeat: Infinity,
-                            }
+                                duration: 12,
+                                ease: "easeInOut",
+                                repeat: Infinity,
+                              }
                             : { duration: 0.5, ease: "easeOut" }
                         }
                         className="w-full flex flex-col items-center justify-center"
                       >
                         {/* Brand / Logo */}
                         <div className="flex items-center gap-4 mb-6 cinematic-shadow">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[24px] bg-gradient-to-br from-[var(--brand)] to-[var(--brand-light)] flex items-center justify-center shadow-lg shadow-[var(--brand)]/40">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[24px] bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center shadow-lg shadow-[#0F766E]/40">
                             <Car className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
                           </div>
                           <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[90px] font-sora font-extrabold tracking-tighter text-white">
@@ -194,7 +216,7 @@ export function LandingPage() {
                         transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
                         onClick={startAuthTransition}
                         className={cn(
-                          "group flex items-center gap-2 px-8 py-3.5 rounded-2xl text-base font-semibold text-white bg-[var(--brand)] hover:bg-[var(--brand-light)] active:scale-95 transition-all shadow-lg shadow-[var(--brand)]/30",
+                          "group flex items-center gap-2 px-8 py-3.5 rounded-2xl text-base font-semibold text-white bg-[#0F766E] hover:bg-[#0D6B63] active:scale-95 transition-all shadow-lg shadow-[#0F766E]/30 cursor-pointer",
                           !titleFinished && "pointer-events-none opacity-0"
                         )}
                         style={{
@@ -232,12 +254,15 @@ export function LandingPage() {
             <div className="absolute inset-0 bg-black/50" />
 
             {/* Back button or top brand badge */}
-            <div className="absolute top-6 left-6 flex items-center gap-2 z-20">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-light)] flex items-center justify-center">
+            <button
+              onClick={() => setScreenState('intro')}
+              className="absolute top-6 left-6 flex items-center gap-2 z-20 hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center">
                 <Car className="w-4.5 h-4.5 text-white" />
               </div>
               <span className="font-bold text-[14px] text-white">ParkEase AI</span>
-            </div>
+            </button>
 
             {/* Center Authentication Glass Panel */}
             <div className="absolute inset-0 flex items-center justify-center px-4 z-10">
@@ -260,19 +285,21 @@ export function LandingPage() {
                 {/* Switch Tabs */}
                 <div className="flex bg-white/10 rounded-xl p-1 mb-5">
                   <button
+                    type="button"
                     onClick={() => { setIsSignUp(false); setError(''); }}
                     className={cn(
-                      'flex-1 py-2 rounded-lg text-xs font-bold transition-all',
-                      !isSignUp ? 'bg-[var(--brand)] text-white shadow-md' : 'text-white/60 hover:text-white'
+                      'flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                      !isSignUp ? 'bg-[#0F766E] text-white shadow-md' : 'text-white/60 hover:text-white'
                     )}
                   >
                     Sign In
                   </button>
                   <button
+                    type="button"
                     onClick={() => { setIsSignUp(true); setError(''); }}
                     className={cn(
-                      'flex-1 py-2 rounded-lg text-xs font-bold transition-all',
-                      isSignUp ? 'bg-[var(--brand)] text-white shadow-md' : 'text-white/60 hover:text-white'
+                      'flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                      isSignUp ? 'bg-[#0F766E] text-white shadow-md' : 'text-white/60 hover:text-white'
                     )}
                   >
                     Create Account
@@ -283,22 +310,21 @@ export function LandingPage() {
                 {!isSignUp && (
                   <div className="mb-4 p-3 rounded-xl bg-white/5 border border-white/10 text-white/70 text-xs space-y-1.5 font-sans text-left">
                     <div className="font-semibold text-white">Demo Accounts:</div>
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
-                      <div>
-                        <span className="text-white/40 block">Admin Email:</span>
-                        <code className="text-teal-300 font-mono">admin@parkease.ai</code>
-                      </div>
-                      <div>
-                        <span className="text-white/40 block">Password:</span>
-                        <code className="text-teal-300 font-mono">admin123</code>
-                      </div>
+                    <div className="grid grid-cols-3 gap-2 text-[10px]">
                       <div>
                         <span className="text-white/40 block">User Email:</span>
-                        <code className="text-teal-300 font-mono">user@parkease.ai</code>
+                        <code className="text-teal-300 font-mono select-all">user@parkease.ai</code>
+                        <span className="text-white/40 block mt-0.5">Pass: <code className="text-teal-300 font-mono">user123</code></span>
                       </div>
                       <div>
-                        <span className="text-white/40 block">Password:</span>
-                        <code className="text-teal-300 font-mono">user123</code>
+                        <span className="text-white/40 block">Partner Email:</span>
+                        <code className="text-teal-300 font-mono select-all">owner@parkease.ai</code>
+                        <span className="text-white/40 block mt-0.5">Pass: <code className="text-teal-300 font-mono">owner123</code></span>
+                      </div>
+                      <div>
+                        <span className="text-white/40 block">Admin Email:</span>
+                        <code className="text-teal-300 font-mono select-all">admin@parkease.ai</code>
+                        <span className="text-white/40 block mt-0.5">Pass: <code className="text-teal-300 font-mono">admin123</code></span>
                       </div>
                     </div>
                   </div>
@@ -335,7 +361,7 @@ export function LandingPage() {
                           value={fullName}
                           onChange={e => setFullName(e.target.value)}
                           placeholder="Girish Kumar"
-                          className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
+                          className="w-full bg-white/5 border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
                         />
                       </div>
                     </motion.div>
@@ -350,7 +376,7 @@ export function LandingPage() {
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                         placeholder="admin@parkease.ai"
-                        className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -364,12 +390,12 @@ export function LandingPage() {
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-10 text-sm text-white placeholder-white/30 outline-none transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-10 text-sm text-white placeholder-white/30 outline-none transition-all"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors cursor-pointer"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -379,7 +405,7 @@ export function LandingPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[var(--brand)] hover:bg-[var(--brand-light)] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[var(--brand)]/20 flex items-center justify-center gap-2 mt-4"
+                    className="w-full bg-[#0F766E] hover:bg-[#0D6B63] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[#0F766E]/20 flex items-center justify-center gap-2 mt-4 cursor-pointer"
                   >
                     {loading ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -1,11 +1,13 @@
 import type { AuthUser } from '../types/auth';
 import type { ParkingOwnerProfile, ParkingLot } from '../types/models';
+import { ROLE_DEFAULT_PERMISSIONS } from '../lib/rbac';
 
 export const mockUsers: AuthUser[] = [
   {
     id: 'user-1',
     email: 'user@parkease.com',
     role: 'USER',
+    permissions: ROLE_DEFAULT_PERMISSIONS.USER,
     firstName: 'John',
     lastName: 'Doe',
     isEmailVerified: true,
@@ -15,6 +17,9 @@ export const mockUsers: AuthUser[] = [
     id: 'owner-1',
     email: 'owner@parkease.com',
     role: 'OWNER',
+    subRole: 'FACILITY_ADMIN',
+    permissions: ROLE_DEFAULT_PERMISSIONS.OWNER,
+    facilityId: 'lot-1',
     firstName: 'Jane',
     lastName: 'Smith',
     isEmailVerified: true,
@@ -23,7 +28,8 @@ export const mockUsers: AuthUser[] = [
   {
     id: 'admin-1',
     email: 'admin@parkease.com',
-    role: 'ADMIN',
+    role: 'SUPER_ADMIN',
+    permissions: ROLE_DEFAULT_PERMISSIONS.SUPER_ADMIN,
     firstName: 'Super',
     lastName: 'Admin',
     isEmailVerified: true,

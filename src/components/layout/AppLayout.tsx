@@ -3,9 +3,9 @@ import { Outlet, useLocation, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Search, Brain, GitMerge, CalendarCheck,
-  CreditCard, Ticket, User, BarChart3, Lightbulb,
+  CreditCard, Ticket, User, Gift, HelpCircle,
   Bell, Menu, X, Sun, Moon, ChevronLeft, ChevronRight,
-  Car, Zap, ChevronDown, Workflow, Shield, Settings, LogOut
+  Car, Zap, ChevronDown, Workflow, Settings, LogOut
 } from 'lucide-react';
 import { useThemeStore, useSidebarStore, useAuthStore } from '../../store';
 import { cn } from '../../lib/utils';
@@ -18,32 +18,22 @@ type NavItem = {
   badge?: string;
 };
 
-const userNavItems: NavItem[] = [
+const customerNavItems: NavItem[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: Workflow, label: 'Project Workflow', path: '/workflow', badge: 'SRS' },
   { icon: Search, label: 'Find Parking', path: '/search' },
   { icon: Brain, label: 'AI Recommendation', path: '/ai-recommendation' },
-  { icon: GitMerge, label: 'Digital Twin', path: '/digital-twin', badge: 'Live' },
+  { icon: GitMerge, label: 'Digital Twin View', path: '/digital-twin', badge: 'Live' },
   { icon: CalendarCheck, label: 'Book Parking', path: '/book' },
-  { icon: CreditCard, label: 'Payment', path: '/payment' },
-  { icon: Ticket, label: 'My Tickets', path: '/ticket' },
-];
-
-const ownerNavItems: NavItem[] = [
-  { icon: LayoutDashboard, label: 'Partner Dashboard', path: '/owner/dashboard' },
-  { icon: Car, label: 'My Parking Lots', path: '/owner/parking' },
-  { icon: BarChart3, label: 'Revenue', path: '/owner/revenue' },
-];
-
-const adminNavItems: NavItem[] = [
-  { icon: Shield, label: 'Admin Dashboard', path: '/admin' },
-  { icon: BarChart3, label: 'System Analytics', path: '/analytics' },
-  { icon: Lightbulb, label: 'AI Insights', path: '/ai-insights', badge: '6' },
+  { icon: CreditCard, label: 'Payment & Wallet', path: '/payment' },
+  { icon: Ticket, label: 'My Passes & Tickets', path: '/ticket' },
+  { icon: Gift, label: 'Rewards & Perks', path: '/rewards', badge: 'New' },
+  { icon: Workflow, label: 'Project Workflow', path: '/workflow', badge: 'SRS' },
 ];
 
 const secondaryNav: NavItem[] = [
   { icon: Bell, label: 'Notifications', path: '/notifications', badge: '3' },
-  { icon: User, label: 'Profile', path: '/profile' },
+  { icon: HelpCircle, label: 'Support & Help', path: '/support' },
+  { icon: User, label: 'My Garage & Profile', path: '/profile' },
 ];
 
 export function AppLayout() {
@@ -55,10 +45,6 @@ export function AppLayout() {
 
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
-  const isAdmin = user?.role === 'ADMIN';
-  const isOwner = user?.role === 'OWNER';
-
-  const currentNavItems = isAdmin ? adminNavItems : isOwner ? ownerNavItems : userNavItems;
 
   const handleLogout = () => {
     logout();
@@ -92,7 +78,7 @@ export function AppLayout() {
         'flex items-center gap-3 px-4 py-5 border-b border-white/60 dark:border-white/10',
         collapsed && 'justify-center px-3'
       )}>
-        <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center flex-shrink-0 shadow-md">
           <Car className="w-4 h-4 text-white" />
         </div>
         <AnimatePresence>
@@ -107,25 +93,28 @@ export function AppLayout() {
               <span className="font-bold text-[15px] text-[#111827] dark:text-white whitespace-nowrap">
                 ParkEase <span className="text-[#0F766E] dark:text-[#14B8A6]">AI</span>
               </span>
+              <span className="block text-[9px] font-semibold text-[#0F766E] dark:text-[#14B8A6] uppercase tracking-wider">
+                Customer Workspace
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Main Nav */}
+      {/* Main Customer Nav */}
       <div className="flex-1 overflow-y-auto no-scrollbar py-4 px-3 space-y-0.5">
         {!collapsed && (
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF] px-3 mb-2">Main</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#0F766E] dark:text-[#14B8A6] px-3 mb-2">Driver Portal</p>
         )}
-        {currentNavItems.map((item) => (
+        {customerNavItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             onClick={onItemClick}
             className={({ isActive }) =>
               cn(
-                'sidebar-item group relative',
-                isActive && 'active',
+                'sidebar-item group relative transition-all duration-200',
+                isActive && 'active bg-[#0F766E]/10 text-[#0F766E] dark:bg-[#14B8A6]/20 dark:text-[#14B8A6] font-semibold',
                 collapsed && 'justify-center px-0 py-2.5'
               )
             }
@@ -155,42 +144,42 @@ export function AppLayout() {
         <div className="my-3 border-t border-white/60 dark:border-white/10" />
 
         {!collapsed && (
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF] px-3 mb-2">Tools</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF] px-3 mb-2">Account & Help</p>
         )}
         {secondaryNav.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={onItemClick}
-              className={({ isActive }) =>
-                cn(
-                  'sidebar-item group relative',
-                  isActive && 'active',
-                  collapsed && 'justify-center px-0 py-2.5'
-                )
-              }
-              title={collapsed ? item.label : undefined}
-            >
-              <item.icon className="w-4 h-4 flex-shrink-0" />
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex-1 text-sm"
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-              {!collapsed && item.badge && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400">
-                  {item.badge}
-                </span>
+          <NavLink
+            key={item.path}
+            to={item.path}
+            onClick={onItemClick}
+            className={({ isActive }) =>
+              cn(
+                'sidebar-item group relative transition-all duration-200',
+                isActive && 'active bg-[#0F766E]/10 text-[#0F766E] dark:bg-[#14B8A6]/20 dark:text-[#14B8A6] font-semibold',
+                collapsed && 'justify-center px-0 py-2.5'
+              )
+            }
+            title={collapsed ? item.label : undefined}
+          >
+            <item.icon className="w-4 h-4 flex-shrink-0" />
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex-1 text-sm"
+                >
+                  {item.label}
+                </motion.span>
               )}
-            </NavLink>
-          ))}
+            </AnimatePresence>
+            {!collapsed && item.badge && (
+              <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                {item.badge}
+              </span>
+            )}
+          </NavLink>
+        ))}
       </div>
 
       {/* Bottom - Theme & User */}
@@ -205,7 +194,7 @@ export function AppLayout() {
           {theme === 'light' ? (
             <Moon className="w-4 h-4 flex-shrink-0" />
           ) : (
-            <Sun className="w-4 h-4 flex-shrink-0" />
+            <Sun className="w-4 h-4 flex-shrink-0 text-amber-500" />
           )}
           {!collapsed && (
             <span className="text-sm">{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
@@ -229,20 +218,20 @@ export function AppLayout() {
           <div className="relative animate-fade-in" ref={sidebarProfileDropdownRef}>
             <div
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/50 dark:hover:bg-white/5 transition-all cursor-pointer select-none",
-                sidebarProfileOpen && "bg-white/50 dark:bg-white/5"
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/50 dark:hover:bg-white/5 transition-all cursor-pointer select-none border border-transparent hover:border-[#0F766E]/20",
+                sidebarProfileOpen && "bg-white/50 dark:bg-white/5 border-[#0F766E]/20"
               )}
               onClick={() => setSidebarProfileOpen(!sidebarProfileOpen)}
             >
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                {isAdmin ? 'A' : 'U'}
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow">
+                U
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-[#111827] dark:text-white truncate">
-                  {user?.firstName ? `${user.firstName} ${user.lastName}` : (isAdmin ? 'Admin User' : isOwner ? 'Partner' : 'Standard User')}
+                  {user?.firstName ? `${user.firstName} ${user.lastName}` : 'Customer User'}
                 </p>
-                <p className="text-[10px] text-[#9CA3AF] dark:text-[#94A3B8]">
-                  {isAdmin ? 'System Admin' : isOwner ? 'Parking Owner' : 'Customer'}
+                <p className="text-[10px] text-[#0F766E] dark:text-[#14B8A6] font-medium">
+                  Driver Persona
                 </p>
               </div>
               <ChevronDown className={cn("w-3 h-3 text-[#9CA3AF] transition-transform duration-200", sidebarProfileOpen && "rotate-180")} />
@@ -264,8 +253,8 @@ export function AppLayout() {
                     }}
                     className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-white/10 rounded-xl transition-colors text-left"
                   >
-                    <User className="w-3.5 h-3.5 text-[#9CA3AF]" />
-                    My Profile
+                    <User className="w-3.5 h-3.5 text-[#0F766E]" />
+                    My Profile & Garage
                   </button>
 
                   <button
@@ -275,7 +264,7 @@ export function AppLayout() {
                     }}
                     className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-white/10 rounded-xl transition-colors text-left"
                   >
-                    <Settings className="w-3.5 h-3.5 text-[#9CA3AF]" />
+                    <Settings className="w-3.5 h-3.5 text-[#0F766E]" />
                     Settings
                   </button>
 
@@ -316,9 +305,9 @@ export function AppLayout() {
           className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-white dark:bg-[#0F172A] border border-white/60 dark:border-white/10 flex items-center justify-center shadow-soft hover:shadow-card transition-all z-30"
         >
           {collapsed ? (
-            <ChevronRight className="w-3 h-3 text-[#9CA3AF]" />
+            <ChevronRight className="w-3 h-3 text-[#0F766E]" />
           ) : (
-            <ChevronLeft className="w-3 h-3 text-[#9CA3AF]" />
+            <ChevronLeft className="w-3 h-3 text-[#0F766E]" />
           )}
         </button>
       </motion.aside>
@@ -364,16 +353,21 @@ export function AppLayout() {
             <Menu className="w-4 h-4 text-[#9CA3AF]" />
           </button>
 
+          {/* Customer Workspace Tag */}
+          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-[#0F766E]/10 border border-[#0F766E]/20 text-[#0F766E] dark:bg-[#14B8A6]/20 dark:text-[#14B8A6]">
+            <Car className="w-3.5 h-3.5" />
+            <span className="text-xs font-bold uppercase tracking-wider">Customer Portal</span>
+          </div>
+
           {/* Search */}
-          <div className="flex-1 max-w-xs hidden sm:block">
+          <div className="flex-1 max-w-xs hidden sm:block ml-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" />
               <input
                 type="text"
-                placeholder="Search parking, bookings, insights..."
+                placeholder="Search parking facilities, slots..."
                 className="w-full pl-8 pr-4 py-2 text-xs bg-white/80 dark:bg-white/5 border border-white/70 dark:border-white/10 rounded-xl placeholder:text-[#9CA3AF] text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20"
               />
-              <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-[#9CA3AF] bg-[#E5E7EB] dark:bg-white/10 px-1.5 py-0.5 rounded hidden md:block">⌘K</kbd>
             </div>
           </div>
 
@@ -381,7 +375,7 @@ export function AppLayout() {
             {/* Live indicator */}
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/30">
               <span className="live-dot" />
-              <span className="text-[11px] font-semibold text-green-700 dark:text-green-400">Live</span>
+              <span className="text-[11px] font-semibold text-green-700 dark:text-green-400">Driver Live</span>
             </div>
 
             {/* Theme toggle */}
@@ -411,7 +405,7 @@ export function AppLayout() {
               className="btn-primary text-xs px-3 py-2 hidden sm:flex"
             >
               <Zap className="w-3.5 h-3.5" />
-              Book Now
+              Book Slot
             </button>
 
             {/* Avatar Dropdown */}
@@ -420,7 +414,7 @@ export function AppLayout() {
                 onClick={() => setAvatarOpen(!avatarOpen)}
                 className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center text-white text-xs font-bold hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20"
               >
-                {isAdmin ? 'A' : 'U'}
+                U
               </button>
 
               <AnimatePresence>
@@ -432,16 +426,15 @@ export function AppLayout() {
                     transition={{ duration: 0.15, ease: 'easeOut' }}
                     className="absolute right-0 mt-2 w-56 bg-white/90 backdrop-blur-2xl dark:bg-[#0F172A]/95 border border-white/60 dark:border-white/10 rounded-2xl shadow-xl py-2 z-50 overflow-hidden"
                   >
-                    {/* User profile summary */}
                     <div className="px-4 py-2.5 border-b border-white/60 dark:border-white/10">
                       <p className="text-xs font-semibold text-[#111827] dark:text-white truncate">
-                        {isAdmin ? 'Girish Kumar' : 'Standard User'}
+                        {user?.firstName ? `${user.firstName} ${user.lastName}` : 'Customer User'}
                       </p>
                       <p className="text-[10px] text-[#9CA3AF] dark:text-[#94A3B8] truncate mt-0.5">
                         {user?.email || 'user@parkease.ai'}
                       </p>
                       <span className="inline-block px-1.5 py-0.5 text-[9px] font-bold rounded bg-[#0F766E]/10 text-[#0F766E] dark:bg-[#14B8A6]/20 dark:text-[#14B8A6] mt-2">
-                        {isAdmin ? 'Admin' : 'Customer'}
+                        Customer Driver
                       </span>
                     </div>
 
@@ -453,8 +446,8 @@ export function AppLayout() {
                         }}
                         className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-white/10 rounded-xl transition-colors text-left"
                       >
-                        <User className="w-3.5 h-3.5 text-[#9CA3AF]" />
-                        My Profile
+                        <User className="w-3.5 h-3.5 text-[#0F766E]" />
+                        My Profile & Garage
                       </button>
 
                       <button
@@ -464,27 +457,8 @@ export function AppLayout() {
                         }}
                         className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-white/10 rounded-xl transition-colors text-left"
                       >
-                        <Settings className="w-3.5 h-3.5 text-[#9CA3AF]" />
+                        <Settings className="w-3.5 h-3.5 text-[#0F766E]" />
                         Settings
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          toggleTheme();
-                        }}
-                        className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#F3F4F6] dark:hover:bg-white/10 rounded-xl transition-colors text-left"
-                      >
-                        {theme === 'light' ? (
-                          <>
-                            <Moon className="w-3.5 h-3.5 text-[#9CA3AF]" />
-                            Dark Mode
-                          </>
-                        ) : (
-                          <>
-                            <Sun className="w-3.5 h-3.5 text-[#F59E0B]" />
-                            Light Mode
-                          </>
-                        )}
                       </button>
                     </div>
 
@@ -525,7 +499,7 @@ export function AppLayout() {
 
         {/* Mobile bottom nav */}
         <nav className="lg:hidden flex items-center justify-around py-2 bg-white/85 backdrop-blur-2xl border-t border-white/60 dark:bg-[#0F172A]/90 dark:border-white/10 safe-area-bottom">
-          {currentNavItems.slice(0, 4).concat([{ icon: User, path: '/profile', label: 'Profile' }]).map((item) => (
+          {customerNavItems.slice(0, 4).concat([{ icon: User, path: '/profile', label: 'Profile' }]).map((item) => (
             <NavLink
               key={item.path}
               to={item.path}

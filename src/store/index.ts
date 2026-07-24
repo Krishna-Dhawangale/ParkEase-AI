@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import type { AuthUser } from '../types/auth';
+import { resolveUserPermissions } from '../lib/rbac';
 
 type Theme = 'light' | 'dark';
 
@@ -36,8 +38,6 @@ export const useSidebarStore = create<SidebarStore>((set) => ({
   toggleSidebar: () => set((s) => ({ collapsed: !s.collapsed })),
 }));
 
-import type { AuthUser } from '../types/auth';
-
 interface AuthStore {
   isAuthenticated: boolean;
   user: AuthUser | null;
@@ -49,11 +49,21 @@ interface AuthStore {
 const initialToken = localStorage.getItem('parkease-token');
 const initialUserStr = localStorage.getItem('parkease-user');
 let initialUser: AuthUser | null = null;
+
 if (initialUserStr) {
   try {
     initialUser = JSON.parse(initialUserStr);
+    if (initialUser) {
+      // Normalize legacy roles & permissions
+      if ((initialUser.role as any) === 'ADMIN') {
+        initialUser.role = 'SUPER_ADMIN';
+      }
+      if (!initialUser.permissions || initialUser.permissions.length === 0) {
+        initialUser.permissions = resolveUserPermissions(initialUser.role, initialUser.subRole);
+      }
+    }
   } catch (e) {
-    // Ignore parse error
+    initialUser = null;
   }
 }
 
@@ -62,9 +72,18 @@ export const useAuthStore = create<AuthStore>((set) => ({
   user: initialUser,
   token: initialToken,
   login: (token, user) => {
+    // Normalize role & permissions on login
+    const normalizedUser = { ...user };
+    if ((normalizedUser.role as any) === 'ADMIN') {
+      normalizedUser.role = 'SUPER_ADMIN';
+    }
+    if (!normalizedUser.permissions || normalizedUser.permissions.length === 0) {
+      normalizedUser.permissions = resolveUserPermissions(normalizedUser.role, normalizedUser.subRole);
+    }
+
     localStorage.setItem('parkease-token', token);
-    localStorage.setItem('parkease-user', JSON.stringify(user));
-    set({ isAuthenticated: true, user, token });
+    localStorage.setItem('parkease-user', JSON.stringify(normalizedUser));
+    set({ isAuthenticated: true, user: normalizedUser, token });
   },
   logout: () => {
     localStorage.removeItem('parkease-token');

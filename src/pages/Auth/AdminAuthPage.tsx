@@ -17,8 +17,8 @@ export const AdminAuthPage: React.FC = () => {
     
     try {
       const response = await AuthService.login({ email, password });
-      if (response.user.role !== 'ADMIN') {
-        throw new Error('Unauthorized access');
+      if (response.user.role !== 'SUPER_ADMIN') {
+        throw new Error('Unauthorized access. Platform Superadmin privileges required.');
       }
       login(response.token, response.user);
       navigate('/admin');

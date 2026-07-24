@@ -3,36 +3,35 @@ import { AnimatePresence, motion } from 'framer-motion';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import {
   LayoutDashboard,
-  Car,
-  Boxes,
-  CalendarCheck,
+  CheckSquare,
   Users,
-  UserCog,
   BarChart3,
+  Activity,
   Brain,
-  Tags,
   CreditCard,
-  Bell,
-  FileBarChart,
-  Shield,
+  CircleDollarSign,
+  ShieldAlert,
+  LifeBuoy,
+  Code2,
+  FileText,
+  ToggleRight,
   Settings,
   CircleUser,
-  LifeBuoy,
   LogOut,
   ChevronLeft,
   ChevronRight,
   X,
+  Crown
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useAdminSidebarStore } from '../../../store';
+import { useAdminSidebarStore, useAuthStore } from '../../../store';
 import { cn } from '../../../lib/utils';
-
-/* ───────────────────────────── Navigation Config ───────────────────────────── */
 
 interface NavItem {
   label: string;
   icon: LucideIcon;
   path: string;
+  badge?: string;
 }
 
 interface NavSection {
@@ -44,52 +43,44 @@ const navigation: NavSection[] = [
   {
     label: 'Overview',
     items: [
-      { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
+      { label: 'Platform Command HQ', icon: LayoutDashboard, path: '/admin/dashboard' },
     ],
   },
   {
-    label: 'Management',
+    label: 'Partners & Ecosystem',
     items: [
-      { label: 'Parking Management', icon: Car, path: '/admin/parking' },
-      { label: 'Digital Twin Builder', icon: Boxes, path: '/admin/digital-twin' },
-      { label: 'Bookings', icon: CalendarCheck, path: '/admin/bookings' },
-      { label: 'Users', icon: Users, path: '/admin/users' },
-      { label: 'Employees', icon: UserCog, path: '/admin/employees' },
+      { label: 'Partner Approvals', icon: CheckSquare, path: '/admin/partners', badge: 'KYC' },
+      { label: 'User Governance', icon: Users, path: '/admin/users' },
+      { label: 'Subscriptions & Billing', icon: CreditCard, path: '/admin/subscriptions' },
     ],
   },
   {
-    label: 'Intelligence',
+    label: 'Platform Telemetry',
     items: [
-      { label: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
-      { label: 'AI Dashboard', icon: Brain, path: '/admin/ai' },
+      { label: 'Global Analytics', icon: BarChart3, path: '/admin/analytics' },
+      { label: 'Infrastructure Health', icon: Activity, path: '/admin/monitoring', badge: '99.98%' },
+      { label: 'AI Neural Engine', icon: Brain, path: '/admin/ai' },
     ],
   },
   {
-    label: 'Finance',
+    label: 'Financial & Governance',
     items: [
-      { label: 'Pricing', icon: Tags, path: '/admin/pricing' },
-      { label: 'Payments', icon: CreditCard, path: '/admin/payments' },
+      { label: 'Commission Ledger', icon: CircleDollarSign, path: '/admin/finances' },
+      { label: 'Anti-Fraud & Risk', icon: ShieldAlert, path: '/admin/fraud' },
     ],
   },
   {
-    label: 'Communication',
+    label: 'System & Security',
     items: [
-      { label: 'Notifications', icon: Bell, path: '/admin/notifications' },
-      { label: 'Reports', icon: FileBarChart, path: '/admin/reports' },
-    ],
-  },
-  {
-    label: 'System',
-    items: [
-      { label: 'Security', icon: Shield, path: '/admin/security' },
-      { label: 'Settings', icon: Settings, path: '/admin/settings' },
-      { label: 'Profile', icon: CircleUser, path: '/admin/profile' },
-      { label: 'Support', icon: LifeBuoy, path: '/admin/support' },
+      { label: 'Global Support Desk', icon: LifeBuoy, path: '/admin/support' },
+      { label: 'API Keys & Webhooks', icon: Code2, path: '/admin/api' },
+      { label: 'Global Audit Logs', icon: FileText, path: '/admin/security' },
+      { label: 'Feature Flags', icon: ToggleRight, path: '/admin/feature-flags' },
+      { label: 'Platform Settings', icon: Settings, path: '/admin/settings' },
+      { label: 'Superadmin Profile', icon: CircleUser, path: '/admin/profile' },
     ],
   },
 ];
-
-/* ──────────────────────────── Sidebar Nav Item ─────────────────────────────── */
 
 interface SidebarNavItemProps {
   item: NavItem;
@@ -108,20 +99,18 @@ const SidebarNavItem = ({ item, isCollapsed, onNavigate }: SidebarNavItemProps) 
         cn(
           'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200',
           isActive
-            ? 'bg-blue-600/10 text-blue-400'
+            ? 'bg-indigo-600/20 text-indigo-400 font-semibold border-l-2 border-indigo-500'
             : 'text-slate-400 hover:bg-white/[0.06] hover:text-slate-200',
-          isCollapsed && 'justify-center px-2'
+          isCollapsed && 'justify-center px-2 border-l-0'
         )
       }
     >
-      {({ isActive }) => (
-        <>
-          {isActive && (
-            <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-blue-500" />
-          )}
-          <Icon className="h-[18px] w-[18px] shrink-0" />
-          {!isCollapsed && <span className="truncate">{item.label}</span>}
-        </>
+      <Icon className="h-[18px] w-[18px] shrink-0 text-indigo-400" />
+      {!isCollapsed && <span className="truncate flex-1">{item.label}</span>}
+      {!isCollapsed && item.badge && (
+        <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-indigo-500/20 text-indigo-300">
+          {item.badge}
+        </span>
       )}
     </NavLink>
   );
@@ -147,15 +136,14 @@ const SidebarNavItem = ({ item, isCollapsed, onNavigate }: SidebarNavItemProps) 
   return link;
 };
 
-/* ──────────────────────────── Main Sidebar ──────────────────────────────────── */
-
 const AdminSidebar = () => {
-  const { isCollapsed, isMobileOpen, toggleCollapse, setMobileOpen } =
-    useAdminSidebarStore();
+  const { isCollapsed, isMobileOpen, toggleCollapse, setMobileOpen } = useAdminSidebarStore();
+  const logout = useAuthStore(s => s.logout);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     setMobileOpen(false);
+    logout();
     navigate('/');
   };
 
@@ -163,25 +151,25 @@ const AdminSidebar = () => {
     const collapsed = isCollapsed && !isMobile;
 
     return (
-      <div className="flex h-full flex-col">
-        {/* ── Brand ── */}
+      <div className="flex h-full flex-col bg-slate-950 text-slate-100 border-r border-slate-800">
+        {/* Brand */}
         <div
           className={cn(
-            'flex h-16 shrink-0 items-center border-b border-slate-800 px-4',
+            'flex h-16 shrink-0 items-center border-b border-indigo-800/40 px-4 bg-indigo-950/30',
             collapsed ? 'justify-center px-2' : 'justify-between'
           )}
         >
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-              P
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-900/50">
+              <Crown className="w-5 h-5 text-indigo-100" />
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <h2 className="truncate text-sm font-semibold text-white">
+                <h2 className="truncate text-sm font-bold text-white tracking-wide">
                   ParkEase AI
                 </h2>
-                <p className="truncate text-[11px] text-slate-500">
-                  Team Workspace
+                <p className="truncate text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
+                  Superadmin SaaS HQ
                 </p>
               </div>
             )}
@@ -189,19 +177,19 @@ const AdminSidebar = () => {
           {isMobile && (
             <button
               onClick={() => setMobileOpen(false)}
-              className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
             >
               <X className="h-5 w-5" />
             </button>
           )}
         </div>
 
-        {/* ── Navigation ── */}
-        <nav className="no-scrollbar flex-1 overflow-y-auto px-3 py-4">
+        {/* Navigation */}
+        <nav className="no-scrollbar flex-1 overflow-y-auto px-3 py-4 space-y-5">
           {navigation.map((section) => (
-            <div key={section.label} className="mb-5">
+            <div key={section.label}>
               {!collapsed && (
-                <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-indigo-400">
                   {section.label}
                 </p>
               )}
@@ -220,8 +208,8 @@ const AdminSidebar = () => {
           ))}
         </nav>
 
-        {/* ── Bottom ── */}
-        <div className="shrink-0 border-t border-slate-800 p-3">
+        {/* Bottom */}
+        <div className="shrink-0 border-t border-slate-800 p-3 bg-slate-950/50">
           <button
             onClick={handleLogout}
             className={cn(
@@ -229,8 +217,8 @@ const AdminSidebar = () => {
               collapsed && 'justify-center px-2'
             )}
           >
-            <LogOut className="h-[18px] w-[18px] shrink-0" />
-            {!collapsed && <span>Logout</span>}
+            <LogOut className="h-[18px] w-[18px] shrink-0 text-red-400" />
+            {!collapsed && <span>Logout Superadmin</span>}
           </button>
 
           {!isMobile && (
@@ -246,7 +234,7 @@ const AdminSidebar = () => {
               ) : (
                 <>
                   <ChevronLeft className="h-[18px] w-[18px]" />
-                  <span>Collapse</span>
+                  <span>Collapse Sidebar</span>
                 </>
               )}
             </button>
@@ -258,7 +246,6 @@ const AdminSidebar = () => {
 
   return (
     <Tooltip.Provider delayDuration={0}>
-      {/* ── Desktop Sidebar ── */}
       <aside
         className={cn(
           'fixed bottom-0 left-0 top-16 z-20 hidden border-r border-slate-800 bg-slate-900 transition-all duration-300 ease-in-out lg:flex lg:flex-col',
@@ -268,7 +255,6 @@ const AdminSidebar = () => {
         {renderContent(false)}
       </aside>
 
-      {/* ── Mobile Drawer ── */}
       <AnimatePresence>
         {isMobileOpen && (
           <>
