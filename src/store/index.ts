@@ -36,7 +36,6 @@ export const useSidebarStore = create<SidebarStore>((set) => ({
   toggleSidebar: () => set((s) => ({ collapsed: !s.collapsed })),
 }));
 
-<<<<<<< HEAD
 import type { AuthUser } from '../types/auth';
 
 interface AuthStore {
@@ -72,7 +71,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
     localStorage.removeItem('parkease-user');
     set({ isAuthenticated: false, user: null, token: null });
   },
-=======
+}));
+
 interface AdminSidebarStore {
   isCollapsed: boolean;
   isMobileOpen: boolean;
@@ -85,5 +85,4 @@ export const useAdminSidebarStore = create<AdminSidebarStore>((set) => ({
   isMobileOpen: false,
   toggleCollapse: () => set((s) => ({ isCollapsed: !s.isCollapsed })),
   setMobileOpen: (open) => set({ isMobileOpen: open }),
->>>>>>> origin/feature/admin-portal
 }));

@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Search, Brain, GitMerge, CalendarCheck,
   CreditCard, Ticket, User, Shield, BarChart3, Lightbulb,
   Bell, Menu, X, Sun, Moon, ChevronLeft, ChevronRight,
-  Car, Zap, ChevronDown, Workflow
+  Car, Zap, ChevronDown, Workflow, Settings, LogOut
 } from 'lucide-react';
 import { useThemeStore, useSidebarStore, useAuthStore } from '../../store';
 import { cn } from '../../lib/utils';
