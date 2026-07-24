@@ -23,6 +23,9 @@ import { OwnerAuthPage } from './pages/Auth/OwnerAuthPage';
 // Route Modules
 import { ownerRoutes } from './routes/OwnerRoutes';
 import { adminRoutes } from './routes/AdminRoutes';
+import { UserAuthPage } from './pages/Auth/UserAuthPage';
+import { AdminAuthPage } from './pages/Auth/AdminAuthPage';
+import { OwnerAuthPage } from './pages/Auth/OwnerAuthPage';
 
 function App() {
   return (
