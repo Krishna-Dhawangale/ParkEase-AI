@@ -46,6 +46,7 @@ import {
   type TwinObjectStatus,
   type TwinObjectType,
 } from './data';
+import { DIGITAL_TWIN_STORAGE_KEY } from './sync';
 
 type ToolMode = 'select' | 'move' | 'wall' | 'road' | 'slot' | 'zone' | 'gate' | 'camera' | 'object' | 'text';
 type PreviewMode = '2D' | '3D' | 'Simulation';
@@ -60,12 +61,17 @@ type BuilderSnapshot = {
 type PersistedBuilderState = {
   project: TwinBuilderProject;
   activeFloorId: string;
+  viewportRotation: number;
   snapshots: BuilderSnapshot[];
 };
 type DragState =
   | { kind: 'move'; id: string; startX: number; startY: number; originX: number; originY: number }
   | { kind: 'resize'; id: string; startX: number; startY: number; originW: number; originH: number }
   | null;
+type RotationDragState = {
+  startRotation: number;
+  startAngle: number;
+} | null;
 
 const toolItems: { id: ToolMode; label: string; icon: React.ElementType; shortcut?: string }[] = [
   { id: 'select', label: 'Select', icon: MousePointer2, shortcut: 'V' },
@@ -105,11 +111,19 @@ const iconButtonClass = 'inline-flex h-10 w-10 items-center justify-center round
 const menuItemClass = 'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800';
 const propertyInputClass = 'mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 dark:border-slate-700 dark:bg-slate-900 dark:text-white';
 const propertyLabelClass = 'block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400';
-const storageKey = 'parkease-ai.digital-twin-builder.v1';
 const snapshotLimit = 12;
 
 const snap = (value: number, size: number) => Math.round(value / size) * size;
 const cloneProject = (project: TwinBuilderProject): TwinBuilderProject => JSON.parse(JSON.stringify(project));
+const rotateDelta = (deltaX: number, deltaY: number, rotationDegrees: number) => {
+  const radians = (-rotationDegrees * Math.PI) / 180;
+  const cosine = Math.cos(radians);
+  const sine = Math.sin(radians);
+  return {
+    x: deltaX * cosine - deltaY * sine,
+    y: deltaX * sine + deltaY * cosine,
+  };
+};
 
 const createSnapshot = (project: TwinBuilderProject, activeFloorId: string, label: string): BuilderSnapshot => ({
   id: `${project.id}-${project.version}-${Date.now()}`,
@@ -122,31 +136,32 @@ const createSnapshot = (project: TwinBuilderProject, activeFloorId: string, labe
 
 const loadBuilderState = (): PersistedBuilderState => {
   if (typeof window === 'undefined') {
-    return { project: cloneProject(mockTwinBuilderProject), activeFloorId: mockTwinBuilderProject.activeFloorId, snapshots: [] };
+    return { project: cloneProject(mockTwinBuilderProject), activeFloorId: mockTwinBuilderProject.activeFloorId, viewportRotation: 0, snapshots: [] };
   }
 
   try {
-    const raw = window.localStorage.getItem(storageKey);
+    const raw = window.localStorage.getItem(DIGITAL_TWIN_STORAGE_KEY);
     if (!raw) {
-      return { project: cloneProject(mockTwinBuilderProject), activeFloorId: mockTwinBuilderProject.activeFloorId, snapshots: [] };
+      return { project: cloneProject(mockTwinBuilderProject), activeFloorId: mockTwinBuilderProject.activeFloorId, viewportRotation: 0, snapshots: [] };
     }
 
     const parsed = JSON.parse(raw) as Partial<PersistedBuilderState> & { project?: TwinBuilderProject };
     if (!parsed.project?.floors?.length) {
-      return { project: cloneProject(mockTwinBuilderProject), activeFloorId: mockTwinBuilderProject.activeFloorId, snapshots: [] };
+      return { project: cloneProject(mockTwinBuilderProject), activeFloorId: mockTwinBuilderProject.activeFloorId, viewportRotation: 0, snapshots: [] };
     }
 
     const project = cloneProject(parsed.project);
     const activeFloorId = parsed.activeFloorId ?? project.activeFloorId ?? project.floors[0].id;
+    const viewportRotation = Number.isFinite(parsed.viewportRotation ?? 0) ? Number(parsed.viewportRotation ?? 0) : 0;
     const snapshots = Array.isArray(parsed.snapshots)
       ? parsed.snapshots
           .filter((snapshot): snapshot is BuilderSnapshot => Boolean(snapshot && snapshot.project && snapshot.activeFloorId))
           .slice(0, snapshotLimit)
       : [];
 
-    return { project, activeFloorId, snapshots };
+    return { project, activeFloorId, viewportRotation, snapshots };
   } catch {
-    return { project: cloneProject(mockTwinBuilderProject), activeFloorId: mockTwinBuilderProject.activeFloorId, snapshots: [] };
+    return { project: cloneProject(mockTwinBuilderProject), activeFloorId: mockTwinBuilderProject.activeFloorId, viewportRotation: 0, snapshots: [] };
   }
 };
 
@@ -154,6 +169,7 @@ const DigitalTwin = () => {
   const [initialState] = useState(() => loadBuilderState());
   const [project, setProject] = useState<TwinBuilderProject>(() => cloneProject(initialState.project));
   const [activeFloorId, setActiveFloorId] = useState(initialState.activeFloorId);
+  const [layoutRotation, setLayoutRotation] = useState(initialState.viewportRotation);
   const [selectedIds, setSelectedIds] = useState<string[]>(() => {
     const floor = initialState.project.floors.find((item) => item.id === initialState.activeFloorId) ?? initialState.project.floors[0];
     return floor?.objects[0]?.id ? [floor.objects[0].id] : [];
@@ -171,11 +187,13 @@ const DigitalTwin = () => {
   const [future, setFuture] = useState<TwinBuilderProject[]>([]);
   const [clipboard, setClipboard] = useState<TwinCanvasObject[]>([]);
   const [dragState, setDragState] = useState<DragState>(null);
+  const [rotationDrag, setRotationDrag] = useState<RotationDragState>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
   const [toast, setToast] = useState('Autosave ready');
   const [validationOpen, setValidationOpen] = useState(true);
   const [versionHistory, setVersionHistory] = useState<BuilderSnapshot[]>(() => initialState.snapshots);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
 
   const activeFloor = project.floors.find((floor) => floor.id === activeFloorId) ?? project.floors[0];
   const selectedObjects = activeFloor.objects.filter((item) => selectedIds.includes(item.id));
@@ -210,6 +228,19 @@ const DigitalTwin = () => {
   const showToast = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast('Autosaved just now'), 1800);
+  };
+
+  const getBoardCenter = () => {
+    const board = boardRef.current;
+    if (!board) return null;
+    const rect = board.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  };
+
+  const getAngleFromCenter = (clientX: number, clientY: number) => {
+    const center = getBoardCenter();
+    if (!center) return 0;
+    return (Math.atan2(clientY - center.y, clientX - center.x) * 180) / Math.PI;
   };
 
   const getSelectedIdsForFloor = useCallback((floorObjects: TwinCanvasObject[]) => {
@@ -455,16 +486,17 @@ const DigitalTwin = () => {
         const payload: PersistedBuilderState = {
           project,
           activeFloorId,
+          viewportRotation: layoutRotation,
           snapshots: versionHistory,
         };
-        window.localStorage.setItem(storageKey, JSON.stringify(payload));
+        window.localStorage.setItem(DIGITAL_TWIN_STORAGE_KEY, JSON.stringify(payload));
       } catch {
         // Ignore storage write failures and keep the in-memory session usable.
       }
     }, 250);
 
     return () => window.clearTimeout(timer);
-  }, [activeFloorId, project, versionHistory]);
+  }, [activeFloorId, layoutRotation, project, versionHistory]);
 
   const restoreSnapshot = useCallback((snapshot: BuilderSnapshot) => {
     const restoredProject = cloneProject(snapshot.project);
@@ -478,12 +510,19 @@ const DigitalTwin = () => {
   }, [getSelectedIdsForFloor]);
 
   const handlePointerMove = (event: React.PointerEvent) => {
+    if (rotationDrag) {
+      const nextAngle = getAngleFromCenter(event.clientX, event.clientY);
+      const delta = nextAngle - rotationDrag.startAngle;
+      setLayoutRotation((rotationDrag.startRotation + delta + 360) % 360);
+      return;
+    }
     if (!dragState) return;
     const deltaX = (event.clientX - dragState.startX) / zoom;
     const deltaY = (event.clientY - dragState.startY) / zoom;
+    const rotatedDelta = layoutRotation === 0 ? { x: deltaX, y: deltaY } : rotateDelta(deltaX, deltaY, layoutRotation);
     if (dragState.kind === 'move') {
-      const nextX = dragState.originX + deltaX;
-      const nextY = dragState.originY + deltaY;
+      const nextX = dragState.originX + rotatedDelta.x;
+      const nextY = dragState.originY + rotatedDelta.y;
       updateObject(dragState.id, {
         x: snapToGrid ? snap(nextX, project.canvas.gridSize) : Math.round(nextX),
         y: snapToGrid ? snap(nextY, project.canvas.gridSize) : Math.round(nextY),
@@ -491,20 +530,28 @@ const DigitalTwin = () => {
     }
     if (dragState.kind === 'resize') {
       updateObject(dragState.id, {
-        width: Math.max(24, Math.round(dragState.originW + deltaX)),
-        height: Math.max(24, Math.round(dragState.originH + deltaY)),
+        width: Math.max(24, Math.round(dragState.originW + rotatedDelta.x)),
+        height: Math.max(24, Math.round(dragState.originH + rotatedDelta.y)),
       });
     }
   };
 
-  const handlePointerUp = () => setDragState(null);
+  const handlePointerUp = () => {
+    setDragState(null);
+    setRotationDrag(null);
+  };
 
   const onCanvasDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const type = event.dataTransfer.getData('application/parkease-component') as TwinObjectType;
     if (!type) return;
     const rect = event.currentTarget.getBoundingClientRect();
-    addObject(type, (event.clientX - rect.left) / zoom, (event.clientY - rect.top) / zoom);
+    const rawX = (event.clientX - rect.left) / zoom;
+    const rawY = (event.clientY - rect.top) / zoom;
+    const centerX = project.canvas.width / 2;
+    const centerY = project.canvas.height / 2;
+    const rotatedPoint = layoutRotation === 0 ? { x: rawX, y: rawY } : rotateDelta(rawX - centerX, rawY - centerY, layoutRotation);
+    addObject(type, centerX + rotatedPoint.x, centerY + rotatedPoint.y);
   };
 
   const exportJson = () => {
@@ -692,29 +739,73 @@ const DigitalTwin = () => {
               <button onClick={() => setSnapToGrid((value) => !value)} className={cn('rounded-lg px-3 py-2 text-xs font-bold', snapToGrid ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10' : 'text-slate-500')}>Snap</button>
               <button onClick={() => setPan({ x: 0, y: 0 })} className={iconButtonClass}><Maximize2 className="h-4 w-4" /></button>
             </div>
+            <div className="ml-3 flex items-center gap-2 border-l border-slate-200 pl-3 dark:border-slate-800">
+              <div
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                title="Drag the compass handle on the canvas to rotate"
+              >
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white shadow">N</span>
+                <span>{Math.round(layoutRotation)}°</span>
+              </div>
+              <button onClick={() => setLayoutRotation(0)} className={iconButtonClass} title="Reset north">Reset</button>
+            </div>
           </div>
 
           <div
-            className="relative min-h-0 flex-1 overflow-auto rounded-2xl border border-slate-200 bg-slate-100 shadow-inner dark:border-slate-800 dark:bg-slate-900"
+            className="relative min-h-0 flex-1 overflow-auto rounded-2xl border border-slate-200 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,.10),transparent_24%),radial-gradient(circle_at_80%_10%,rgba(16,185,129,.08),transparent_20%),linear-gradient(180deg,#eff6ff_0%,#dbeafe_22%,#e2e8f0_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_40px_120px_-55px_rgba(15,23,42,0.75)] dark:border-slate-800 dark:bg-[radial-gradient(circle_at_20%_20%,rgba(96,165,250,.14),transparent_24%),radial-gradient(circle_at_80%_10%,rgba(52,211,153,.10),transparent_20%),linear-gradient(180deg,#0f172a_0%,#111827_60%,#020617_100%)]"
+            style={{ perspective: '1800px', perspectiveOrigin: '50% 20%' }}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onDragOver={(event) => event.preventDefault()}
             onDrop={onCanvasDrop}
             onClick={() => setContextMenu(null)}
           >
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,.24)_0%,rgba(255,255,255,.04)_35%,transparent_60%)] opacity-70" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_45%,rgba(15,23,42,.22)_100%)] dark:bg-[radial-gradient(circle_at_center,transparent_46%,rgba(2,6,23,.55)_100%)]" />
             <div
-              className={cn('relative mx-auto my-8 rounded-[18px] bg-[#d8d8d8] shadow-2xl transition', previewMode === '3D' && 'rotate-x-6')}
+              ref={boardRef}
+              className={cn(
+                'relative mx-auto my-8 rounded-[28px] bg-[#d8d8d8] shadow-[0_50px_120px_-40px_rgba(15,23,42,0.8)] transition-transform duration-300',
+                previewMode === '3D' && 'scene-3d'
+              )}
               style={{
                 width: project.canvas.width,
                 height: project.canvas.height,
-                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotateZ(${layoutRotation}deg) ${previewMode === '3D' ? 'rotateX(14deg) rotateZ(-0.4deg) translateY(6px)' : ''}`,
                 transformOrigin: 'top center',
+                transformStyle: 'preserve-3d',
                 backgroundImage: showGrid ? 'linear-gradient(90deg, rgba(255,255,255,.25) 1px, transparent 1px), linear-gradient(rgba(255,255,255,.25) 1px, transparent 1px)' : undefined,
                 backgroundSize: `${project.canvas.gridSize}px ${project.canvas.gridSize}px`,
               }}
             >
-              <div className="absolute inset-10 rounded-xl border-[16px] border-slate-300/90 shadow-inner" />
-              <div className="absolute inset-20 rounded-lg bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,.28),transparent_24%),linear-gradient(135deg,#9ca3af,#737373)]" />
+              <div className="absolute inset-0 rounded-[inherit] bg-[linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,0)_32%,rgba(15,23,42,.08)_100%)]" />
+              <div className="absolute inset-2 rounded-[24px] border border-white/70 bg-white/20 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.45)] backdrop-blur-[1px]" />
+              <div className="absolute inset-6 rounded-[20px] border border-slate-300/70 bg-[linear-gradient(145deg,rgba(255,255,255,.55),rgba(226,232,240,.28))] shadow-[inset_0_2px_0_rgba(255,255,255,.8),inset_0_-16px_36px_rgba(15,23,42,.14)]" />
+              <div className="absolute inset-10 rounded-[18px] border-[16px] border-slate-300/90 shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_24px_60px_-30px_rgba(15,23,42,.75)]" />
+              <div className="absolute inset-20 rounded-[14px] bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,.34),transparent_24%),linear-gradient(135deg,#9ca3af,#5b6472_55%,#3f4856)] shadow-[inset_0_1px_0_rgba(255,255,255,.35),inset_0_-28px_50px_rgba(15,23,42,.28)]" />
+              <div className="absolute left-12 right-12 top-8 h-14 rounded-[50%] bg-white/35 blur-2xl" />
+              <div className="absolute bottom-4 left-12 right-12 h-24 rounded-[50%] bg-black/15 blur-3xl" />
+              <div className="absolute inset-[22px] rounded-[16px] border border-white/20 bg-[linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0))]" />
+              <div className="pointer-events-none absolute inset-x-24 top-5 h-1 rounded-full bg-white/80 shadow-[0_0_18px_rgba(255,255,255,.7)]" />
+              <div className="pointer-events-none absolute inset-x-20 bottom-6 h-2 rounded-full bg-slate-900/15 blur-md" />
+              <button
+                type="button"
+                aria-label="Drag to rotate layout"
+                className="absolute right-6 top-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-white/70 bg-slate-950/85 text-white shadow-[0_16px_30px_-14px_rgba(15,23,42,0.9)] backdrop-blur"
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  const boardCenter = getBoardCenter();
+                  if (!boardCenter) return;
+                  setRotationDrag({
+                    startRotation: layoutRotation,
+                    startAngle: getAngleFromCenter(event.clientX, event.clientY),
+                  });
+                }}
+              >
+                <RotateCw className="h-4 w-4" />
+              </button>
+              <div className="pointer-events-none absolute right-5 top-[74px] z-40 rounded-full bg-slate-950/75 px-2 py-1 text-[10px] font-black tracking-[0.28em] text-white shadow-lg">DRAG TO ROTATE</div>
 
               {visibleObjects.map((item) => {
                 const Icon = iconForType[item.type] ?? Box;
@@ -735,13 +826,14 @@ const DigitalTwin = () => {
                   top: item.y,
                   width: item.width,
                   height: item.height,
-                  transform: `rotate(${item.rotation}deg)`,
+                  transform: `rotate(${item.rotation}deg) translateZ(${Math.max(0, item.zIndex - 1) * 1.5}px)`,
                   opacity: item.opacity,
                   background: isRoadLike ? item.fill : item.fill === 'transparent' ? 'transparent' : item.fill,
                   borderColor: selectedItem ? '#2563eb' : item.stroke,
                   zIndex: item.zIndex,
+                  transformStyle: 'preserve-3d',
                   boxShadow: selectedItem
-                    ? '0 0 0 2px rgba(37, 99, 235, 0.18), 0 22px 40px -24px rgba(15, 23, 42, 0.8)'
+                    ? '0 0 0 2px rgba(37, 99, 235, 0.18), 0 22px 40px -24px rgba(15, 23, 42, 0.8), 0 0 42px rgba(59, 130, 246, 0.24)'
                     : locked
                       ? '0 12px 32px -24px rgba(15, 23, 42, 0.55)'
                       : '0 16px 34px -26px rgba(15, 23, 42, 0.75)',
@@ -785,59 +877,72 @@ const DigitalTwin = () => {
                   >
                     {isParkingSlot ? (
                       <>
+                        <div className="absolute left-1 right-1 -bottom-2 h-4 rounded-full bg-slate-950/30 blur-md" />
+                        <div className="absolute left-1/2 -top-3 h-2 w-[70%] -translate-x-1/2 rounded-full bg-white/70 blur-[1px]" />
                         <div className="absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.16))]" />
-                        <div className="absolute inset-[6px] rounded-[18px] border border-white/50 bg-gradient-to-b from-white/40 to-transparent" />
-                        <div className="absolute left-1/2 top-1.5 h-4 w-[72%] -translate-x-1/2 rounded-full bg-white/80 shadow-sm" />
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-slate-950/70 px-2 py-0.5 text-[9px] font-black tracking-[0.2em] text-white">{item.status?.toUpperCase() ?? 'PARK'}</div>
-                        <span className="relative z-10 text-[10px] font-black tracking-[0.28em] text-slate-800">{item.text ?? item.name}</span>
+                        <div className="absolute inset-[6px] rounded-[18px] border border-white/55 bg-[linear-gradient(180deg,rgba(255,255,255,.5),rgba(241,245,249,.12))] shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-10px_18px_rgba(15,23,42,.08)]" />
+                        <div className="absolute inset-x-4 top-2 h-5 rounded-full bg-white/90 shadow-[0_8px_18px_-10px_rgba(15,23,42,.65)]" />
+                        <div className="absolute inset-x-[18%] top-7 h-[2px] rounded-full bg-white/85 shadow-[0_0_10px_rgba(255,255,255,.4)]" />
+                        <div className="absolute inset-x-4 bottom-9 h-[1px] rounded-full bg-slate-900/15" />
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-slate-950/75 px-2.5 py-0.5 text-[9px] font-black tracking-[0.22em] text-white shadow-lg">{item.status?.toUpperCase() ?? 'PARK'}</div>
+                        <span className="relative z-10 text-[10px] font-black tracking-[0.3em] text-slate-800 drop-shadow-sm">{item.text ?? item.name}</span>
                         {slotTone && <div className="absolute inset-0 rounded-[inherit] ring-1 ring-inset" style={{ boxShadow: `inset 0 0 0 1px ${slotTone.color}55` }} />}
                       </>
                     ) : isRoadLike ? (
                       <>
-                        <div className="absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,#1f2937,#111827_55%,#0f172a)]" />
-                        <div className="absolute inset-[5px] rounded-[inherit] bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.06)_0px,rgba(255,255,255,0.06)_3px,transparent_3px,transparent_9px)]" />
-                        <div className="absolute inset-x-4 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-amber-300/95 shadow-[0_0_12px_rgba(251,191,36,0.35)]" />
-                        <div className="absolute inset-y-4 left-1/2 w-1 -translate-x-1/2 rounded-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.22)]" />
-                        <div className="absolute inset-x-4 bottom-3 h-[2px] rounded-full bg-amber-300/70" />
-                        <span className="relative rounded-full bg-slate-950/55 px-3 py-1 text-[10px] font-black tracking-[0.35em] text-white backdrop-blur-sm">{item.text ?? item.name}</span>
+                        <div className="absolute left-[2px] right-[2px] -bottom-[6px] h-[10px] rounded-[inherit] bg-black/35 blur-md" />
+                        <div className="absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,#2b3442,#171c24_55%,#0f172a)] shadow-[inset_0_1px_0_rgba(255,255,255,.12),inset_0_-10px_22px_rgba(0,0,0,.35)]" />
+                        <div className="absolute inset-[5px] rounded-[inherit] border border-white/8 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.05)_0px,rgba(255,255,255,0.05)_4px,transparent_4px,transparent_10px)]" />
+                        <div className="absolute inset-x-4 top-1/2 h-2 -translate-y-1/2 rounded-full bg-amber-300/95 shadow-[0_0_16px_rgba(251,191,36,0.45)]" />
+                        <div className="absolute inset-y-3 left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-white/95 shadow-[0_0_12px_rgba(255,255,255,0.3)]" />
+                        <div className="absolute left-5 top-4 h-[1px] w-10 bg-white/25" />
+                        <div className="absolute right-5 bottom-4 h-[1px] w-10 bg-white/20" />
+                        <div className="absolute inset-x-4 bottom-3 h-[2px] rounded-full bg-amber-300/75" />
+                        <span className="relative rounded-full bg-slate-950/60 px-3 py-1 text-[10px] font-black tracking-[0.35em] text-white shadow-lg backdrop-blur-sm">{item.text ?? item.name}</span>
                       </>
                     ) : isGate ? (
                       <>
-                        <div className="absolute inset-0 rounded-[inherit] bg-gradient-to-r from-white/90 via-white/70 to-white/90" />
+                        <div className="absolute left-1/2 top-[72%] h-8 w-[88%] -translate-x-1/2 rounded-full bg-black/25 blur-lg" />
+                        <div className="absolute inset-0 rounded-[inherit] bg-gradient-to-r from-white/95 via-white/78 to-white/95" />
                         <div className={cn('absolute left-0 top-0 h-full w-4 rounded-l-[inherit]', item.type === 'entry-gate' ? 'bg-emerald-500' : 'bg-rose-500')} />
-                        <div className={cn('absolute right-2 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-slate-900 shadow', item.type === 'entry-gate' ? 'w-[62%]' : 'w-[50%]')} />
-                        <div className={cn('absolute top-1 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 text-[9px] font-black tracking-[0.35em] text-white shadow', item.type === 'entry-gate' ? 'bg-emerald-600' : 'bg-rose-600')}>{item.type === 'entry-gate' ? 'ENTRY' : 'EXIT'}</div>
+                        <div className={cn('absolute right-2 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-slate-900 shadow-lg', item.type === 'entry-gate' ? 'w-[62%]' : 'w-[50%]')} />
+                        <div className={cn('absolute left-4 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-2 border-white shadow-lg', item.type === 'entry-gate' ? 'bg-emerald-400' : 'bg-rose-400')} />
+                        <div className={cn('absolute top-1 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 text-[9px] font-black tracking-[0.35em] text-white shadow-lg', item.type === 'entry-gate' ? 'bg-emerald-600' : 'bg-rose-600')}>{item.type === 'entry-gate' ? 'ENTRY' : 'EXIT'}</div>
                         <div className="absolute bottom-0 left-0 right-0 h-2 bg-slate-900/10" />
                         <div className={cn('absolute bottom-3 left-3 h-8 w-1 origin-left rounded-full shadow-lg', item.type === 'entry-gate' ? 'bg-emerald-400' : 'bg-rose-400')} style={{ transform: item.type === 'entry-gate' ? 'rotate(-16deg)' : 'rotate(16deg)' }} />
                         <span className="relative px-2 text-[10px] font-black tracking-[0.3em] text-slate-700">{item.text ?? item.name}</span>
                       </>
                     ) : isCamera ? (
                       <>
-                        <div className="absolute left-1/2 top-1 h-5 w-1.5 -translate-x-1/2 rounded-full bg-slate-500 shadow-sm" />
-                        <div className="absolute left-1/2 top-4 h-1/2 w-2 -translate-x-1/2 rounded-full bg-slate-700" />
-                        <div className="absolute left-1/2 top-4 h-[28px] w-[54px] -translate-x-1/2 rounded-[14px] bg-gradient-to-br from-slate-100 via-slate-300 to-slate-500 shadow-[0_12px_24px_-14px_rgba(15,23,42,0.8)]" />
-                        <div className="absolute left-1/2 top-[18px] h-[18px] w-[18px] -translate-x-1/2 rounded-full border-[3px] border-slate-950 bg-slate-800 shadow-inner" />
-                        <div className="absolute left-1/2 top-[28px] h-[14px] w-[14px] -translate-x-1/2 rounded-full bg-sky-400/90 shadow-[0_0_14px_rgba(56,189,248,0.45)]" />
+                        <div className="absolute left-1/2 top-[74px] h-10 w-[110px] -translate-x-1/2 rounded-full bg-slate-900/20 blur-xl" />
+                        <div className="absolute left-1/2 top-9 h-[120px] w-[2px] -translate-x-1/2 bg-gradient-to-b from-slate-200 via-slate-500 to-slate-900 shadow-[0_0_14px_rgba(15,23,42,.28)]" />
+                        <div className="absolute left-1/2 top-1 h-7 w-2 -translate-x-1/2 rounded-full bg-slate-500 shadow-sm" />
+                        <div className="absolute left-1/2 top-6 h-6 w-8 -translate-x-1/2 rounded-full bg-slate-700 shadow-[0_10px_20px_-10px_rgba(15,23,42,0.9)]" />
+                        <div className="absolute left-1/2 top-[18px] h-[28px] w-[58px] -translate-x-1/2 rounded-[16px] bg-gradient-to-br from-slate-100 via-slate-300 to-slate-500 shadow-[0_16px_24px_-14px_rgba(15,23,42,0.85)]" />
+                        <div className="absolute left-1/2 top-[20px] h-[22px] w-[22px] -translate-x-1/2 rounded-full border-[3px] border-slate-950 bg-slate-800 shadow-inner" />
+                        <div className="absolute left-1/2 top-[29px] h-[14px] w-[14px] -translate-x-1/2 rounded-full bg-sky-400/90 shadow-[0_0_18px_rgba(56,189,248,0.65)]" />
                         {selectedItem && (
-                          <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-[20%] -translate-y-1/2 h-0 w-0 border-y-[54px] border-y-transparent border-l-[140px] border-l-sky-400/20" />
+                          <div className="pointer-events-none absolute left-1/2 top-[46%] -z-10 -translate-x-[16%] -translate-y-1/2 h-0 w-0 border-y-[84px] border-y-transparent border-l-[220px] border-l-sky-400/20" />
                         )}
                       </>
                     ) : isBarrier ? (
                       <>
-                        <div className="absolute left-1 top-1/2 h-4 w-7 -translate-y-1/2 rounded-md bg-slate-800 shadow-inner" />
-                        <div className="absolute left-7 top-1/2 h-2.5 w-8 -translate-y-1/2 rounded-full bg-slate-700" />
-                        <div className="absolute left-[42px] top-1/2 h-2.5 w-[68px] -translate-y-1/2 origin-left rounded-full bg-gradient-to-r from-amber-300 via-amber-400 to-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.2)]" style={{ transform: 'translateY(-50%) rotate(-12deg)' }} />
-                        <div className="absolute right-1 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-slate-900 bg-white" />
+                        <div className="absolute left-1 top-1/2 h-5 w-8 -translate-y-1/2 rounded-md bg-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,.18),0_10px_18px_-12px_rgba(15,23,42,.85)]" />
+                        <div className="absolute left-7 top-1/2 h-3 w-8 -translate-y-1/2 rounded-full bg-slate-700" />
+                        <div className="absolute left-[42px] top-1/2 h-3 w-[74px] -translate-y-1/2 origin-left rounded-full bg-gradient-to-r from-amber-300 via-amber-400 to-amber-200 shadow-[0_0_18px_rgba(251,191,36,0.3)]" style={{ transform: 'translateY(-50%) rotate(-12deg)' }} />
+                        <div className="absolute right-1 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-slate-900 bg-white shadow-md" />
                       </>
                     ) : isWall ? (
                       <>
-                        <div className="absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,#e5e7eb,#cbd5e1_48%,#94a3b8)]" />
-                        <div className="absolute inset-[4px] rounded-[inherit] border border-white/50 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,.24)_0px,rgba(255,255,255,.24)_10px,rgba(255,255,255,.05)_10px,rgba(255,255,255,.05)_16px)]" />
+                        <div className="absolute left-1/2 top-[105%] h-4 w-[92%] -translate-x-1/2 rounded-full bg-black/25 blur-md" />
+                        <div className="absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,#e5e7eb,#cbd5e1_42%,#94a3b8)]" />
+                        <div className="absolute inset-[4px] rounded-[inherit] border border-white/55 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,.24)_0px,rgba(255,255,255,.24)_10px,rgba(255,255,255,.05)_10px,rgba(255,255,255,.05)_16px)] shadow-[inset_0_1px_0_rgba(255,255,255,.9),inset_0_-10px_16px_rgba(15,23,42,.1)]" />
                       </>
                     ) : isCore ? (
                       <>
+                        <div className="absolute left-1/2 top-[104%] h-6 w-[88%] -translate-x-1/2 rounded-full bg-black/25 blur-md" />
                         <div className="absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,#f8fafc,#e2e8f0_48%,#cbd5e1)]" />
-                        <div className="absolute inset-x-4 top-3 bottom-3 rounded-xl border border-white/60 bg-[repeating-linear-gradient(180deg,rgba(15,23,42,.08)_0px,rgba(15,23,42,.08)_10px,transparent_10px,transparent_22px)]" />
+                        <div className="absolute inset-x-4 top-3 bottom-3 rounded-xl border border-white/65 bg-[repeating-linear-gradient(180deg,rgba(15,23,42,.08)_0px,rgba(15,23,42,.08)_10px,transparent_10px,transparent_22px)] shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-14px_24px_rgba(15,23,42,.08)]" />
                         <div className="absolute inset-x-6 top-1.5 rounded-full bg-slate-900/10 px-2 py-0.5 text-[9px] font-black tracking-[0.3em] text-slate-700">CORE</div>
                       </>
                     ) : isArrow ? (
