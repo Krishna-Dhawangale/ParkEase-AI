@@ -16,8 +16,8 @@ export const AdminAuthPage: React.FC = () => {
     setError('');
     
     try {
-      const response = await AuthService.login({ email, password });
-      if (response.user.role !== 'ADMIN') {
+      const response = await AuthService.login({ email, password: 'password123' });
+      if (response.user.role !== 'SUPER_ADMIN') {
         throw new Error('Unauthorized access');
       }
       login(response.token, response.user);

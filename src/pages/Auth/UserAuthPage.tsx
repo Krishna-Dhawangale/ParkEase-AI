@@ -29,7 +29,7 @@ export const UserAuthPage: React.FC = () => {
           password,
           firstName,
           lastName,
-          role: 'USER'
+          role: 'CUSTOMER'
         });
         login(response.token, response.user);
         navigate('/dashboard');

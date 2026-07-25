@@ -1,11 +1,30 @@
 import type { AuthUser } from '../types/auth';
 import type { ParkingOwnerProfile, ParkingLot } from '../types/models';
 
+import type { Tenant } from '../types/models';
+
+// [DEVELOPMENT MOCK]
+export const mockTenants: Tenant[] = [
+  {
+    id: 'tenant-1',
+    name: 'Phoenix Mall',
+    slug: 'phoenix-mall',
+    status: 'ACTIVE',
+    plan: 'PRO',
+    contactEmail: 'admin@phoenixmall.com',
+    contactPhone: '+1-555-0192',
+    isOnboarded: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+];
+
+// [DEVELOPMENT MOCK]
 export const mockUsers: AuthUser[] = [
   {
     id: 'user-1',
     email: 'user@parkease.com',
-    role: 'USER',
+    role: 'CUSTOMER',
     firstName: 'John',
     lastName: 'Doe',
     isEmailVerified: true,
@@ -14,16 +33,18 @@ export const mockUsers: AuthUser[] = [
   {
     id: 'owner-1',
     email: 'owner@parkease.com',
-    role: 'OWNER',
+    role: 'CLIENT_OWNER',
+    tenantId: 'tenant-1',
     firstName: 'Jane',
     lastName: 'Smith',
     isEmailVerified: true,
+    requiresPasswordChange: true,
     createdAt: new Date().toISOString(),
   },
   {
     id: 'admin-1',
     email: 'admin@parkease.com',
-    role: 'ADMIN',
+    role: 'SUPER_ADMIN',
     firstName: 'Super',
     lastName: 'Admin',
     isEmailVerified: true,
@@ -31,6 +52,7 @@ export const mockUsers: AuthUser[] = [
   }
 ];
 
+// [DEVELOPMENT MOCK]
 export const mockOwnerProfiles: ParkingOwnerProfile[] = [
   {
     id: 'profile-1',
@@ -46,11 +68,12 @@ export const mockOwnerProfiles: ParkingOwnerProfile[] = [
   }
 ];
 
+// [DEVELOPMENT MOCK]
 export const mockParkingLots: ParkingLot[] = [
   {
     id: 'lot-1',
-    ownerId: 'owner-1',
-    name: 'Downtown Central Parking',
+    tenantId: 'tenant-1',
+    name: 'Phoenix Mall Central Parking',
     description: 'Secure, covered parking in the heart of downtown.',
     address: {
       street: '123 Main St',

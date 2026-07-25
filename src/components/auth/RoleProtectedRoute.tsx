@@ -20,7 +20,7 @@ export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({
 
   if (!allowedRoles.includes(user.role)) {
     // If authenticated but wrong role, maybe go to their specific dashboard
-    const fallbackPath = user.role === 'OWNER' ? '/owner/dashboard' : user.role === 'ADMIN' ? '/admin' : '/dashboard';
+    const fallbackPath = ['CLIENT_OWNER', 'CLIENT_ADMIN', 'PARKING_MANAGER', 'SECURITY_GUARD', 'CASHIER', 'MAINTENANCE'].includes(user.role) ? '/admin' : user.role === 'SUPER_ADMIN' ? '/super-admin' : '/dashboard';
     return <Navigate to={fallbackPath} replace />;
   }
 

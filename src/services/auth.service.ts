@@ -1,5 +1,6 @@
 import type { AuthResponse, AuthUser, LoginCredentials, RegisterCredentials } from '../types/auth';
-import { mockUsers } from './api.mock';
+import { mockUsers, mockTenants } from './api.mock';
+import { useTenantStore } from '../store';
 
 // Helper to generate a fake JWT
 const generateFakeJwt = (user: AuthUser): string => {
@@ -24,6 +25,13 @@ export const AuthService = {
     
     if (!user) {
       throw new Error('Invalid email or password');
+    }
+
+    if (user.tenantId) {
+      const tenant = mockTenants.find(t => t.id === user.tenantId);
+      if (tenant) {
+        useTenantStore.getState().setTenant(tenant);
+      }
     }
 
     return {

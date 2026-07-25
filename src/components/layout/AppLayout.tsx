@@ -55,8 +55,8 @@ export function AppLayout() {
 
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
-  const isAdmin = user?.role === 'ADMIN';
-  const isOwner = user?.role === 'OWNER';
+  const isAdmin = user?.role === 'SUPER_ADMIN';
+  const isOwner = user?.role === 'CLIENT_OWNER' || user?.role === 'CLIENT_ADMIN';
 
   const currentNavItems = isAdmin ? adminNavItems : isOwner ? ownerNavItems : userNavItems;
 

@@ -12,13 +12,20 @@ export function LandingPage() {
   const navigate = useNavigate();
   const loginUser = useAuthStore((s) => s.login);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
 
-  // If already authenticated, redirect to dashboard immediately
+  // If already authenticated, redirect to appropriate dashboard immediately
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      if (user?.role === 'SUPER_ADMIN') {
+        navigate('/super-admin');
+      } else if (['CLIENT_OWNER', 'CLIENT_ADMIN', 'PARKING_MANAGER', 'SECURITY_GUARD', 'CASHIER', 'MAINTENANCE'].includes(user?.role || '')) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   // Video and Playback States
   const introVideoRef = useRef<HTMLVideoElement>(null);
@@ -85,7 +92,7 @@ export function LandingPage() {
         }
       }
 
-      const mockUserRole = email === 'admin@parkease.ai' ? 'ADMIN' : 'USER';
+      const mockUserRole = email === 'admin@parkease.ai' ? 'SUPER_ADMIN' : 'CUSTOMER';
       loginUser('demo-token', {
         id: 'demo-user',
         email,
@@ -95,7 +102,7 @@ export function LandingPage() {
         isEmailVerified: true,
         createdAt: new Date().toISOString()
       });
-      navigate(mockUserRole === 'ADMIN' ? '/admin' : '/dashboard');
+      navigate(mockUserRole === 'SUPER_ADMIN' ? '/super-admin' : '/dashboard');
     }, 1500);
   };
 

@@ -1,4 +1,13 @@
-export type Role = 'USER' | 'OWNER' | 'ADMIN';
+export type Role =
+  | 'CUSTOMER'
+  | 'CLIENT_OWNER'
+  | 'CLIENT_ADMIN'
+  | 'PARKING_MANAGER'
+  | 'SECURITY_GUARD'
+  | 'CASHIER'
+  | 'MAINTENANCE'
+  | 'SUPER_ADMIN'
+  | 'SUPER_ADMIN_SUPPORT';
 
 export interface AuthUser {
   id: string;
@@ -8,6 +17,8 @@ export interface AuthUser {
   lastName: string;
   profileImage?: string;
   isEmailVerified: boolean;
+  tenantId?: string; // Nullable for CUSTOMER and SUPER_ADMIN
+  requiresPasswordChange?: boolean;
   createdAt: string;
 }
 
