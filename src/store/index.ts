@@ -43,6 +43,7 @@ interface AuthStore {
   user: AuthUser | null;
   token: string | null;
   login: (token: string, user: AuthUser) => void;
+  updateUser: (user: AuthUser) => void;
   logout: () => void;
 }
 
@@ -65,6 +66,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
     localStorage.setItem('parkease-token', token);
     localStorage.setItem('parkease-user', JSON.stringify(user));
     set({ isAuthenticated: true, user, token });
+  },
+  updateUser: (user) => {
+    localStorage.setItem('parkease-user', JSON.stringify(user));
+    set({ user });
   },
   logout: () => {
     localStorage.removeItem('parkease-token');

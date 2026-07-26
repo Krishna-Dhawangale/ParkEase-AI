@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import {
@@ -17,7 +17,8 @@ import {
   LogOut,
   Building2,
 } from 'lucide-react';
-import { useAdminSidebarStore, useThemeStore, useWebSocketStore } from '../../../store';
+import { useAdminSidebarStore, useThemeStore, useWebSocketStore, useAuthStore, useTenantStore } from '../../../store';
+import { FacilityService, type ClientFacility } from '../parking/facility.service';
 import { cn } from '../../../lib/utils';
 
 /* ───────────────────────── Route Label Map ──────────────────────────────────── */
@@ -58,10 +59,37 @@ const AdminNavbar = () => {
   const { setMobileOpen } = useAdminSidebarStore();
   const { theme, toggleTheme } = useThemeStore();
   const { isConnected, isReconnecting } = useWebSocketStore();
+  const { user, logout } = useAuthStore();
+  const { currentTenant } = useTenantStore();
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [facilities, setFacilities] = useState<ClientFacility[]>([]);
+  const [activeFacility, setActiveFacility] = useState<ClientFacility | null>(null);
+
+  const tenantId = user?.tenantId || currentTenant?.id;
+
+  // Load this tenant's facilities
+  useEffect(() => {
+    if (!tenantId) return;
+    FacilityService.getByTenant(tenantId).then(facs => {
+      setFacilities(facs);
+      if (facs.length > 0 && !activeFacility) setActiveFacility(facs[0]);
+    }).catch(() => {/* ignore */});
+  }, [tenantId]);
+
   const breadcrumbs = getBreadcrumbs(location.pathname);
+
+  const displayName = user
+    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Admin'
+    : 'Admin';
+  const displayEmail = user?.email || 'admin@parkease.ai';
+  const initials = displayName.charAt(0).toUpperCase();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login/admin');
+  };
 
   return (
     <header className="fixed left-0 right-0 top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 lg:px-6">
@@ -99,42 +127,56 @@ const AdminNavbar = () => {
           {breadcrumbs[breadcrumbs.length - 1]?.label ?? 'Admin'}
         </span>
 
-        {/* ── Facility Selector ── */}
-        <div className="hidden md:flex ml-2 pl-4 border-l border-slate-200 dark:border-slate-800">
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
-              <button className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div className="text-left flex flex-col">
-                  <span className="text-slate-900 dark:text-white leading-tight">Phoenix Mall</span>
-                  <span className="text-[10px] font-medium text-slate-500 leading-tight">Nagpur</span>
-                </div>
-                <ChevronDown className="w-4 h-4 text-slate-400 ml-1" />
-              </button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content align="start" sideOffset={8} className="z-50 w-56 rounded-xl border border-slate-200 bg-white py-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-800">
-                <DropdownMenu.Label className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Select Facility
-                </DropdownMenu.Label>
-                <DropdownMenu.Item className="mx-1.5 flex cursor-pointer flex-col rounded-lg px-3 py-2 text-sm text-slate-700 outline-none transition-colors bg-blue-50 dark:bg-blue-500/10 dark:text-slate-300">
-                  <span className="font-semibold text-blue-700 dark:text-blue-300">Phoenix Mall</span>
-                  <span className="text-[11px] font-medium text-blue-500/80">Nagpur</span>
-                </DropdownMenu.Item>
-                <DropdownMenu.Item className="mx-1.5 flex cursor-pointer flex-col rounded-lg px-3 py-2 text-sm text-slate-700 outline-none transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700">
-                  <span className="font-semibold text-slate-900 dark:text-white">Airport Terminal</span>
-                  <span className="text-[11px] font-medium text-slate-500">Mumbai</span>
-                </DropdownMenu.Item>
-                <DropdownMenu.Separator className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
-                <DropdownMenu.Item className="mx-1.5 flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 outline-none transition-colors hover:bg-slate-100 dark:hover:bg-slate-700">
-                  View All Facilities
-                </DropdownMenu.Item>
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
-        </div>
+        {/* ── Facility Selector — only if tenant has facilities ── */}
+        {facilities.length > 0 && (
+          <div className="hidden md:flex ml-2 pl-4 border-l border-slate-200 dark:border-slate-800">
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <button className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
+                    <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="text-left flex flex-col">
+                    <span className="text-slate-900 dark:text-white leading-tight">{activeFacility?.name ?? 'Select Facility'}</span>
+                    <span className="text-[10px] font-medium text-slate-500 leading-tight">{activeFacility?.city ?? ''}</span>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-slate-400 ml-1" />
+                </button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content align="start" sideOffset={8} className="z-50 w-56 rounded-xl border border-slate-200 bg-white py-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                  <DropdownMenu.Label className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Select Facility
+                  </DropdownMenu.Label>
+                  {facilities.map(fac => (
+                    <DropdownMenu.Item
+                      key={fac.id}
+                      onSelect={() => setActiveFacility(fac)}
+                      className={cn(
+                        "mx-1.5 flex cursor-pointer flex-col rounded-lg px-3 py-2 text-sm outline-none transition-colors",
+                        activeFacility?.id === fac.id
+                          ? "bg-blue-50 dark:bg-blue-500/10 text-slate-700 dark:text-slate-300"
+                          : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+                      )}
+                    >
+                      <span className={cn("font-semibold", activeFacility?.id === fac.id ? "text-blue-700 dark:text-blue-300" : "text-slate-900 dark:text-white")}>
+                        {fac.name}
+                      </span>
+                      <span className="text-[11px] font-medium text-slate-500">{fac.city}</span>
+                    </DropdownMenu.Item>
+                  ))}
+                  <DropdownMenu.Separator className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
+                  <DropdownMenu.Item
+                    onSelect={() => navigate('/admin/parking')}
+                    className="mx-1.5 flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 outline-none transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
+                  >
+                    View All Facilities
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
+          </div>
+        )}
       </div>
 
       {/* ── Right: Actions ── */}
@@ -175,7 +217,6 @@ const AdminNavbar = () => {
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-white dark:ring-slate-900" />
         </button>
 
         {/* Theme Toggle */}
@@ -215,14 +256,14 @@ const AdminNavbar = () => {
           <DropdownMenu.Trigger asChild>
             <button className="flex items-center gap-2.5 rounded-lg p-1.5 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                A
+                {initials}
               </div>
               <div className="hidden text-left md:block">
                 <p className="text-sm font-medium leading-tight text-slate-900 dark:text-white">
-                  Admin
+                  {displayName}
                 </p>
                 <p className="text-[11px] leading-tight text-slate-500">
-                  admin@parkease.ai
+                  {displayEmail}
                 </p>
               </div>
               <ChevronDown className="hidden h-4 w-4 text-slate-400 md:block" />
@@ -237,9 +278,9 @@ const AdminNavbar = () => {
             >
               <DropdownMenu.Label className="px-3 py-2">
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
-                  Admin User
+                  {displayName}
                 </p>
-                <p className="text-xs text-slate-500">admin@parkease.ai</p>
+                <p className="text-xs text-slate-500">{displayEmail}</p>
               </DropdownMenu.Label>
 
               <DropdownMenu.Separator className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
@@ -272,7 +313,7 @@ const AdminNavbar = () => {
 
               <DropdownMenu.Item
                 className="mx-1.5 flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-red-600 outline-none transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
-                onSelect={() => navigate('/')}
+                onSelect={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
                 Logout

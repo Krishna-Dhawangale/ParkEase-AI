@@ -14,32 +14,15 @@ export function LandingPage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
 
-  // If already authenticated, redirect to appropriate dashboard immediately
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (user?.role === 'SUPER_ADMIN') {
-        navigate('/super-admin');
-      } else if (['CLIENT_OWNER', 'CLIENT_ADMIN', 'PARKING_MANAGER', 'SECURITY_GUARD', 'CASHIER', 'MAINTENANCE'].includes(user?.role || '')) {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
-    }
-  }, [isAuthenticated, user, navigate]);
+  // Removed auto-redirect. Users can now stay on the landing page even if authenticated.
+  const handleGetStarted = () => {
+    startAuthTransition();
+  };
 
   // Video and Playback States
   const introVideoRef = useRef<HTMLVideoElement>(null);
   const [videoProgress, setVideoProgress] = useState(0); // 0 to 100 %
   const [screenState, setScreenState] = useState<'intro' | 'transition' | 'auth'>('intro');
-  const [isSignUp, setIsSignUp] = useState(false);
-
-  // Form inputs
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [titleFinished, setTitleFinished] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -61,50 +44,7 @@ export function LandingPage() {
     }, 800); // match fade transition timing
   };
 
-  const handleAuthSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
 
-    if (!email || !password) {
-      setError('Please fill in all fields.');
-      return;
-    }
-
-    if (isSignUp && !fullName) {
-      setError('Please enter your full name.');
-      return;
-    }
-
-    setLoading(true);
-
-    // Simple simulation of authentication
-    setTimeout(() => {
-      setLoading(false);
-
-      if (!isSignUp) {
-        if (email === 'admin@parkease.ai' && password !== 'admin123') {
-          setError('Invalid password for Admin account. Use admin123.');
-          return;
-        }
-        if (email === 'user@parkease.ai' && password !== 'user123') {
-          setError('Invalid password for User account. Use user123.');
-          return;
-        }
-      }
-
-      const mockUserRole = email === 'admin@parkease.ai' ? 'SUPER_ADMIN' : 'CUSTOMER';
-      loginUser('demo-token', {
-        id: 'demo-user',
-        email,
-        role: mockUserRole,
-        firstName: 'Demo',
-        lastName: 'User',
-        isEmailVerified: true,
-        createdAt: new Date().toISOString()
-      });
-      navigate(mockUserRole === 'SUPER_ADMIN' ? '/super-admin' : '/dashboard');
-    }, 1500);
-  };
 
   // Determine if title & button should animate into view
   const triggerIntroElements = videoProgress >= 38;
@@ -199,7 +139,7 @@ export function LandingPage() {
                         initial={{ opacity: 0, y: 15 }}
                         animate={titleFinished ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
                         transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-                        onClick={startAuthTransition}
+                        onClick={handleGetStarted}
                         className={cn(
                           "group flex items-center gap-2 px-8 py-3.5 rounded-2xl text-base font-semibold text-white bg-[var(--brand)] hover:bg-[var(--brand-light)] active:scale-95 transition-all shadow-lg shadow-[var(--brand)]/30",
                           !titleFinished && "pointer-events-none opacity-0"
@@ -255,149 +195,58 @@ export function LandingPage() {
                 className="w-full max-w-md bg-white/10 dark:bg-black/40 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden"
               >
                 {/* Form header */}
-                <div className="text-center mb-6">
+                <div className="text-center mb-8">
                   <h2 className="text-2xl font-bold tracking-tight text-white">
-                    {isSignUp ? 'Create your account' : 'Welcome back'}
+                    Select Portal
                   </h2>
-                  <p className="text-xs text-white/60 mt-1">
-                    {isSignUp ? 'Sign up to access the smart portal' : 'Enter credentials to access the platform'}
+                  <p className="text-sm text-white/70 mt-2">
+                    Choose your destination to log in to ParkEase AI.
                   </p>
                 </div>
 
-                {/* Switch Tabs */}
-                <div className="flex bg-white/10 rounded-xl p-1 mb-5">
+                <div className="space-y-4">
                   <button
-                    onClick={() => { setIsSignUp(false); setError(''); }}
-                    className={cn(
-                      'flex-1 py-2 rounded-lg text-xs font-bold transition-all',
-                      !isSignUp ? 'bg-[var(--brand)] text-white shadow-md' : 'text-white/60 hover:text-white'
-                    )}
+                    onClick={() => navigate('/login/user')}
+                    className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white p-4 rounded-xl flex items-center gap-4 transition-all group"
                   >
-                    Sign In
+                    <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <User className="w-6 h-6" />
+                    </div>
+                    <div className="text-left flex-1">
+                      <div className="font-semibold text-base">Customer Portal</div>
+                      <div className="text-xs text-white/50">For drivers and standard users</div>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
                   </button>
+
                   <button
-                    onClick={() => { setIsSignUp(true); setError(''); }}
-                    className={cn(
-                      'flex-1 py-2 rounded-lg text-xs font-bold transition-all',
-                      isSignUp ? 'bg-[var(--brand)] text-white shadow-md' : 'text-white/60 hover:text-white'
-                    )}
+                    onClick={() => navigate('/login/admin')}
+                    className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white p-4 rounded-xl flex items-center gap-4 transition-all group"
                   >
-                    Create Account
+                    <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Car className="w-6 h-6" />
+                    </div>
+                    <div className="text-left flex-1">
+                      <div className="font-semibold text-base">Client Portal</div>
+                      <div className="text-xs text-white/50">For parking facility owners and staff</div>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/super-admin/login')}
+                    className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white p-4 rounded-xl flex items-center gap-4 transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-[var(--brand)]/20 text-[var(--brand-light)] flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Shield className="w-6 h-6" />
+                    </div>
+                    <div className="text-left flex-1">
+                      <div className="font-semibold text-base">Super Admin</div>
+                      <div className="text-xs text-white/50">Platform control plane</div>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
                   </button>
                 </div>
-
-                {/* Demo Credentials Helper */}
-                {!isSignUp && (
-                  <div className="mb-4 p-3 rounded-xl bg-white/5 border border-white/10 text-white/70 text-xs space-y-1.5 font-sans text-left">
-                    <div className="font-semibold text-white">Demo Accounts:</div>
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
-                      <div>
-                        <span className="text-white/40 block">Admin Email:</span>
-                        <code className="text-teal-300 font-mono">admin@parkease.ai</code>
-                      </div>
-                      <div>
-                        <span className="text-white/40 block">Password:</span>
-                        <code className="text-teal-300 font-mono">admin123</code>
-                      </div>
-                      <div>
-                        <span className="text-white/40 block">User Email:</span>
-                        <code className="text-teal-300 font-mono">user@parkease.ai</code>
-                      </div>
-                      <div>
-                        <span className="text-white/40 block">Password:</span>
-                        <code className="text-teal-300 font-mono">user123</code>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Error Display */}
-                <AnimatePresence>
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mb-4 p-3 rounded-xl bg-red-950/40 border border-red-500/40 text-red-200 text-xs flex items-center gap-2"
-                    >
-                      <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-                      <span>{error}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Authentication Form */}
-                <form onSubmit={handleAuthSubmit} className="space-y-4">
-                  {isSignUp && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="space-y-1.5"
-                    >
-                      <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">Full Name</label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                        <input
-                          type="text"
-                          value={fullName}
-                          onChange={e => setFullName(e.target.value)}
-                          placeholder="Girish Kumar"
-                          className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">Email Address</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        placeholder="admin@parkease.ai"
-                        className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">Password</label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full bg-white/5 border border-white/10 focus:border-[var(--brand-light)] focus:bg-white/10 rounded-xl py-3 pl-10 pr-10 text-sm text-white placeholder-white/30 outline-none transition-all"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-[var(--brand)] hover:bg-[var(--brand-light)] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[var(--brand)]/20 flex items-center justify-center gap-2 mt-4"
-                  >
-                    {loading ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        {isSignUp ? 'Sign Up' : 'Sign In'}
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </form>
 
                 {/* Bottom Secure indicator */}
                 <div className="flex items-center justify-center gap-1.5 mt-5 text-[10px] text-white/40">

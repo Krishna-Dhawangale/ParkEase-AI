@@ -19,8 +19,17 @@ export interface AuthUser {
   isEmailVerified: boolean;
   tenantId?: string; // Nullable for CUSTOMER and SUPER_ADMIN
   requiresPasswordChange?: boolean;
+  profileSetupComplete?: boolean; // true after /admin/welcome is submitted
+  accountStatus?: 'ACTIVE' | 'DISABLED';
+  // Simplified onboardingStatus — approval/live status for the FACILITY, not the user login flow
+  onboardingStatus?: 'ACCOUNT_CREATED' | 'PASSWORD_CHANGED' | 'PROFILE_SETUP_COMPLETE' | 'APPROVED' | 'LIVE';
+  // Contact details set during welcome setup
+  phone?: string;
+  city?: string;
+  contactEmail?: string;
   createdAt: string;
 }
+
 
 export interface JwtPayload {
   sub: string;

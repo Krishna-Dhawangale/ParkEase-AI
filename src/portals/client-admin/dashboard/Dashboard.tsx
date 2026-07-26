@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useTenantStore, useWebSocketStore } from '../../../store';
+import { useTenantStore, useWebSocketStore, useAuthStore } from '../../../store';
 import { DashboardService } from '../../../services/dashboard.service';
+import { FacilityService, type ClientFacility } from '../parking/facility.service';
 import {
   RefreshCw,
   Download,
@@ -21,6 +22,8 @@ import {
   ShieldAlert,
   CarFront,
   Zap,
+  Plus,
+  Building2,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -48,7 +51,7 @@ const getFormattedDate = () => {
 
 const Dashboard = () => {
   const { currentTenant } = useTenantStore();
-  const isDraft = currentTenant?.status === 'DRAFT' || currentTenant?.status === 'TRIAL';
+  const { user } = useAuthStore();
 
   const [isLoading, setIsLoading] = useState(true);
   const [kpis, setKpis] = useState<KPICard[]>([]);
@@ -56,19 +59,26 @@ const Dashboard = () => {
   const [alerts, setAlerts] = useState<RecentAlert[]>([]);
   const [occupancyTrend, setOccupancyTrend] = useState<PeakHourDataPoint[]>([]);
   const [revenue, setRevenue] = useState<RevenueDataPoint[]>([]);
+  const [hasFacilities, setHasFacilities] = useState(true);
+  const [draftFacility, setDraftFacility] = useState<ClientFacility | null>(null);
 
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const tenantId = currentTenant?.id || 'default';
-      const [kpiData, bookingsData, alertsData, peakData, revData] = await Promise.all([
+      const tenantId = user?.tenantId || currentTenant?.id || 'default';
+      const [kpiData, bookingsData, alertsData, peakData, revData, facilities] = await Promise.all([
         DashboardService.getKPIs(tenantId),
         DashboardService.getRecentBookings(tenantId),
         DashboardService.getRecentAlerts(tenantId),
         DashboardService.getPeakHourData(tenantId),
         DashboardService.getRevenueData(tenantId),
+        FacilityService.getByTenant(tenantId)
       ]);
       
+      setHasFacilities(facilities.length > 0);
+      // Show draft banner if at least one facility exists that is still DRAFT (not submitted yet)
+      const firstDraft = facilities.find(f => f.status === 'DRAFT') ?? null;
+      setDraftFacility(firstDraft);
       setKpis(kpiData);
       setBookings(bookingsData);
       setAlerts(alertsData);
@@ -128,16 +138,16 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen pb-12 bg-[#F9FAFB] dark:bg-[#09090b] text-[#18181b] dark:text-[#fafafa]">
-      {/* Top Warning Banner if DRAFT */}
-      {isDraft && (
+      {/* Top Warning Banner — only show when a DRAFT facility exists */}
+      {draftFacility && (
         <div className="bg-[#fffbeb] dark:bg-[#422006] border-b border-[#fcd34d] dark:border-[#78350f] px-6 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-[#92400e] dark:text-[#fde68a]">
             <AlertTriangle className="w-4 h-4" />
-            <span className="font-medium">Facility is currently in DRAFT status.</span>
-            <span className="hidden sm:inline">Complete your Digital Twin configuration to request Go-Live.</span>
+            <span className="font-medium">Facility is in DRAFT status.</span>
+            <span className="hidden sm:inline">Configure pricing and submit for approval to go live.</span>
           </div>
-          <Link to="/admin/digital-twin" className="text-xs font-bold bg-[#f59e0b] hover:bg-[#d97706] text-white px-3 py-1 rounded transition-colors">
-            Open Builder
+          <Link to={`/admin/parking/${draftFacility.id}`} className="text-xs font-bold bg-[#f59e0b] hover:bg-[#d97706] text-white px-3 py-1 rounded transition-colors">
+            Configure Now
           </Link>
         </div>
       )}
@@ -151,9 +161,9 @@ const Dashboard = () => {
               <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
               <span className={cn(
                 "text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider",
-                isDraft ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+                draftFacility ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
               )}>
-                {isDraft ? 'DRAFT' : 'LIVE'}
+                {draftFacility ? 'DRAFT' : 'LIVE'}
               </span>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -252,11 +262,30 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Live Parking Status & Entry/Exit */}
+          {/* Main content area */}
           <div className="lg:col-span-2 space-y-6">
             
-            {/* Charts Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {!hasFacilities ? (
+              <div className="bg-white dark:bg-slate-900 border border-brand-200 dark:border-brand-900/50 rounded-xl p-10 text-center shadow-sm">
+                <div className="w-16 h-16 bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Map className="w-8 h-8" />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Welcome to ParkEase AI</h2>
+                <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-8">
+                  Your workspace is ready. Add your first parking facility to start configuring your smart parking operation.
+                </p>
+                <Link
+                  to="/admin/parking/new"
+                  className="inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 px-6 rounded-lg text-sm transition-all shadow-sm hover:shadow-md"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add First Parking
+                </Link>
+              </div>
+            ) : (
+              <>
+                {/* Charts Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="card border border-gray-200 dark:border-gray-800 rounded-lg p-5">
                 <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Revenue Trend (30 Days)</h3>
                 <div className="h-[200px] w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900/50 rounded border border-dashed border-gray-200 dark:border-gray-800">
@@ -347,6 +376,8 @@ const Dashboard = () => {
                 )}
               </div>
             </div>
+              </>
+            )}
           </div>
 
           {/* Right Sidebar: Alerts & Facility Status */}
@@ -394,24 +425,31 @@ const Dashboard = () => {
 
             <div className="card border border-gray-200 dark:border-gray-800 rounded-lg p-5">
               <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Live Parking Status</h3>
-              {/* Fake list for zero-state */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-medium"><Map className="w-4 h-4 text-gray-400" /> Ground Floor</div>
-                  <div className="text-xs font-mono text-gray-500">0 / 0</div>
+              
+              {!hasFacilities ? (
+                <div className="py-8 text-center flex flex-col items-center">
+                  <Building2 className="w-8 h-8 text-slate-300 dark:text-slate-700 mb-3" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No facilities configured</p>
                 </div>
-                <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: '0%' }}></div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-medium"><Map className="w-4 h-4 text-gray-400" /> Ground Floor</div>
+                    <div className="text-xs font-mono text-gray-500">0 / 0</div>
+                  </div>
+                  <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: '0%' }}></div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center gap-2 text-sm font-medium"><Map className="w-4 h-4 text-gray-400" /> Basement B1</div>
+                    <div className="text-xs font-mono text-gray-500">0 / 0</div>
+                  </div>
+                  <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 rounded-full" style={{ width: '0%' }}></div>
+                  </div>
                 </div>
-                
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-2 text-sm font-medium"><Map className="w-4 h-4 text-gray-400" /> Basement B1</div>
-                  <div className="text-xs font-mono text-gray-500">0 / 0</div>
-                </div>
-                <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500 rounded-full" style={{ width: '0%' }}></div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

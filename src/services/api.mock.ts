@@ -1,9 +1,79 @@
 import type { AuthUser } from '../types/auth';
 import type { ParkingOwnerProfile, ParkingLot } from '../types/models';
-
 import type { Tenant } from '../types/models';
 
-// [DEVELOPMENT MOCK]
+// ─── Email Normalization ────────────────────────────────────────────────────
+// Single source of truth for email normalization across the entire app.
+// Used by: organization creation, client admin creation, login, registration.
+
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+// ─── Mock Users Persistence ─────────────────────────────────────────────────
+// mockUsers is the SINGLE authentication source of truth.
+// It must persist to localStorage so dynamically-created users survive page reloads.
+
+const MOCK_USERS_KEY = 'parkease_mock_users';
+
+// Hardcoded seed users — these always exist as baseline.
+const SEED_USERS: AuthUser[] = [
+  {
+    id: 'user-1',
+    email: 'user@parkease.com',
+    role: 'CUSTOMER',
+    firstName: 'John',
+    lastName: 'Doe',
+    isEmailVerified: true,
+    accountStatus: 'ACTIVE',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'admin-1',
+    email: 'admin@parkease.com',
+    role: 'SUPER_ADMIN',
+    firstName: 'Super',
+    lastName: 'Admin',
+    isEmailVerified: true,
+    accountStatus: 'ACTIVE',
+    createdAt: new Date().toISOString(),
+  }
+];
+
+// Hydrate: merge seeds with any persisted dynamic users.
+// Seeds win on ID conflict (so seed data is always current).
+function hydrateMockUsers(): AuthUser[] {
+  const seedMap = new Map<string, AuthUser>();
+  SEED_USERS.forEach(u => seedMap.set(u.id, u));
+
+  try {
+    const raw = localStorage.getItem(MOCK_USERS_KEY);
+    if (raw) {
+      const persisted: AuthUser[] = JSON.parse(raw);
+      persisted.forEach(u => {
+        // Only add if not a seed user (seeds are always authoritative)
+        if (!seedMap.has(u.id)) {
+          seedMap.set(u.id, u);
+        }
+      });
+    }
+  } catch { /* ignore parse errors */ }
+
+  return Array.from(seedMap.values());
+}
+
+// The single mutable array used by AuthService and SuperAdminService.
+export const mockUsers: AuthUser[] = hydrateMockUsers();
+
+// Call this after ANY mutation to mockUsers (push, property change).
+export function persistMockUsers(): void {
+  try {
+    localStorage.setItem(MOCK_USERS_KEY, JSON.stringify(mockUsers));
+  } catch { /* ignore quota errors */ }
+}
+
+// ─── Mock Tenants ───────────────────────────────────────────────────────────
+
 export const mockTenants: Tenant[] = [
   {
     id: 'tenant-1',
@@ -14,45 +84,14 @@ export const mockTenants: Tenant[] = [
     contactEmail: 'admin@phoenixmall.com',
     contactPhone: '+1-555-0192',
     isOnboarded: false,
+    type: 'Mall',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
 ];
 
-// [DEVELOPMENT MOCK]
-export const mockUsers: AuthUser[] = [
-  {
-    id: 'user-1',
-    email: 'user@parkease.com',
-    role: 'CUSTOMER',
-    firstName: 'John',
-    lastName: 'Doe',
-    isEmailVerified: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'owner-1',
-    email: 'owner@parkease.com',
-    role: 'CLIENT_OWNER',
-    tenantId: 'tenant-1',
-    firstName: 'Jane',
-    lastName: 'Smith',
-    isEmailVerified: true,
-    requiresPasswordChange: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'admin-1',
-    email: 'admin@parkease.com',
-    role: 'SUPER_ADMIN',
-    firstName: 'Super',
-    lastName: 'Admin',
-    isEmailVerified: true,
-    createdAt: new Date().toISOString(),
-  }
-];
+// ─── Mock Owner Profiles ────────────────────────────────────────────────────
 
-// [DEVELOPMENT MOCK]
 export const mockOwnerProfiles: ParkingOwnerProfile[] = [
   {
     id: 'profile-1',
@@ -68,7 +107,8 @@ export const mockOwnerProfiles: ParkingOwnerProfile[] = [
   }
 ];
 
-// [DEVELOPMENT MOCK]
+// ─── Mock Parking Lots ──────────────────────────────────────────────────────
+
 export const mockParkingLots: ParkingLot[] = [
   {
     id: 'lot-1',

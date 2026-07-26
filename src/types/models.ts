@@ -4,10 +4,22 @@ export interface Tenant {
   id: string;
   name: string; // e.g., 'Phoenix Mall', 'Airport Authority'
   slug: string;
-  status: 'ACTIVE' | 'SUSPENDED' | 'TRIAL' | 'DRAFT';
+  status: 'ACTIVE' | 'SUSPENDED' | 'TRIAL' | 'DRAFT' | 'ONBOARDING' | 'INACTIVE';
   plan: 'BASIC' | 'PRO' | 'ENTERPRISE';
+  type?: string;
+  contactPerson?: string;
   contactEmail: string;
   contactPhone: string;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  gstNumber?: string;
+  website?: string;
+  internalNotes?: string;
   isOnboarded?: boolean;
   createdAt: string;
   updatedAt: string;

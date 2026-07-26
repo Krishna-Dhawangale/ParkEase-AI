@@ -21,6 +21,12 @@ export const UserAuthPage: React.FC = () => {
     try {
       if (isLogin) {
         const response = await AuthService.login({ email, password });
+        if (response.user.role !== 'CUSTOMER') {
+          throw new Error('Unauthorized role for Customer Portal. Please use the appropriate login portal.');
+        }
+        if (response.user.accountStatus === 'DISABLED') {
+          throw new Error('Your account is currently disabled. Contact support.');
+        }
         login(response.token, response.user);
         navigate('/dashboard');
       } else {
