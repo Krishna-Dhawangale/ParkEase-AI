@@ -7,17 +7,17 @@ export const FacilityManagement: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto text-slate-100">
+    <div className="space-y-6 max-w-[1600px] mx-auto text-txt-primary">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-bg-card p-6 rounded-2xl border border-bdr shadow-xl">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
               Facility Management
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Owned Parking Properties</h1>
-          <p className="text-xs text-slate-400 mt-1">Configure capacity, EV charging ports, operating hours, base pricing, and status.</p>
+          <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Owned Parking Properties</h1>
+          <p className="text-xs text-txt-secondary mt-1">Configure capacity, EV charging ports, operating hours, base pricing, and status.</p>
         </div>
 
         <button
@@ -32,11 +32,11 @@ export const FacilityManagement: React.FC = () => {
       {/* Facilities Cards */}
       <div className="grid md:grid-cols-2 gap-6">
         {lots.map(lot => (
-          <div key={lot.id} className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 hover:border-slate-700 transition-all">
+          <div key={lot.id} className="p-6 rounded-2xl bg-bg-card border border-bdr space-y-4 hover:border-bdr transition-all">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-bold text-lg text-white">{lot.name}</h3>
-                <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                <h3 className="font-bold text-lg text-txt-primary">{lot.name}</h3>
+                <p className="text-xs text-txt-secondary flex items-center gap-1 mt-1">
                   <MapPin className="w-3.5 h-3.5 text-emerald-400" />
                   {lot.address.street}, {lot.address.city}, {lot.address.state}
                 </p>
@@ -46,19 +46,19 @@ export const FacilityManagement: React.FC = () => {
               </span>
             </div>
 
-            <p className="text-xs text-slate-300">{lot.description}</p>
+            <p className="text-xs text-txt-secondary">{lot.description}</p>
 
             <div className="grid grid-cols-3 gap-3 pt-2">
-              <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 text-center">
-                <p className="text-[10px] text-slate-400 uppercase font-semibold">Total Capacity</p>
-                <p className="text-lg font-bold text-white mt-0.5">{lot.capacity} Slots</p>
+              <div className="p-3 rounded-xl bg-bg-elevated/80 border border-bdr text-center">
+                <p className="text-[10px] text-txt-secondary uppercase font-semibold">Total Capacity</p>
+                <p className="text-lg font-bold text-txt-primary mt-0.5">{lot.capacity} Slots</p>
               </div>
-              <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 text-center">
-                <p className="text-[10px] text-slate-400 uppercase font-semibold">Base Tariff</p>
+              <div className="p-3 rounded-xl bg-bg-elevated/80 border border-bdr text-center">
+                <p className="text-[10px] text-txt-secondary uppercase font-semibold">Base Tariff</p>
                 <p className="text-lg font-bold text-emerald-400 mt-0.5">${lot.basePricePerHour}/hr</p>
               </div>
-              <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 text-center">
-                <p className="text-[10px] text-slate-400 uppercase font-semibold">EV Chargers</p>
+              <div className="p-3 rounded-xl bg-bg-elevated/80 border border-bdr text-center">
+                <p className="text-[10px] text-txt-secondary uppercase font-semibold">EV Chargers</p>
                 <p className="text-lg font-bold text-teal-400 mt-0.5">8 Ports</p>
               </div>
             </div>
@@ -66,20 +66,20 @@ export const FacilityManagement: React.FC = () => {
             {/* Features Tags */}
             <div className="flex flex-wrap gap-2 pt-2">
               {lot.features.map(f => (
-                <span key={f} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                <span key={f} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-bg-elevated text-txt-secondary border border-bdr">
                   ✓ {f}
                 </span>
               ))}
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-              <span className="text-xs text-slate-400 flex items-center gap-1">
+            <div className="flex items-center justify-between pt-4 border-t border-bdr">
+              <span className="text-xs text-txt-secondary flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-emerald-400" />
                 Operating: 24/7 Mon-Sun
               </span>
 
               <div className="flex items-center gap-2">
-                <button className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1">
+                <button className="px-3 py-1.5 rounded-lg bg-bg-elevated hover:bg-bg-hover text-txt-primary text-xs font-semibold flex items-center gap-1">
                   <Edit3 className="w-3.5 h-3.5" /> Edit Details
                 </button>
               </div>

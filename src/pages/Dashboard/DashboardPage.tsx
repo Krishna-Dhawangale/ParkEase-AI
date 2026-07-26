@@ -96,7 +96,7 @@ const statusColors: Record<string, string> = {
 };
 
 const colorMap = {
-  brand: { bg: 'bg-[var(--brand)]/10 dark:bg-[var(--brand-light)]/10', icon: 'text-[var(--brand)] dark:text-[var(--brand-light)]', ring: 'ring-[var(--brand)]/20' },
+  brand: { bg: 'bg-brand/10 dark:bg-[var(--brand-light)]/10', icon: 'text-brand', ring: 'ring-[var(--brand)]/20' },
   danger: { bg: 'bg-red-50 dark:bg-red-900/20', icon: 'text-red-600 dark:text-red-400', ring: 'ring-red-200' },
   amber: { bg: 'bg-amber-50 dark:bg-amber-900/20', icon: 'text-amber-600 dark:text-amber-400', ring: 'ring-amber-200' },
   success: { bg: 'bg-green-50 dark:bg-green-900/20', icon: 'text-green-600 dark:text-green-400', ring: 'ring-green-200' },
@@ -123,7 +123,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="card p-3 shadow-hover">
-      <p className="text-xs font-semibold text-[var(--text-primary)] dark:text-white mb-1">{label}</p>
+      <p className="text-xs font-semibold text-txt-primary mb-1">{label}</p>
       {payload.map((entry: any) => (
         <p key={entry.name} className="text-xs" style={{ color: entry.color }}>
           {entry.name}: {entry.name === 'revenue' ? `₹${entry.value.toLocaleString()}` : `${entry.value}%`}
@@ -147,17 +147,17 @@ export function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">
+          <h1 className="text-2xl font-bold text-txt-primary tracking-tight">
             Good morning, Girish 👋
           </h1>
-          <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">
+          <p className="text-sm text-txt-secondary mt-0.5">
             Here's what's happening at your parking facility today.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Time range selector */}
-          <div className="flex items-center bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] dark:border-[var(--border)] rounded-xl p-1">
+          <div className="flex items-center bg-bg-card border border-bdr rounded-xl p-1">
             {['today', 'week', 'month'].map(range => (
               <button
                 key={range}
@@ -165,8 +165,8 @@ export function DashboardPage() {
                 className={cn(
                   'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize',
                   timeRange === range
-                    ? 'bg-[var(--brand)] text-white'
-                    : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-white'
+                    ? 'bg-brand text-white'
+                    : 'text-txt-secondary hover:text-txt-primary dark:hover:text-txt-primary'
                 )}
               >
                 {range}
@@ -219,29 +219,29 @@ export function DashboardPage() {
                 <div className={cn(
                   'flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full',
                   card.changeType === 'positive' && 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400',
-                  card.changeType === 'neutral' && 'bg-[var(--bg-primary)] dark:bg-[var(--border)] text-[var(--text-secondary)]',
+                  card.changeType === 'neutral' && 'bg-bg-primary dark:bg-bg-secondary text-txt-secondary',
                 )}>
                   {card.changeType === 'positive' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                   {card.change}
                 </div>
               </div>
-              <div className="text-2xl font-bold text-[var(--text-primary)] dark:text-white mb-0.5">{card.value}</div>
-              <div className="text-xs font-medium text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">{card.title}</div>
-              <div className="text-[11px] text-[var(--text-secondary)] dark:text-[var(--border)] mt-1">{card.sub}</div>
+              <div className="text-2xl font-bold text-txt-primary mb-0.5">{card.value}</div>
+              <div className="text-xs font-medium text-txt-secondary">{card.title}</div>
+              <div className="text-[11px] text-txt-secondary dark:text-[var(--border)] mt-1">{card.sub}</div>
 
               {/* Mini progress bar */}
               {card.title === 'Available Slots' && (
-                <div className="mt-3 h-1 bg-[var(--bg-primary)] dark:bg-[var(--border)] rounded-full overflow-hidden">
+                <div className="mt-3 h-1 bg-bg-primary dark:bg-bg-secondary rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: '28.6%' }}
                     transition={{ delay: i * 0.06 + 0.3, duration: 0.8 }}
-                    className="h-full rounded-full bg-[var(--brand)]"
+                    className="h-full rounded-full bg-brand"
                   />
                 </div>
               )}
               {card.title === 'Occupied Slots' && (
-                <div className="mt-3 h-1 bg-[var(--bg-primary)] dark:bg-[var(--border)] rounded-full overflow-hidden">
+                <div className="mt-3 h-1 bg-bg-primary dark:bg-bg-secondary rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: '62.4%' }}
@@ -251,7 +251,7 @@ export function DashboardPage() {
                 </div>
               )}
               {card.title === 'AI Accuracy' && (
-                <div className="mt-3 h-1 bg-[var(--bg-primary)] dark:bg-[var(--border)] rounded-full overflow-hidden">
+                <div className="mt-3 h-1 bg-bg-primary dark:bg-bg-secondary rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: '96.2%' }}
@@ -276,17 +276,17 @@ export function DashboardPage() {
         >
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Live Occupancy Trend</h3>
-              <p className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">Today's occupancy and revenue by hour</p>
+              <h3 className="font-bold text-txt-primary">Live Occupancy Trend</h3>
+              <p className="text-xs text-txt-secondary mt-0.5">Today's occupancy and revenue by hour</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-[var(--brand)]" />
-                <span className="text-xs text-[var(--text-secondary)]">Occupancy</span>
+                <div className="w-3 h-3 rounded-full bg-brand" />
+                <span className="text-xs text-txt-secondary">Occupancy</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-[#F59E0B]" />
-                <span className="text-xs text-[var(--text-secondary)]">Revenue</span>
+                <span className="text-xs text-txt-secondary">Revenue</span>
               </div>
             </div>
           </div>
@@ -324,10 +324,10 @@ export function DashboardPage() {
         >
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Revenue Trend</h3>
-              <p className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">Monthly</p>
+              <h3 className="font-bold text-txt-primary">Revenue Trend</h3>
+              <p className="text-xs text-txt-secondary mt-0.5">Monthly</p>
             </div>
-            <button className="text-xs text-[var(--brand)] dark:text-[var(--brand-light)] font-semibold flex items-center gap-1">
+            <button className="text-xs text-brand font-semibold flex items-center gap-1">
               View All <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -355,37 +355,37 @@ export function DashboardPage() {
           transition={{ delay: 0.4 }}
           className="lg:col-span-2 card"
         >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] dark:border-[var(--border)]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-bdr">
             <div>
-              <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Recent Bookings</h3>
-              <p className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">Latest parking sessions</p>
+              <h3 className="font-bold text-txt-primary">Recent Bookings</h3>
+              <p className="text-xs text-txt-secondary mt-0.5">Latest parking sessions</p>
             </div>
             <button className="btn-ghost text-xs">
               View All <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="divide-y divide-[var(--border)] dark:divide-[var(--border)]">
+          <div className="divide-y divide-bdr">
             {mockRecentBookings.map((booking, i) => (
               <motion.div
                 key={booking.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 + i * 0.06 }}
-                className="flex items-center gap-4 px-5 py-3.5 hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)]/30 transition-colors"
+                className="flex items-center gap-4 px-5 py-3.5 hover:bg-bg-primary dark:hover:bg-[var(--border)]/30 transition-colors"
               >
-                <div className="w-8 h-8 rounded-xl bg-[var(--brand)]/10 dark:bg-[var(--brand-light)]/10 flex items-center justify-center flex-shrink-0">
-                  <Car className="w-4 h-4 text-[var(--brand)] dark:text-[var(--brand-light)]" />
+                <div className="w-8 h-8 rounded-xl bg-brand/10 dark:bg-[var(--brand-light)]/10 flex items-center justify-center flex-shrink-0">
+                  <Car className="w-4 h-4 text-brand" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-[var(--text-primary)] dark:text-white truncate">{booking.vehicle}</p>
-                    <span className="text-[10px] text-[var(--text-secondary)]">{booking.id}</span>
+                    <p className="text-sm font-semibold text-txt-primary truncate">{booking.vehicle}</p>
+                    <span className="text-[10px] text-txt-secondary">{booking.id}</span>
                   </div>
-                  <p className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">{booking.parking} · Slot {booking.slot}</p>
+                  <p className="text-xs text-txt-secondary">{booking.parking} · Slot {booking.slot}</p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-bold text-[var(--text-primary)] dark:text-white">₹{booking.amount}</p>
-                  <p className="text-[11px] text-[var(--text-secondary)]">{booking.time}</p>
+                  <p className="text-sm font-bold text-txt-primary">₹{booking.amount}</p>
+                  <p className="text-[11px] text-txt-secondary">{booking.time}</p>
                 </div>
                 <span className={cn('badge', statusColors[booking.status])}>
                   {booking.status}
@@ -402,12 +402,12 @@ export function DashboardPage() {
           transition={{ delay: 0.45 }}
           className="card"
         >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] dark:border-[var(--border)]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-bdr">
             <div className="flex items-center gap-2">
               <div className="live-dot" />
-              <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Live Activity</h3>
+              <h3 className="font-bold text-txt-primary">Live Activity</h3>
             </div>
-            <Activity className="w-4 h-4 text-[var(--text-secondary)]" />
+            <Activity className="w-4 h-4 text-txt-secondary" />
           </div>
           <div className="p-4 space-y-3">
             {mockLiveActivity.map((activity, i) => (
@@ -428,16 +428,16 @@ export function DashboardPage() {
                   {activity.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-[var(--text-primary)] dark:text-white">
+                  <p className="text-xs font-semibold text-txt-primary">
                     {activity.type === 'entry' && 'Entered'}
                     {activity.type === 'exit' && 'Exited'}
                     {activity.type === 'reserved' && 'Reserved'}
                     {activity.type === 'payment' && 'Payment'}
                     {' '}· Slot {activity.slot}
                   </p>
-                  <p className="text-[11px] text-[var(--text-secondary)] dark:text-[var(--text-secondary)] truncate">{activity.vehicle}</p>
+                  <p className="text-[11px] text-txt-secondary truncate">{activity.vehicle}</p>
                 </div>
-                <span className="text-[10px] text-[var(--text-secondary)] whitespace-nowrap">{activity.time}</span>
+                <span className="text-[10px] text-txt-secondary whitespace-nowrap">{activity.time}</span>
               </motion.div>
             ))}
           </div>
@@ -451,7 +451,7 @@ export function DashboardPage() {
         transition={{ delay: 0.5 }}
         className="card p-5"
       >
-        <h3 className="font-bold text-[var(--text-primary)] dark:text-white mb-4">Quick Actions</h3>
+        <h3 className="font-bold text-txt-primary mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { icon: Zap, label: 'New Booking', color: 'brand', desc: 'Reserve a slot instantly' },
@@ -461,20 +461,20 @@ export function DashboardPage() {
           ].map(action => (
             <button key={action.label} className={cn(
               'p-4 rounded-2xl border text-left transition-all hover:scale-[1.02] active:scale-[0.98]',
-              action.color === 'brand' && 'bg-[var(--brand)]/5 dark:bg-[var(--brand-light)]/5 border-[var(--brand)]/20',
+              action.color === 'brand' && 'bg-brand/5 dark:bg-[var(--brand-light)]/5 border-[var(--brand)]/20',
               action.color === 'info' && 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 dark:border-blue-800/20',
               action.color === 'amber' && 'bg-amber-50/50 dark:bg-amber-900/10 border-amber-200/50 dark:border-amber-800/20',
               action.color === 'success' && 'bg-green-50/50 dark:bg-green-900/10 border-green-200/50 dark:border-green-800/20',
             )}>
               <action.icon className={cn(
                 'w-5 h-5 mb-2',
-                action.color === 'brand' && 'text-[var(--brand)] dark:text-[var(--brand-light)]',
+                action.color === 'brand' && 'text-brand',
                 action.color === 'info' && 'text-blue-600 dark:text-blue-400',
                 action.color === 'amber' && 'text-amber-600 dark:text-amber-400',
                 action.color === 'success' && 'text-green-600 dark:text-green-400',
               )} />
-              <p className="text-sm font-semibold text-[var(--text-primary)] dark:text-white">{action.label}</p>
-              <p className="text-[11px] text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">{action.desc}</p>
+              <p className="text-sm font-semibold text-txt-primary">{action.label}</p>
+              <p className="text-[11px] text-txt-secondary mt-0.5">{action.desc}</p>
             </button>
           ))}
         </div>

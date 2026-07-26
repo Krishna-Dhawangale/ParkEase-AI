@@ -13,20 +13,20 @@ const mockMonthlyData = [
 
 export const BusinessAnalytics: React.FC = () => {
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto text-slate-100">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+    <div className="space-y-6 max-w-[1600px] mx-auto text-txt-primary">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-bg-card p-6 rounded-2xl border border-bdr shadow-xl">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
               Business Intelligence
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Facility Financial & Occupancy Analytics</h1>
-          <p className="text-xs text-slate-400 mt-1">Detailed earnings breakdown, peak hour occupancy curves, vehicle distribution, and PDF/CSV reports.</p>
+          <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Facility Financial & Occupancy Analytics</h1>
+          <p className="text-xs text-txt-secondary mt-1">Detailed earnings breakdown, peak hour occupancy curves, vehicle distribution, and PDF/CSV reports.</p>
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 flex items-center gap-2">
+          <button className="px-3.5 py-2 rounded-xl bg-bg-elevated hover:bg-bg-hover text-xs font-semibold text-txt-secondary border border-bdr flex items-center gap-2">
             <Download className="w-3.5 h-3.5 text-emerald-400" />
             Export CSV
           </button>
@@ -37,14 +37,14 @@ export const BusinessAnalytics: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-        <h3 className="font-bold text-white text-base">Monthly Gross Revenue & Occupancy Growth</h3>
+      <div className="p-6 rounded-2xl bg-bg-card border border-bdr space-y-4">
+        <h3 className="font-bold text-txt-primary text-base">Monthly Gross Revenue & Occupancy Growth</h3>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={mockMonthlyData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
             <XAxis dataKey="month" tick={{ fill: '#94A3B8', fontSize: 11 }} />
             <YAxis tick={{ fill: '#94A3B8', fontSize: 11 }} />
-            <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '12px' }} />
+            <Tooltip contentStyle={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border)', borderRadius: '12px' }} />
             <Bar dataKey="revenue" fill="#10B981" radius={[6, 6, 0, 0]} name="Revenue (₹)" />
           </BarChart>
         </ResponsiveContainer>

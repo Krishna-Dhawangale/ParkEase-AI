@@ -2,31 +2,102 @@ import { create } from 'zustand';
 import type { AuthUser } from '../types/auth';
 import { resolveUserPermissions } from '../lib/rbac';
 
-type Theme = 'light' | 'dark';
+type ThemePreference = 'light' | 'dark' | 'system';
+type ResolvedTheme = 'light' | 'dark';
 
 interface ThemeStore {
-  theme: Theme;
+  /** User's preference: light, dark, or follow system */
+  preference: ThemePreference;
+  /** Actually applied theme after resolving 'system' */
+  resolvedTheme: ResolvedTheme;
+  /** Legacy alias for resolvedTheme for backwards compat */
+  theme: ResolvedTheme;
+  /** Set theme preference */
+  setTheme: (pref: ThemePreference) => void;
+  /** Cycle through: light → dark → system → light */
+  cycleTheme: () => void;
+  /** Legacy toggle for backwards compat (light ↔ dark) */
   toggleTheme: () => void;
-  setTheme: (t: Theme) => void;
+  /** Initialize system listener — call once at app start */
+  initSystemListener: () => (() => void);
 }
 
-export const useThemeStore = create<ThemeStore>((set) => ({
-  theme: (localStorage.getItem('parkease-theme') as Theme) || 'light',
-  toggleTheme: () =>
-    set((state) => {
-      const next = state.theme === 'light' ? 'dark' : 'light';
-      localStorage.setItem('parkease-theme', next);
-      if (next === 'dark') document.documentElement.classList.add('dark');
-      else document.documentElement.classList.remove('dark');
-      return { theme: next };
-    }),
-  setTheme: (t) => {
-    localStorage.setItem('parkease-theme', t);
-    if (t === 'dark') document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
-    set({ theme: t });
+function getSystemTheme(): ResolvedTheme {
+  if (typeof window === 'undefined') return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function resolveTheme(pref: ThemePreference): ResolvedTheme {
+  if (pref === 'system') return getSystemTheme();
+  return pref;
+}
+
+function applyThemeToDOM(resolved: ResolvedTheme): void {
+  const root = document.documentElement;
+
+  // Add scoped transition class for smooth switching
+  root.classList.add('theme-transitioning');
+
+  if (resolved === 'dark') {
+    root.classList.add('dark');
+  } else {
+    root.classList.remove('dark');
+  }
+
+  // Remove transition class after animation completes
+  setTimeout(() => {
+    root.classList.remove('theme-transitioning');
+  }, 300);
+}
+
+const savedPref = (localStorage.getItem('parkease-theme') as ThemePreference) || 'system';
+const initialResolved = resolveTheme(savedPref);
+
+export const useThemeStore = create<ThemeStore>((set, get) => ({
+  preference: savedPref,
+  resolvedTheme: initialResolved,
+  theme: initialResolved,
+
+  setTheme: (pref) => {
+    localStorage.setItem('parkease-theme', pref);
+    const resolved = resolveTheme(pref);
+    applyThemeToDOM(resolved);
+    set({ preference: pref, resolvedTheme: resolved, theme: resolved });
+  },
+
+  cycleTheme: () => {
+    const current = get().preference;
+    const next: ThemePreference =
+      current === 'light' ? 'dark' :
+      current === 'dark' ? 'system' : 'light';
+    get().setTheme(next);
+  },
+
+  toggleTheme: () => {
+    // Legacy compat: toggles resolved theme between light/dark
+    const current = get().resolvedTheme;
+    const next: ThemePreference = current === 'light' ? 'dark' : 'light';
+    get().setTheme(next);
+  },
+
+  initSystemListener: () => {
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => {
+      const state = get();
+      if (state.preference === 'system') {
+        const resolved = getSystemTheme();
+        applyThemeToDOM(resolved);
+        set({ resolvedTheme: resolved, theme: resolved });
+      }
+    };
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
   },
 }));
+
+// Legacy alias so existing code using `theme` still works
+// Components can use: const { resolvedTheme: theme } = useThemeStore();
+
 
 interface SidebarStore {
   collapsed: boolean;

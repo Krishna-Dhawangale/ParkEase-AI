@@ -24,13 +24,13 @@ const CustomTooltip = ({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-800">
-      <p className="mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</p>
+    <div className="rounded-xl border border-bdr bg-white p-3 shadow-lg dark:border-bdr dark:bg-bg-elevated">
+      <p className="mb-2 text-xs font-semibold text-txt-muted dark:text-txt-secondary">{label}</p>
       {payload.map((entry) => (
         <div key={entry.name} className="flex items-center gap-2 text-sm">
           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
-          <span className="text-slate-600 dark:text-slate-300">{entry.name}:</span>
-          <span className="font-semibold text-slate-900 dark:text-white">{entry.value}</span>
+          <span className="text-txt-muted dark:text-txt-secondary">{entry.name}:</span>
+          <span className="font-semibold text-txt-primary dark:text-txt-primary">{entry.value}</span>
         </div>
       ))}
     </div>
@@ -45,26 +45,26 @@ const BookingChart = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.4 }}
-      className="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900"
+      className="rounded-2xl border border-bdr bg-white p-6 shadow-soft dark:border-bdr dark:bg-bg-card"
     >
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Weekly Bookings</h3>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Bookings, cancellations & walk-ins</p>
+          <h3 className="text-sm font-semibold text-txt-primary dark:text-txt-primary">Weekly Bookings</h3>
+          <p className="mt-0.5 text-xs text-txt-muted dark:text-txt-secondary">Bookings, cancellations & walk-ins</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-blue-500" />
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Bookings</span>
+            <span className="text-[11px] text-txt-muted dark:text-txt-secondary">Bookings</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-amber-400" />
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Walk-ins</span>
+            <span className="text-[11px] text-txt-muted dark:text-txt-secondary">Walk-ins</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-rose-400" />
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Cancelled</span>
+            <span className="text-[11px] text-txt-muted dark:text-txt-secondary">Cancelled</span>
           </div>
         </div>
       </div>
@@ -73,7 +73,7 @@ const BookingChart = () => {
       <div className="h-[280px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={bookingData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-100 dark:text-slate-800" />
+            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-txt-primary dark:text-txt-primary" />
             <XAxis
               dataKey="day"
               tick={{ fontSize: 11, fill: '#94A3B8' }}

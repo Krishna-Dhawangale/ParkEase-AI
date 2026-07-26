@@ -8,7 +8,7 @@ const AdminLayout = () => {
   const { isCollapsed } = useAdminSidebarStore();
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-bg-app text-txt-primary">
       <AdminNavbar />
       <AdminSidebar />
       <main

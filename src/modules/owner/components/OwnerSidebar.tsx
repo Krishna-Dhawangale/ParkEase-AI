@@ -110,24 +110,24 @@ export const OwnerSidebar: React.FC<OwnerSidebarProps> = ({
     const collapsed = isCollapsed && !isMobile;
 
     return (
-      <div className="flex h-full flex-col bg-slate-900 text-slate-100 border-r border-slate-800">
+      <div className="flex h-full flex-col bg-bg-card text-txt-primary border-r border-bdr">
         {/* Brand Header */}
         <div
           className={cn(
-            'flex h-16 shrink-0 items-center border-b border-emerald-800/40 px-4 bg-emerald-950/30',
+            'flex h-16 shrink-0 items-center border-b border-bdr px-4 bg-owner-subtle',
             collapsed ? 'justify-center px-2' : 'justify-between'
           )}
         >
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 font-bold text-white shadow-lg shadow-emerald-900/40">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-owner font-bold text-white shadow-lg">
               <Store className="w-5 h-5" />
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <h2 className="truncate text-sm font-bold text-white tracking-wide">
+                <h2 className="truncate text-sm font-bold text-txt-primary tracking-wide">
                   Facility Operator
                 </h2>
-                <p className="truncate text-[10px] font-semibold text-emerald-400">
+                <p className="truncate text-[10px] font-semibold text-owner">
                   {user?.subRole?.replace('_', ' ') || 'Facility Manager'}
                 </p>
               </div>
@@ -136,7 +136,7 @@ export const OwnerSidebar: React.FC<OwnerSidebarProps> = ({
           {isMobile && (
             <button
               onClick={() => setMobileOpen(false)}
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-1.5 text-txt-muted hover:bg-bg-hover hover:text-txt-primary"
             >
               <X className="h-5 w-5" />
             </button>
@@ -145,12 +145,12 @@ export const OwnerSidebar: React.FC<OwnerSidebarProps> = ({
 
         {/* Facility Selector Header */}
         {!collapsed && (
-          <div className="px-3 py-3 border-b border-slate-800 bg-slate-950/40">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Property</p>
-            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-800/80 border border-slate-700/60">
+          <div className="px-3 py-3 border-b border-bdr bg-bg-secondary/50">
+            <p className="text-[10px] font-bold text-txt-muted uppercase tracking-widest mb-1">Active Property</p>
+            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-bg-elevated border border-bdr">
               <div className="truncate">
-                <p className="text-xs font-semibold text-white truncate">Downtown Central Hub</p>
-                <p className="text-[10px] text-emerald-400 font-medium">32 / 50 Occupied</p>
+                <p className="text-xs font-semibold text-txt-primary truncate">Downtown Central Hub</p>
+                <p className="text-[10px] text-owner font-medium">32 / 50 Occupied</p>
               </div>
             </div>
           </div>
@@ -168,11 +168,11 @@ export const OwnerSidebar: React.FC<OwnerSidebarProps> = ({
             return (
               <div key={section.label}>
                 {!collapsed && (
-                  <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-emerald-500">
+                  <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-owner">
                     {section.label}
                   </p>
                 )}
-                {collapsed && <div className="mb-2 border-t border-slate-800" />}
+                {collapsed && <div className="mb-2 border-t border-bdr" />}
                 <div className="space-y-0.5">
                   {filteredItems.map((item) => {
                     const Icon = item.icon;
@@ -185,16 +185,16 @@ export const OwnerSidebar: React.FC<OwnerSidebarProps> = ({
                           cn(
                             'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200',
                             isActive
-                              ? 'bg-emerald-600/20 text-emerald-400 font-semibold border-l-2 border-emerald-500'
-                              : 'text-slate-400 hover:bg-white/[0.06] hover:text-slate-200',
+                              ? 'bg-owner-subtle text-owner font-semibold border-l-2 border-owner'
+                              : 'text-txt-secondary hover:bg-bg-hover hover:text-txt-primary',
                             collapsed && 'justify-center px-2 border-l-0'
                           )
                         }
                       >
-                        <Icon className="h-[18px] w-[18px] shrink-0 text-emerald-400" />
+                        <Icon className="h-[18px] w-[18px] shrink-0 text-owner" />
                         {!collapsed && <span className="truncate flex-1">{item.label}</span>}
                         {!collapsed && item.badge && (
-                          <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500/20 text-amber-400">
+                          <span className="px-1.5 py-0.5 text-[9px] font-bold rounded badge-warning">
                             {item.badge}
                           </span>
                         )}
@@ -208,15 +208,15 @@ export const OwnerSidebar: React.FC<OwnerSidebarProps> = ({
         </nav>
 
         {/* Footer */}
-        <div className="shrink-0 border-t border-slate-800 p-3 bg-slate-950/40">
+        <div className="shrink-0 border-t border-bdr p-3 bg-bg-secondary/50">
           <button
             onClick={handleLogout}
             className={cn(
-              'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-slate-400 transition-all duration-200 hover:bg-red-500/10 hover:text-red-400',
+              'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-txt-secondary transition-all duration-200 hover:bg-semantic-danger-bg hover:text-red-500 dark:hover:text-red-400',
               collapsed && 'justify-center px-2'
             )}
           >
-            <LogOut className="h-[18px] w-[18px] shrink-0 text-red-400" />
+            <LogOut className="h-[18px] w-[18px] shrink-0 text-red-500 dark:text-red-400" />
             {!collapsed && <span>Logout Operator</span>}
           </button>
 
@@ -224,7 +224,7 @@ export const OwnerSidebar: React.FC<OwnerSidebarProps> = ({
             <button
               onClick={toggleCollapse}
               className={cn(
-                'mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-slate-500 transition-all duration-200 hover:bg-white/[0.06] hover:text-slate-300',
+                'mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-txt-muted transition-all duration-200 hover:bg-bg-hover hover:text-txt-primary',
                 collapsed && 'justify-center px-2'
               )}
             >
@@ -247,7 +247,7 @@ export const OwnerSidebar: React.FC<OwnerSidebarProps> = ({
     <>
       <aside
         className={cn(
-          'fixed bottom-0 left-0 top-0 z-30 hidden border-r border-slate-800 bg-slate-900 transition-all duration-300 ease-in-out lg:flex lg:flex-col',
+          'fixed bottom-0 left-0 top-0 z-30 hidden border-r border-bdr bg-bg-card transition-all duration-300 ease-in-out lg:flex lg:flex-col',
           isCollapsed ? 'w-[72px]' : 'w-64'
         )}
       >
@@ -258,14 +258,14 @@ export const OwnerSidebar: React.FC<OwnerSidebarProps> = ({
         {isMobileOpen && (
           <>
             <motion.div
-              className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+              className="fixed inset-0 z-40 bg-bg-overlay lg:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
             />
             <motion.aside
-              className="fixed bottom-0 left-0 top-0 z-50 w-64 bg-slate-900 shadow-2xl lg:hidden"
+              className="fixed bottom-0 left-0 top-0 z-50 w-64 bg-bg-card shadow-modal lg:hidden"
               initial={{ x: -256 }}
               animate={{ x: 0 }}
               exit={{ x: -256 }}

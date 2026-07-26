@@ -51,7 +51,7 @@ const StatKPICard = ({ card, index }: { card: KPICard; index: number }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.06, ease: 'easeOut' }}
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-soft transition-shadow hover:shadow-hover dark:border-slate-800 dark:bg-slate-900"
+      className="group relative overflow-hidden rounded-2xl border border-bdr bg-white p-5 shadow-soft transition-shadow hover:shadow-hover dark:border-bdr dark:bg-bg-card"
     >
       {/* Header: Icon + Sparkline */}
       <div className="flex items-start justify-between">
@@ -63,15 +63,15 @@ const StatKPICard = ({ card, index }: { card: KPICard; index: number }) => {
 
       {/* Value */}
       <div className="mt-4">
-        <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400">
+        <p className="text-[13px] font-medium text-txt-muted dark:text-txt-secondary">
           {card.title}
         </p>
         <div className="mt-1 flex items-baseline gap-1.5">
-          <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <span className="text-2xl font-bold tracking-tight text-txt-primary dark:text-txt-primary">
             {card.value}
           </span>
           {card.suffix && (
-            <span className="text-lg font-semibold text-slate-400 dark:text-slate-500">
+            <span className="text-lg font-semibold text-txt-secondary dark:text-txt-muted">
               {card.suffix}
             </span>
           )}
@@ -95,7 +95,7 @@ const StatKPICard = ({ card, index }: { card: KPICard; index: number }) => {
             </span>
           </div>
         )}
-        <span className="text-[11px] text-slate-400 dark:text-slate-500">vs last week</span>
+        <span className="text-[11px] text-txt-secondary dark:text-txt-muted">vs last week</span>
       </div>
     </motion.div>
   );

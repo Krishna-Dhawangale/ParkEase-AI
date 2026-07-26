@@ -23,22 +23,22 @@ export const FacilityDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto text-slate-100">
+    <div className="space-y-6 max-w-[1600px] mx-auto text-txt-primary">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-bg-card p-6 rounded-2xl border border-bdr shadow-xl">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
               Facility Management Portal
             </span>
-            <span className="text-xs text-slate-400">Downtown Central Hub</span>
+            <span className="text-xs text-txt-secondary">Downtown Central Hub</span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Facility Operations Overview</h1>
-          <p className="text-xs text-slate-400 mt-1">Real-time facility telemetry, active bookings, and automated barrier operations.</p>
+          <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Facility Operations Overview</h1>
+          <p className="text-xs text-txt-secondary mt-1">Real-time facility telemetry, active bookings, and automated barrier operations.</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 flex items-center gap-2 border border-slate-700 transition-colors">
+          <button className="px-3.5 py-2 rounded-xl bg-bg-elevated hover:bg-bg-hover text-xs font-semibold text-txt-secondary flex items-center gap-2 border border-bdr transition-colors">
             <RefreshCw className="w-3.5 h-3.5 text-emerald-400" />
             Refresh Telemetry
           </button>
@@ -69,16 +69,16 @@ export const FacilityDashboard: React.FC = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
-            className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all shadow-md"
+            className="p-5 rounded-2xl bg-bg-card border border-bdr hover:border-bdr transition-all shadow-md"
           >
             <div className="flex items-center justify-between mb-3">
               <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center border", kpi.color)}>
                 <kpi.icon className="w-4.5 h-4.5" />
               </div>
-              <span className="text-[10px] font-semibold text-slate-400">{kpi.sub}</span>
+              <span className="text-[10px] font-semibold text-txt-secondary">{kpi.sub}</span>
             </div>
-            <div className="text-2xl font-bold text-white tracking-tight mb-1">{kpi.value}</div>
-            <div className="text-xs text-slate-400 font-medium">{kpi.title}</div>
+            <div className="text-2xl font-bold text-txt-primary tracking-tight mb-1">{kpi.value}</div>
+            <div className="text-xs text-txt-secondary font-medium">{kpi.title}</div>
           </motion.div>
         ))}
       </div>
@@ -86,11 +86,11 @@ export const FacilityDashboard: React.FC = () => {
       {/* Main Grid — Charts & Live Gate Telemetry */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Live Occupancy & Revenue Chart */}
-        <div className="lg:col-span-2 p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+        <div className="lg:col-span-2 p-5 rounded-2xl bg-bg-card border border-bdr space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-white text-base">Live Facility Occupancy & Hourly Revenue</h3>
-              <p className="text-xs text-slate-400">Hourly load metrics across Floor GF, F1, F2, F3</p>
+              <h3 className="font-bold text-txt-primary text-base">Live Facility Occupancy & Hourly Revenue</h3>
+              <p className="text-xs text-txt-secondary">Hourly load metrics across Floor GF, F1, F2, F3</p>
             </div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Today</span>
@@ -108,18 +108,18 @@ export const FacilityDashboard: React.FC = () => {
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
               <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#94A3B8' }} />
               <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} />
-              <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '12px', fontSize: '12px' }} />
+              <Tooltip contentStyle={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border)', borderRadius: '12px', fontSize: '12px' }} />
               <Area type="monotone" dataKey="occupancy" stroke="#10B981" strokeWidth={2.5} fill="url(#opOccGrad)" name="Occupancy %" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
         {/* Gate Barriers Control Card */}
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+        <div className="p-5 rounded-2xl bg-bg-card border border-bdr space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-emerald-400" />
-              <h3 className="font-bold text-white text-base">Gate Barrier Remote Control</h3>
+              <h3 className="font-bold text-txt-primary text-base">Gate Barrier Remote Control</h3>
             </div>
             <span className="text-xs font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded">ANPR Synced</span>
           </div>
@@ -131,10 +131,10 @@ export const FacilityDashboard: React.FC = () => {
               { gate: 'Exit Gate 1 (North)', status: 'OPEN', color: 'emerald', time: '<1.1s response' },
               { gate: 'Exit Gate 2 (South)', status: 'MAINTENANCE', color: 'amber', time: 'Slow barrier arm' },
             ].map(g => (
-              <div key={g.gate} className="flex items-center justify-between p-3 rounded-xl bg-slate-800/80 border border-slate-700/60">
+              <div key={g.gate} className="flex items-center justify-between p-3 rounded-xl bg-bg-elevated/80 border border-bdr">
                 <div>
-                  <p className="text-xs font-semibold text-white">{g.gate}</p>
-                  <p className="text-[10px] text-slate-400">{g.time}</p>
+                  <p className="text-xs font-semibold text-txt-primary">{g.gate}</p>
+                  <p className="text-[10px] text-txt-secondary">{g.time}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={cn(
@@ -143,7 +143,7 @@ export const FacilityDashboard: React.FC = () => {
                   )}>
                     {g.status}
                   </span>
-                  <button className="p-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs">
+                  <button className="p-1.5 rounded-lg bg-bg-hover hover:bg-slate-600 text-txt-primary text-xs">
                     {g.status === 'OPEN' ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                   </button>
                 </div>
@@ -153,7 +153,7 @@ export const FacilityDashboard: React.FC = () => {
 
           <button 
             onClick={() => navigate('/owner/security')}
-            className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 border border-slate-700 transition-colors"
+            className="w-full py-2.5 rounded-xl bg-bg-elevated hover:bg-bg-hover text-txt-primary text-xs font-semibold flex items-center justify-center gap-2 border border-bdr transition-colors"
           >
             Open Full Security Operations
             <ChevronRight className="w-4 h-4" />
@@ -168,11 +168,11 @@ export const FacilityDashboard: React.FC = () => {
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+            <h4 className="text-sm font-bold text-txt-primary flex items-center gap-2">
               AI Dynamic Pricing Recommendation
               <span className="text-[10px] bg-emerald-500/30 text-emerald-300 font-extrabold px-2 py-0.5 rounded">Peak Surge Ahead</span>
             </h4>
-            <p className="text-xs text-slate-300 mt-0.5">
+            <p className="text-xs text-txt-secondary mt-0.5">
               High demand expected between 5 PM – 8 PM today. AI recommends increasing base hourly rate from <span className="font-bold text-emerald-400">₹50 → ₹65/hr</span> to boost revenue by an estimated +18%.
             </p>
           </div>

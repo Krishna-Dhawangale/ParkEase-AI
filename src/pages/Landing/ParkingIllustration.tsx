@@ -41,17 +41,17 @@ export function ParkingIllustration() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs font-bold text-[var(--text-primary)] dark:text-white">Central Hub – Live</span>
+            <span className="text-xs font-bold text-txt-primary">Central Hub – Live</span>
           </div>
           <div className="flex gap-1">
             {['GF', 'F1', 'F2'].map((f, i) => (
-              <span key={f} className={`px-2 py-0.5 text-xs font-semibold rounded-md ${i === 0 ? 'bg-[var(--brand)] text-white' : 'bg-[var(--bg-primary)] dark:bg-[var(--border)] text-[var(--text-secondary)]'}`}>{f}</span>
+              <span key={f} className={`px-2 py-0.5 text-xs font-semibold rounded-md ${i === 0 ? 'bg-brand text-white' : 'bg-bg-primary dark:bg-bg-secondary text-txt-secondary'}`}>{f}</span>
             ))}
           </div>
         </div>
 
         {/* SVG Parking View */}
-        <div className="bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)] rounded-xl overflow-hidden">
+        <div className="bg-bg-primary rounded-xl overflow-hidden">
           <svg viewBox="0 0 340 200" className="w-full h-auto">
             {/* Road/driveway */}
             <rect x="20" y="90" width="300" height="20" rx="4" fill="var(--border)" />
@@ -157,9 +157,9 @@ export function ParkingIllustration() {
             { label: 'Reserved', value: '8', color: '#F59E0B' },
             { label: 'EV Slots', value: '3', color: '#2563EB' },
           ].map(stat => (
-            <div key={stat.label} className="text-center p-2 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
+            <div key={stat.label} className="text-center p-2 rounded-xl bg-bg-primary">
               <div className="text-lg font-bold" style={{ color: stat.color }}>{stat.value}</div>
-              <div className="text-[10px] text-[var(--text-secondary)]">{stat.label}</div>
+              <div className="text-[10px] text-txt-secondary">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -172,12 +172,12 @@ export function ParkingIllustration() {
         transition={{ duration: 3, repeat: Infinity, delay: 1 }}
       >
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-[var(--brand)]/10 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-lg bg-brand/10 flex items-center justify-center">
             <span className="text-[10px]">🧠</span>
           </div>
           <div>
-            <div className="text-[10px] font-bold text-[var(--text-primary)] dark:text-white">AI Confidence</div>
-            <div className="text-xs font-bold text-[var(--brand)]">96.2%</div>
+            <div className="text-[10px] font-bold text-txt-primary">AI Confidence</div>
+            <div className="text-xs font-bold text-brand">96.2%</div>
           </div>
         </div>
       </motion.div>
@@ -193,7 +193,7 @@ export function ParkingIllustration() {
             <span className="text-[10px]">💰</span>
           </div>
           <div>
-            <div className="text-[10px] font-bold text-[var(--text-primary)] dark:text-white">Today's Revenue</div>
+            <div className="text-[10px] font-bold text-txt-primary">Today's Revenue</div>
             <div className="text-xs font-bold text-green-600">₹48,720</div>
           </div>
         </div>

@@ -99,16 +99,16 @@ const SidebarNavItem = ({ item, isCollapsed, onNavigate }: SidebarNavItemProps) 
         cn(
           'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200',
           isActive
-            ? 'bg-indigo-600/20 text-indigo-400 font-semibold border-l-2 border-indigo-500'
-            : 'text-slate-400 hover:bg-white/[0.06] hover:text-slate-200',
+            ? 'bg-admin-subtle text-admin font-semibold border-l-2 border-admin'
+            : 'text-txt-secondary hover:bg-bg-hover hover:text-txt-primary',
           isCollapsed && 'justify-center px-2 border-l-0'
         )
       }
     >
-      <Icon className="h-[18px] w-[18px] shrink-0 text-indigo-400" />
+      <Icon className="h-[18px] w-[18px] shrink-0 text-admin" />
       {!isCollapsed && <span className="truncate flex-1">{item.label}</span>}
       {!isCollapsed && item.badge && (
-        <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-indigo-500/20 text-indigo-300">
+        <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-admin-subtle text-admin-light">
           {item.badge}
         </span>
       )}
@@ -123,10 +123,10 @@ const SidebarNavItem = ({ item, isCollapsed, onNavigate }: SidebarNavItemProps) 
           <Tooltip.Content
             side="right"
             sideOffset={14}
-            className="z-[60] rounded-md bg-slate-800 px-3 py-1.5 text-xs font-medium text-white shadow-xl"
+            className="z-[60] rounded-md bg-bg-elevated px-3 py-1.5 text-xs font-medium text-txt-primary shadow-modal border border-bdr"
           >
             {item.label}
-            <Tooltip.Arrow className="fill-slate-800" />
+            <Tooltip.Arrow className="fill-bg-elevated" />
           </Tooltip.Content>
         </Tooltip.Portal>
       </Tooltip.Root>
@@ -151,24 +151,24 @@ const AdminSidebar = () => {
     const collapsed = isCollapsed && !isMobile;
 
     return (
-      <div className="flex h-full flex-col bg-slate-950 text-slate-100 border-r border-slate-800">
+      <div className="flex h-full flex-col bg-bg-card text-txt-primary border-r border-bdr">
         {/* Brand */}
         <div
           className={cn(
-            'flex h-16 shrink-0 items-center border-b border-indigo-800/40 px-4 bg-indigo-950/30',
+            'flex h-16 shrink-0 items-center border-b border-bdr px-4 bg-admin-subtle',
             collapsed ? 'justify-center px-2' : 'justify-between'
           )}
         >
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-900/50">
-              <Crown className="w-5 h-5 text-indigo-100" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-admin font-bold text-white shadow-lg">
+              <Crown className="w-5 h-5 text-txt-primary" />
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <h2 className="truncate text-sm font-bold text-white tracking-wide">
+                <h2 className="truncate text-sm font-bold text-txt-primary tracking-wide">
                   ParkEase AI
                 </h2>
-                <p className="truncate text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
+                <p className="truncate text-[10px] font-bold text-admin uppercase tracking-wider">
                   Superadmin SaaS HQ
                 </p>
               </div>
@@ -177,7 +177,7 @@ const AdminSidebar = () => {
           {isMobile && (
             <button
               onClick={() => setMobileOpen(false)}
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-1.5 text-txt-muted hover:bg-bg-hover hover:text-txt-primary"
             >
               <X className="h-5 w-5" />
             </button>
@@ -189,11 +189,11 @@ const AdminSidebar = () => {
           {navigation.map((section) => (
             <div key={section.label}>
               {!collapsed && (
-                <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-admin">
                   {section.label}
                 </p>
               )}
-              {collapsed && <div className="mb-2 border-t border-slate-800" />}
+              {collapsed && <div className="mb-2 border-t border-bdr" />}
               <div className="space-y-0.5">
                 {section.items.map((item) => (
                   <SidebarNavItem
@@ -209,15 +209,15 @@ const AdminSidebar = () => {
         </nav>
 
         {/* Bottom */}
-        <div className="shrink-0 border-t border-slate-800 p-3 bg-slate-950/50">
+        <div className="shrink-0 border-t border-bdr p-3 bg-bg-secondary/50">
           <button
             onClick={handleLogout}
             className={cn(
-              'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-slate-400 transition-all duration-200 hover:bg-red-500/10 hover:text-red-400',
+              'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-txt-secondary transition-all duration-200 hover:bg-semantic-danger-bg hover:text-red-500 dark:hover:text-red-400',
               collapsed && 'justify-center px-2'
             )}
           >
-            <LogOut className="h-[18px] w-[18px] shrink-0 text-red-400" />
+            <LogOut className="h-[18px] w-[18px] shrink-0 text-red-500 dark:text-red-400" />
             {!collapsed && <span>Logout Superadmin</span>}
           </button>
 
@@ -225,7 +225,7 @@ const AdminSidebar = () => {
             <button
               onClick={toggleCollapse}
               className={cn(
-                'mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-slate-500 transition-all duration-200 hover:bg-white/[0.06] hover:text-slate-300',
+                'mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-txt-muted transition-all duration-200 hover:bg-bg-hover hover:text-txt-primary',
                 collapsed && 'justify-center px-2'
               )}
             >
@@ -248,7 +248,7 @@ const AdminSidebar = () => {
     <Tooltip.Provider delayDuration={0}>
       <aside
         className={cn(
-          'fixed bottom-0 left-0 top-16 z-20 hidden border-r border-slate-800 bg-slate-900 transition-all duration-300 ease-in-out lg:flex lg:flex-col',
+          'fixed bottom-0 left-0 top-16 z-20 hidden border-r border-bdr bg-bg-card transition-all duration-300 ease-in-out lg:flex lg:flex-col',
           isCollapsed ? 'w-[72px]' : 'w-64'
         )}
       >
@@ -259,7 +259,7 @@ const AdminSidebar = () => {
         {isMobileOpen && (
           <>
             <motion.div
-              className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+              className="fixed inset-0 z-40 bg-bg-overlay lg:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -267,7 +267,7 @@ const AdminSidebar = () => {
               onClick={() => setMobileOpen(false)}
             />
             <motion.aside
-              className="fixed bottom-0 left-0 top-0 z-50 w-64 bg-slate-900 shadow-2xl lg:hidden"
+              className="fixed bottom-0 left-0 top-0 z-50 w-64 bg-bg-card shadow-modal lg:hidden"
               initial={{ x: -256 }}
               animate={{ x: 0 }}
               exit={{ x: -256 }}

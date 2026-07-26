@@ -9,16 +9,16 @@ const mockWorkOrders = [
 
 export const MaintenanceWorkOrders: React.FC = () => {
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto text-slate-100">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+    <div className="space-y-6 max-w-[1600px] mx-auto text-txt-primary">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-bg-card p-6 rounded-2xl border border-bdr shadow-xl">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-wider">
               Work Order Management
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Facility Maintenance & Work Orders</h1>
-          <p className="text-xs text-slate-400 mt-1">Create maintenance work orders, assign engineers, track repair status, and log repair costs.</p>
+          <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Facility Maintenance & Work Orders</h1>
+          <p className="text-xs text-txt-secondary mt-1">Create maintenance work orders, assign engineers, track repair status, and log repair costs.</p>
         </div>
 
         <button className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-900/40">
@@ -27,10 +27,10 @@ export const MaintenanceWorkOrders: React.FC = () => {
         </button>
       </div>
 
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+      <div className="p-6 rounded-2xl bg-bg-card border border-bdr space-y-4">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-800/60 text-slate-400 font-semibold uppercase">
+            <thead className="bg-bg-elevated/60 text-txt-secondary font-semibold uppercase">
               <tr>
                 <th className="p-3">Order ID</th>
                 <th className="p-3">Issue Title</th>
@@ -42,32 +42,32 @@ export const MaintenanceWorkOrders: React.FC = () => {
                 <th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-bdr">
               {mockWorkOrders.map(wo => (
-                <tr key={wo.id} className="hover:bg-slate-800/40 transition-colors">
+                <tr key={wo.id} className="hover:bg-bg-elevated/40 transition-colors">
                   <td className="p-3 font-mono font-bold text-amber-400">{wo.id}</td>
-                  <td className="p-3 font-semibold text-white">{wo.title}</td>
-                  <td className="p-3 text-slate-300">{wo.category}</td>
+                  <td className="p-3 font-semibold text-txt-primary">{wo.title}</td>
+                  <td className="p-3 text-txt-secondary">{wo.category}</td>
                   <td className="p-3">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                       wo.priority === 'High' ? 'bg-red-500/20 text-red-400' :
-                      wo.priority === 'Medium' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-300'
+                      wo.priority === 'Medium' ? 'bg-amber-500/20 text-amber-400' : 'bg-bg-elevated text-txt-secondary'
                     }`}>
                       {wo.priority}
                     </span>
                   </td>
-                  <td className="p-3 font-medium text-slate-300">{wo.engineer}</td>
+                  <td className="p-3 font-medium text-txt-secondary">{wo.engineer}</td>
                   <td className="p-3 font-bold text-emerald-400">₹{wo.cost}</td>
                   <td className="p-3">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                       wo.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400' :
-                      wo.status === 'In Progress' ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-800 text-slate-300'
+                      wo.status === 'In Progress' ? 'bg-blue-500/20 text-blue-400' : 'bg-bg-elevated text-txt-secondary'
                     }`}>
                       {wo.status}
                     </span>
                   </td>
                   <td className="p-3 text-right">
-                    <button className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium">Update</button>
+                    <button className="px-2.5 py-1 rounded bg-bg-elevated hover:bg-bg-hover text-txt-primary text-xs font-medium">Update</button>
                   </td>
                 </tr>
               ))}

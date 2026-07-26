@@ -47,8 +47,8 @@ interface ParkingFormProps {
   isSubmitting?: boolean;
 }
 
-const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 dark:border-slate-700 dark:bg-slate-900 dark:text-white';
-const labelClass = 'mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200';
+const inputClass = 'w-full rounded-xl border border-bdr bg-white px-3 py-2.5 text-sm text-txt-primary outline-none transition-all placeholder:text-txt-secondary focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 dark:border-bdr dark:bg-bg-card dark:text-txt-primary';
+const labelClass = 'mb-1.5 block text-sm font-semibold text-txt-primary dark:text-txt-primary';
 
 const ParkingForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ParkingFormProps) => {
   const [uploadedName, setUploadedName] = useState('');
@@ -153,13 +153,13 @@ const ParkingForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ParkingF
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+          <div className="rounded-2xl border border-bdr bg-bg-primary/70 p-4 dark:border-bdr dark:bg-bg-card/60">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Capacity Planning</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{occupancy}% occupied in the current mock feed</p>
+                <h3 className="text-sm font-bold text-txt-primary dark:text-txt-primary">Capacity Planning</h3>
+                <p className="text-xs text-txt-muted dark:text-txt-secondary">{occupancy}% occupied in the current mock feed</p>
               </div>
-              <div className="h-2 w-28 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+              <div className="h-2 w-28 overflow-hidden rounded-full bg-bg-secondary dark:bg-bg-elevated">
                 <div className="h-full rounded-full bg-brand-600 transition-all" style={{ width: `${Math.min(100, occupancy)}%` }} />
               </div>
             </div>
@@ -219,13 +219,13 @@ const ParkingForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ParkingF
         </div>
 
         <div className="space-y-4">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="overflow-hidden rounded-2xl border border-bdr bg-white shadow-sm dark:border-bdr dark:bg-bg-app">
             <img src={imageUrl} alt="" className="h-44 w-full object-cover" />
             <div className="space-y-3 p-4">
               <label className={labelClass}>Parking Image</label>
               <input {...register('imageUrl')} className={inputClass} placeholder="https://..." />
               {errors.imageUrl && <p className="text-xs font-medium text-rose-600">{errors.imageUrl.message}</p>}
-              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 px-3 py-3 text-sm font-semibold text-slate-600 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-brand-500/10">
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-bdr px-3 py-3 text-sm font-semibold text-txt-muted transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-bdr dark:text-txt-secondary dark:hover:bg-brand-500/10">
                 <ImagePlus className="h-4 w-4" />
                 Upload mock image
                 <input
@@ -240,23 +240,23 @@ const ParkingForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ParkingF
                   }}
                 />
               </label>
-              {uploadedName && <p className="truncate text-xs text-slate-500 dark:text-slate-400">{uploadedName}</p>}
+              {uploadedName && <p className="truncate text-xs text-txt-muted dark:text-txt-secondary">{uploadedName}</p>}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+          <div className="rounded-2xl border border-bdr bg-white p-4 shadow-sm dark:border-bdr dark:bg-bg-app">
+            <div className="mb-3 flex items-center gap-2 text-sm font-bold text-txt-primary dark:text-txt-primary">
               <MapPin className="h-4 w-4 text-brand-600" />
               Google Maps Location
             </div>
-            <div className="relative h-44 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
+            <div className="relative h-44 overflow-hidden rounded-xl bg-bg-secondary dark:bg-bg-card">
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(148,163,184,0.22)_1px,transparent_1px),linear-gradient(rgba(148,163,184,0.22)_1px,transparent_1px)] bg-[length:28px_28px]" />
               <div className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-600/15 p-2">
                 <div className="flex h-full w-full items-center justify-center rounded-full bg-brand-600 text-white shadow-lg">
                   <MapPin className="h-4 w-4" />
                 </div>
               </div>
-              <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-white/95 px-3 py-2 text-xs font-medium text-slate-600 shadow-sm dark:bg-slate-950/95 dark:text-slate-300">
+              <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-white/95 px-3 py-2 text-xs font-medium text-txt-muted shadow-sm dark:bg-bg-app/95 dark:text-txt-secondary">
                 {latitude.toFixed(4)}, {longitude.toFixed(4)}
               </div>
             </div>
@@ -264,12 +264,12 @@ const ParkingForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ParkingF
         </div>
       </div>
 
-      <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 dark:border-slate-800 sm:flex-row sm:justify-end">
+      <div className="flex flex-col-reverse gap-3 border-t border-bdr pt-5 dark:border-bdr sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400 disabled:opacity-50 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="rounded-xl px-5 py-2.5 text-sm font-semibold text-txt-primary transition hover:bg-bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400 disabled:opacity-50 dark:text-txt-primary dark:hover:bg-bg-elevated"
         >
           Cancel
         </button>

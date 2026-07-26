@@ -39,8 +39,8 @@ export function TicketPage() {
             <CheckCircle2 className="w-4 h-4 text-green-600" />
             <span className="text-sm font-semibold text-green-700 dark:text-green-400">Booking Confirmed</span>
           </div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">Your Parking Ticket</h1>
-          <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-1">Show this at the parking entry gate</p>
+          <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Your Parking Ticket</h1>
+          <p className="text-sm text-txt-secondary mt-1">Show this at the parking entry gate</p>
         </motion.div>
 
         {/* Ticket Card */}
@@ -57,35 +57,35 @@ export function TicketPage() {
               <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
               <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-2">
-                  <Car className="w-5 h-5 text-white" />
-                  <span className="font-bold text-white">ParkEase AI</span>
+                  <Car className="w-5 h-5 text-txt-primary" />
+                  <span className="font-bold text-txt-primary">ParkEase AI</span>
                 </div>
                 <div className="text-right">
-                  <div className="text-white/70 text-[11px]">Booking ID</div>
-                  <div className="text-white font-bold">{booking.id}</div>
+                  <div className="text-txt-primary/70 text-[11px]">Booking ID</div>
+                  <div className="text-txt-primary font-bold">{booking.id}</div>
                 </div>
               </div>
               <div className="mt-4 relative z-10">
-                <div className="text-white/70 text-xs">PARKING SLOT</div>
-                <div className="text-4xl font-bold text-white mt-0.5">Slot {booking.slot}</div>
-                <div className="text-white/80 text-sm">{booking.floor} · {booking.parking}</div>
+                <div className="text-txt-primary/70 text-xs">PARKING SLOT</div>
+                <div className="text-4xl font-bold text-txt-primary mt-0.5">Slot {booking.slot}</div>
+                <div className="text-txt-primary/80 text-sm">{booking.floor} · {booking.parking}</div>
               </div>
             </div>
 
             {/* Perforation line */}
             <div className="flex items-center px-4 py-2">
-              <div className="flex-1 border-t-2 border-dashed border-[var(--border)] dark:border-[var(--border)]" />
-              <div className="w-6 h-6 rounded-full bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)] border border-[var(--border)] dark:border-[var(--border)] mx-2 flex items-center justify-center">
-                <div className="w-2 h-2 rounded-full bg-[var(--border)] dark:bg-[var(--border)]" />
+              <div className="flex-1 border-t-2 border-dashed border-bdr" />
+              <div className="w-6 h-6 rounded-full bg-bg-primary border border-bdr mx-2 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-[var(--border)] dark:bg-bg-secondary" />
               </div>
-              <div className="flex-1 border-t-2 border-dashed border-[var(--border)] dark:border-[var(--border)]" />
+              <div className="flex-1 border-t-2 border-dashed border-bdr" />
             </div>
 
             {/* QR Code + OTP */}
             <div className="px-5 py-3">
               <div className="flex items-center gap-4">
                 {/* QR Code */}
-                <div className="flex-shrink-0 p-2 border-2 border-[var(--border)] dark:border-[var(--border)] rounded-xl bg-white dark:bg-white">
+                <div className="flex-shrink-0 p-2 border-2 border-bdr rounded-xl bg-white dark:bg-white">
                   <QRCodeSVG
                     value={qrData}
                     size={96}
@@ -98,26 +98,26 @@ export function TicketPage() {
 
                 {/* OTP */}
                 <div className="flex-1">
-                  <div className="text-xs text-[var(--text-secondary)] mb-1 flex items-center gap-1">
+                  <div className="text-xs text-txt-secondary mb-1 flex items-center gap-1">
                     <Shield className="w-3 h-3" />
                     Entry OTP
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="text-3xl font-bold tracking-[0.3em] text-[var(--text-primary)] dark:text-white">
+                    <div className="text-3xl font-bold tracking-[0.3em] text-txt-primary">
                       {booking.otp}
                     </div>
-                    <button className="p-1.5 rounded-lg hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)] transition-colors">
-                      <Copy className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                    <button className="p-1.5 rounded-lg hover:bg-bg-primary dark:hover:bg-[var(--border)] transition-colors">
+                      <Copy className="w-3.5 h-3.5 text-txt-secondary" />
                     </button>
                   </div>
-                  <p className="text-[11px] text-[var(--text-secondary)] mt-1">Valid for 30 min post entry time</p>
+                  <p className="text-[11px] text-txt-secondary mt-1">Valid for 30 min post entry time</p>
                 </div>
               </div>
             </div>
 
             {/* Booking details */}
             <div className="px-5 pb-5 space-y-2.5">
-              <div className="h-px bg-[var(--border)] dark:bg-[var(--border)]" />
+              <div className="h-px bg-[var(--border)] dark:bg-bg-secondary" />
 
               {[
                 { icon: Car, label: 'Vehicle', value: booking.vehicle },
@@ -126,19 +126,19 @@ export function TicketPage() {
                 { icon: Clock, label: 'Exit Time', value: booking.exitTime },
               ].map(item => (
                 <div key={item.label} className="flex items-start gap-3">
-                  <item.icon className="w-3.5 h-3.5 text-[var(--brand)] dark:text-[var(--brand-light)] flex-shrink-0 mt-0.5" />
+                  <item.icon className="w-3.5 h-3.5 text-brand flex-shrink-0 mt-0.5" />
                   <div className="flex-1 flex items-start justify-between gap-2">
-                    <span className="text-xs text-[var(--text-secondary)]">{item.label}</span>
-                    <span className="text-xs font-semibold text-[var(--text-primary)] dark:text-white text-right">{item.value}</span>
+                    <span className="text-xs text-txt-secondary">{item.label}</span>
+                    <span className="text-xs font-semibold text-txt-primary text-right">{item.value}</span>
                   </div>
                 </div>
               ))}
 
-              <div className="h-px bg-[var(--border)] dark:bg-[var(--border)]" />
+              <div className="h-px bg-[var(--border)] dark:bg-bg-secondary" />
 
               <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-[var(--text-primary)] dark:text-white">Amount Paid</span>
-                <span className="text-lg font-bold text-[var(--brand)]">{booking.amount}</span>
+                <span className="text-sm font-bold text-txt-primary">Amount Paid</span>
+                <span className="text-lg font-bold text-brand">{booking.amount}</span>
               </div>
 
               {/* Green badge */}
@@ -181,7 +181,7 @@ export function TicketPage() {
           </button>
           <button
             onClick={() => navigate('/dashboard')}
-            className="btn-ghost py-3 border border-[var(--border)] dark:border-[var(--border)]"
+            className="btn-ghost py-3 border border-bdr"
           >
             Dashboard
             <ChevronRight className="w-4 h-4" />
@@ -189,8 +189,8 @@ export function TicketPage() {
         </motion.div>
 
         {/* Info */}
-        <div className="text-center text-xs text-[var(--text-secondary)] pb-4">
-          <p>Having issues? <span className="text-[var(--brand)] font-semibold cursor-pointer">Contact support</span></p>
+        <div className="text-center text-xs text-txt-secondary pb-4">
+          <p>Having issues? <span className="text-brand font-semibold cursor-pointer">Contact support</span></p>
         </div>
       </div>
     </div>

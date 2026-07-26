@@ -13,17 +13,17 @@ export const BookingOperations: React.FC = () => {
   const [showWalkinModal, setShowWalkinModal] = useState(false);
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto text-slate-100">
+    <div className="space-y-6 max-w-[1600px] mx-auto text-txt-primary">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-bg-card p-6 rounded-2xl border border-bdr shadow-xl">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
               Bookings & Walk-ins
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Facility Booking Management</h1>
-          <p className="text-xs text-slate-400 mt-1">Approve/reject pending bookings, issue manual walk-in tickets, process overstay fees & refunds.</p>
+          <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Facility Booking Management</h1>
+          <p className="text-xs text-txt-secondary mt-1">Approve/reject pending bookings, issue manual walk-in tickets, process overstay fees & refunds.</p>
         </div>
 
         <button
@@ -36,7 +36,7 @@ export const BookingOperations: React.FC = () => {
       </div>
 
       {/* Bookings Table */}
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+      <div className="p-6 rounded-2xl bg-bg-card border border-bdr space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             {['All', 'Active', 'Pending Approval', 'Completed'].map(f => (
@@ -44,7 +44,7 @@ export const BookingOperations: React.FC = () => {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  filter === f ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'
+                  filter === f ? 'bg-emerald-600 text-white' : 'bg-bg-elevated text-txt-secondary hover:text-txt-primary'
                 }`}
               >
                 {f}
@@ -53,18 +53,18 @@ export const BookingOperations: React.FC = () => {
           </div>
 
           <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-txt-secondary" />
             <input
               type="text"
               placeholder="Search vehicle, slot, ID..."
-              className="pl-8 pr-4 py-1.5 rounded-xl bg-slate-800 text-xs text-white border border-slate-700 focus:outline-none focus:border-emerald-500 w-56"
+              className="pl-8 pr-4 py-1.5 rounded-xl bg-bg-elevated text-xs text-txt-primary border border-bdr focus:outline-none focus:border-emerald-500 w-56"
             />
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-800/60 text-slate-400 font-semibold uppercase tracking-wider">
+            <thead className="bg-bg-elevated/60 text-txt-secondary font-semibold uppercase tracking-wider">
               <tr>
                 <th className="p-3">Booking ID</th>
                 <th className="p-3">Customer</th>
@@ -77,16 +77,16 @@ export const BookingOperations: React.FC = () => {
                 <th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-bdr">
               {mockBookings.map(b => (
-                <tr key={b.id} className="hover:bg-slate-800/40 transition-colors">
+                <tr key={b.id} className="hover:bg-bg-elevated/40 transition-colors">
                   <td className="p-3 font-mono font-bold text-emerald-400">{b.id}</td>
-                  <td className="p-3 font-medium text-white">{b.customer}</td>
-                  <td className="p-3 font-mono text-slate-300">{b.vehicle}</td>
-                  <td className="p-3 font-bold text-white">{b.slot}</td>
-                  <td className="p-3 text-slate-400">{b.entry} - {b.exit}</td>
-                  <td className="p-3 font-bold text-white">₹{b.amount}</td>
-                  <td className="p-3 text-slate-400">{b.type}</td>
+                  <td className="p-3 font-medium text-txt-primary">{b.customer}</td>
+                  <td className="p-3 font-mono text-txt-secondary">{b.vehicle}</td>
+                  <td className="p-3 font-bold text-txt-primary">{b.slot}</td>
+                  <td className="p-3 text-txt-secondary">{b.entry} - {b.exit}</td>
+                  <td className="p-3 font-bold text-txt-primary">₹{b.amount}</td>
+                  <td className="p-3 text-txt-secondary">{b.type}</td>
                   <td className="p-3">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                       b.status === 'Active' ? 'bg-emerald-500/20 text-emerald-400' :
@@ -104,7 +104,7 @@ export const BookingOperations: React.FC = () => {
                       </>
                     )}
                     {b.status === 'Active' && (
-                      <button className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">Overstay Fee</button>
+                      <button className="px-2 py-1 rounded bg-bg-elevated hover:bg-bg-hover text-txt-secondary font-semibold">Overstay Fee</button>
                     )}
                   </td>
                 </tr>

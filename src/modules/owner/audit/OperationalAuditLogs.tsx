@@ -10,23 +10,23 @@ const mockAuditLogs = [
 
 export const OperationalAuditLogs: React.FC = () => {
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto text-slate-100">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+    <div className="space-y-6 max-w-[1600px] mx-auto text-txt-primary">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-bg-card p-6 rounded-2xl border border-bdr shadow-xl">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
               Operational Audit Trail
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Facility Operational Audit Logs</h1>
-          <p className="text-xs text-slate-400 mt-1">Immutable audit trail logging all staff actions, tariff updates, gate barrier overrides, and booking edits.</p>
+          <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Facility Operational Audit Logs</h1>
+          <p className="text-xs text-txt-secondary mt-1">Immutable audit trail logging all staff actions, tariff updates, gate barrier overrides, and booking edits.</p>
         </div>
       </div>
 
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+      <div className="p-6 rounded-2xl bg-bg-card border border-bdr space-y-4">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-800/60 text-slate-400 font-semibold uppercase">
+            <thead className="bg-bg-elevated/60 text-txt-secondary font-semibold uppercase">
               <tr>
                 <th className="p-3">Log ID</th>
                 <th className="p-3">Timestamp</th>
@@ -36,15 +36,15 @@ export const OperationalAuditLogs: React.FC = () => {
                 <th className="p-3">Target Resource</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-bdr">
               {mockAuditLogs.map(log => (
-                <tr key={log.id} className="hover:bg-slate-800/40 transition-colors">
+                <tr key={log.id} className="hover:bg-bg-elevated/40 transition-colors">
                   <td className="p-3 font-mono font-bold text-emerald-400">{log.id}</td>
-                  <td className="p-3 text-slate-400">{log.timestamp}</td>
-                  <td className="p-3 font-medium text-white">{log.staff}</td>
+                  <td className="p-3 text-txt-secondary">{log.timestamp}</td>
+                  <td className="p-3 font-medium text-txt-primary">{log.staff}</td>
                   <td className="p-3 font-mono text-emerald-300">{log.action}</td>
-                  <td className="p-3 text-slate-200">{log.details}</td>
-                  <td className="p-3 text-slate-400">{log.target}</td>
+                  <td className="p-3 text-txt-primary">{log.details}</td>
+                  <td className="p-3 text-txt-secondary">{log.target}</td>
                 </tr>
               ))}
             </tbody>

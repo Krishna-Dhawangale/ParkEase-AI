@@ -10,11 +10,11 @@ export const RewardsPage: React.FC = () => {
             <Gift className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">Driver Rewards & Eco Perks</h1>
-            <p className="text-sm text-[var(--text-secondary)] mt-0.5">Earn points for booking off-peak hours and driving EV / hybrid vehicles.</p>
+            <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Driver Rewards & Eco Perks</h1>
+            <p className="text-sm text-txt-secondary mt-0.5">Earn points for booking off-peak hours and driving EV / hybrid vehicles.</p>
           </div>
         </div>
-        <div className="px-4 py-2 rounded-xl bg-[#0F766E]/10 border border-[#0F766E]/20 text-[#0F766E] dark:text-[#14B8A6] font-bold text-sm">
+        <div className="px-4 py-2 rounded-xl bg-[#0F766E]/10 border border-[#0F766E]/20 text-brand font-bold text-sm">
           ⭐ 1,420 Reward Points
         </div>
       </div>
@@ -24,24 +24,24 @@ export const RewardsPage: React.FC = () => {
           <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 flex items-center justify-center">
             <Leaf className="w-5 h-5" />
           </div>
-          <h3 className="font-bold text-base text-[var(--text-primary)] dark:text-white">Eco Driver Level</h3>
-          <p className="text-xs text-[var(--text-secondary)]">Gold Tier (Saved 14.8kg CO₂ this month)</p>
+          <h3 className="font-bold text-base text-txt-primary">Eco Driver Level</h3>
+          <p className="text-xs text-txt-secondary">Gold Tier (Saved 14.8kg CO₂ this month)</p>
         </div>
 
         <div className="p-6 rounded-2xl card space-y-3">
           <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 flex items-center justify-center">
             <Sparkles className="w-5 h-5" />
           </div>
-          <h3 className="font-bold text-base text-[var(--text-primary)] dark:text-white">Active Discount Coupon</h3>
-          <p className="text-xs text-[var(--text-secondary)]">15% OFF next weekend booking (`PARKEASE15`)</p>
+          <h3 className="font-bold text-base text-txt-primary">Active Discount Coupon</h3>
+          <p className="text-xs text-txt-secondary">15% OFF next weekend booking (`PARKEASE15`)</p>
         </div>
 
         <div className="p-6 rounded-2xl card space-y-3">
           <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center">
             <Award className="w-5 h-5" />
           </div>
-          <h3 className="font-bold text-base text-[var(--text-primary)] dark:text-white">Free Parking Pass</h3>
-          <p className="text-xs text-[var(--text-secondary)]">1-hour free pass unlocked for 2,000 pts</p>
+          <h3 className="font-bold text-base text-txt-primary">Free Parking Pass</h3>
+          <p className="text-xs text-txt-secondary">1-hour free pass unlocked for 2,000 pts</p>
         </div>
       </div>
     </div>

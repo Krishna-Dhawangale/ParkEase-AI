@@ -16,7 +16,7 @@ const priorityStyles: Record<AlertPriority, string> = {
   Critical: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
   High:     'bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400',
   Medium:   'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
-  Low:      'bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-400',
+  Low:      'bg-bg-secondary text-txt-muted dark:bg-bg-hover/50 dark:text-txt-secondary',
 };
 
 // ─── Status Styles ──────────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ const alertIconMap: Record<AlertType, { icon: React.ElementType; color: string; 
   'Parking Full':   { icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-500/10' },
   'Camera Offline': { icon: Camera, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-500/10' },
   'Barrier Error':  { icon: ShieldAlert, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
-  'Sensor Offline': { icon: Wifi, color: 'text-slate-500', bg: 'bg-slate-100 dark:bg-slate-700/50' },
+  'Sensor Offline': { icon: Wifi, color: 'text-txt-muted', bg: 'bg-bg-secondary dark:bg-bg-hover/50' },
   'Payment Failed': { icon: CreditCard, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-500/10' },
   'AI Warning':     { icon: Brain, color: 'text-violet-500', bg: 'bg-violet-50 dark:bg-violet-500/10' },
 };
@@ -46,28 +46,28 @@ const RecentAlerts = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.8 }}
-      className="rounded-2xl border border-slate-200 bg-white shadow-soft dark:border-slate-800 dark:bg-slate-900"
+      className="rounded-2xl border border-bdr bg-white shadow-soft dark:border-bdr dark:bg-bg-card"
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+      <div className="flex items-center justify-between border-b border-bdr px-6 py-4 dark:border-bdr">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 dark:bg-red-500/10">
             <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Recent Alerts</h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <h3 className="text-sm font-semibold text-txt-primary dark:text-txt-primary">Recent Alerts</h3>
+            <p className="text-[11px] text-txt-muted dark:text-txt-secondary">
               {recentAlerts.filter((a) => a.status === 'Active').length} active alerts
             </p>
           </div>
         </div>
-        <button className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+        <button className="rounded-lg p-1.5 text-txt-secondary transition-colors hover:bg-bg-secondary hover:text-txt-muted dark:hover:bg-bg-elevated dark:hover:text-txt-secondary">
           <MoreHorizontal className="h-4 w-4" />
         </button>
       </div>
 
       {/* Alert List */}
-      <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
+      <div className="divide-y divide-slate-50 dark:divide-bdr/50">
         {recentAlerts.map((alert, index) => {
           const { icon: AlertIcon, color, bg } = alertIconMap[alert.type];
           return (
@@ -76,7 +76,7 @@ const RecentAlerts = () => {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.9 + index * 0.04 }}
-              className="flex items-start gap-3 px-6 py-3.5 transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/50"
+              className="flex items-start gap-3 px-6 py-3.5 transition-colors hover:bg-bg-primary/80 dark:hover:bg-bg-elevated/50"
             >
               {/* Icon */}
               <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${bg}`}>
@@ -86,22 +86,22 @@ const RecentAlerts = () => {
               {/* Content */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-medium text-slate-900 dark:text-white">
+                  <p className="truncate text-sm font-medium text-txt-primary dark:text-txt-primary">
                     {alert.type}
                   </p>
                   <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${priorityStyles[alert.priority]}`}>
                     {alert.priority}
                   </span>
                 </div>
-                <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                <p className="mt-0.5 truncate text-xs text-txt-muted dark:text-txt-secondary">
                   {alert.message}
                 </p>
                 <div className="mt-1.5 flex items-center gap-3">
-                  <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                  <span className="text-[11px] text-txt-secondary dark:text-txt-muted">
                     {alert.timestamp}
                   </span>
-                  <span className="text-[11px] text-slate-300 dark:text-slate-600">·</span>
-                  <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                  <span className="text-[11px] text-txt-secondary dark:text-txt-muted">·</span>
+                  <span className="text-[11px] text-txt-secondary dark:text-txt-muted">
                     {alert.location}
                   </span>
                 </div>

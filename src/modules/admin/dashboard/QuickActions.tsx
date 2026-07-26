@@ -88,11 +88,11 @@ const QuickActions = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.5 }}
-      className="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900"
+      className="rounded-2xl border border-bdr bg-white p-6 shadow-soft dark:border-bdr dark:bg-bg-card"
     >
       <div className="mb-5">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Quick Actions</h3>
-        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Frequently used operations</p>
+        <h3 className="text-sm font-semibold text-txt-primary dark:text-txt-primary">Quick Actions</h3>
+        <p className="mt-0.5 text-xs text-txt-muted dark:text-txt-secondary">Frequently used operations</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -107,16 +107,16 @@ const QuickActions = () => {
               whileHover={{ y: -3, transition: { duration: 0.15 } }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(action.path)}
-              className="group flex flex-col items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition-all hover:border-slate-200 hover:bg-white hover:shadow-soft dark:border-slate-800 dark:bg-slate-800/50 dark:hover:border-slate-700 dark:hover:bg-slate-800"
+              className="group flex flex-col items-center gap-2.5 rounded-xl border border-bdr bg-bg-primary/50 p-4 transition-all hover:border-bdr hover:bg-white hover:shadow-soft dark:border-bdr dark:bg-bg-elevated/50 dark:hover:border-bdr dark:hover:bg-bg-elevated"
             >
               <div className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${action.bgColor}`}>
                 <Icon className={`h-5 w-5 ${action.color}`} />
               </div>
               <div className="text-center">
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                <p className="text-xs font-semibold text-txt-primary dark:text-txt-primary">
                   {action.label}
                 </p>
-                <p className="mt-0.5 hidden text-[10px] text-slate-400 dark:text-slate-500 sm:block">
+                <p className="mt-0.5 hidden text-[10px] text-txt-secondary dark:text-txt-muted sm:block">
                   {action.description}
                 </p>
               </div>

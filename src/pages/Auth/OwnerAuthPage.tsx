@@ -217,7 +217,7 @@ export const OwnerAuthPage: React.FC = () => {
         return (
           <div className="space-y-4 animate-fade-in">
             <h3 className="text-xl font-semibold mb-4">Review Application</h3>
-            <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl space-y-3 text-sm">
+            <div className="bg-gray-50 dark:bg-bg-elevated p-4 rounded-xl space-y-3 text-sm">
               <div className="flex justify-between border-b pb-2">
                 <span className="opacity-70">Business Name</span>
                 <span className="font-medium">{data.businessName}</span>
@@ -259,7 +259,7 @@ export const OwnerAuthPage: React.FC = () => {
           <div className="card sticky top-8">
             <h3 className="font-semibold mb-4">Onboarding Progress</h3>
             <ul className="space-y-4 relative">
-              <div className="absolute left-2.5 top-2.5 bottom-2.5 w-0.5 bg-gray-200 dark:bg-slate-700 -z-10"></div>
+              <div className="absolute left-2.5 top-2.5 bottom-2.5 w-0.5 bg-gray-200 dark:bg-bg-hover -z-10"></div>
               {[
                 { id: 1, label: 'Personal Details' },
                 { id: 2, label: 'Business Profile' },
@@ -271,9 +271,9 @@ export const OwnerAuthPage: React.FC = () => {
               ].map(s => (
                 <li key={s.id} className="flex items-center gap-3">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                    step === s.id ? 'bg-[var(--color-primary)] text-white ring-4 ring-[var(--color-primary)]/20' :
+                    step === s.id ? 'bg-[var(--color-primary)] text-txt-primary ring-4 ring-[var(--color-primary)]/20' :
                     step > s.id ? 'bg-green-500 text-white' :
-                    'bg-gray-200 text-gray-500 dark:bg-slate-700'
+                    'bg-gray-200 text-gray-500 dark:bg-bg-hover'
                   }`}>
                     {step > s.id ? '✓' : s.id}
                   </div>

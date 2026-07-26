@@ -17,9 +17,9 @@ const mockSaaSGrowth = [
 
 export const SuperAdminDashboard: React.FC = () => {
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto text-slate-100">
+    <div className="space-y-6 max-w-[1600px] mx-auto text-txt-primary">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 p-6 rounded-2xl border border-indigo-950/60 shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-bg-card p-6 rounded-2xl border border-indigo-950/60 shadow-xl">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
             <Crown className="w-6 h-6" />
@@ -33,8 +33,8 @@ export const SuperAdminDashboard: React.FC = () => {
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> 99.98% System Health
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Platform Governance & Infrastructure Command</h1>
-            <p className="text-xs text-slate-400 mt-0.5">Global multi-tenant partner monitoring, subscription MRR, AI service latency, and risk mitigation.</p>
+            <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Platform Governance & Infrastructure Command</h1>
+            <p className="text-xs text-txt-secondary mt-0.5">Global multi-tenant partner monitoring, subscription MRR, AI service latency, and risk mitigation.</p>
           </div>
         </div>
       </div>
@@ -56,27 +56,27 @@ export const SuperAdminDashboard: React.FC = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
-            className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-900/60 transition-all shadow-md"
+            className="p-5 rounded-2xl bg-bg-card border border-bdr hover:border-indigo-900/60 transition-all shadow-md"
           >
             <div className="flex items-center justify-between mb-3">
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${kpi.color}`}>
                 <kpi.icon className="w-4.5 h-4.5" />
               </div>
-              <span className="text-[10px] font-semibold text-slate-400">{kpi.sub}</span>
+              <span className="text-[10px] font-semibold text-txt-secondary">{kpi.sub}</span>
             </div>
-            <div className="text-2xl font-bold text-white tracking-tight mb-1">{kpi.value}</div>
-            <div className="text-xs text-slate-400 font-medium">{kpi.title}</div>
+            <div className="text-2xl font-bold text-txt-primary tracking-tight mb-1">{kpi.value}</div>
+            <div className="text-xs text-txt-secondary font-medium">{kpi.title}</div>
           </motion.div>
         ))}
       </div>
 
       {/* Main SaaS Growth & Infrastructure Telemetry Grid */}
       <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+        <div className="lg:col-span-2 p-5 rounded-2xl bg-bg-card border border-bdr space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-white text-base">Monthly Recurring Revenue (MRR) & Commission Ledger</h3>
-              <p className="text-xs text-slate-400">Aggregated multi-tenant revenue stream and platform platform fees</p>
+              <h3 className="font-bold text-txt-primary text-base">Monthly Recurring Revenue (MRR) & Commission Ledger</h3>
+              <p className="text-xs text-txt-secondary">Aggregated multi-tenant revenue stream and platform platform fees</p>
             </div>
             <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">2026 YTD</span>
           </div>
@@ -92,16 +92,16 @@ export const SuperAdminDashboard: React.FC = () => {
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
               <XAxis dataKey="month" tick={{ fill: '#94A3B8', fontSize: 11 }} />
               <YAxis tick={{ fill: '#94A3B8', fontSize: 11 }} />
-              <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '12px' }} />
+              <Tooltip contentStyle={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border)', borderRadius: '12px' }} />
               <Area type="monotone" dataKey="mrr" stroke="#6366F1" strokeWidth={2.5} fill="url(#saasMrr)" name="MRR (₹ Millions)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
         {/* Infrastructure & Services Status Card */}
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+        <div className="p-5 rounded-2xl bg-bg-card border border-bdr space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-white text-base">Platform Infrastructure Health</h3>
+            <h3 className="font-bold text-txt-primary text-base">Platform Infrastructure Health</h3>
             <span className="text-xs font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded">All Systems Normal</span>
           </div>
 
@@ -113,10 +113,10 @@ export const SuperAdminDashboard: React.FC = () => {
               { service: 'Razorpay / Stripe Gateway', latency: '180ms', ok: true },
               { service: 'ANPR Stream Worker Cluster', latency: '85ms', ok: true },
             ].map(s => (
-              <div key={s.service} className="flex items-center justify-between p-3 rounded-xl bg-slate-800/80 border border-slate-700/60">
+              <div key={s.service} className="flex items-center justify-between p-3 rounded-xl bg-bg-elevated/80 border border-bdr">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span className="font-medium text-white">{s.service}</span>
+                  <span className="font-medium text-txt-primary">{s.service}</span>
                 </div>
                 <span className="font-mono text-emerald-400 font-bold">{s.latency}</span>
               </div>

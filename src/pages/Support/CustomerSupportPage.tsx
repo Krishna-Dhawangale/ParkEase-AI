@@ -10,8 +10,8 @@ export const CustomerSupportPage: React.FC = () => {
             <HelpCircle className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">Customer Support & Helpdesk</h1>
-            <p className="text-sm text-[var(--text-secondary)] mt-0.5">Submit support tickets, report facility issues, or request booking assistance.</p>
+            <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Customer Support & Helpdesk</h1>
+            <p className="text-sm text-txt-secondary mt-0.5">Submit support tickets, report facility issues, or request booking assistance.</p>
           </div>
         </div>
 
@@ -24,20 +24,20 @@ export const CustomerSupportPage: React.FC = () => {
       <div className="grid md:grid-cols-2 gap-6">
         <div className="card p-6 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-bold text-[#0F766E] dark:text-[#14B8A6]">TICKET-4412</span>
+            <span className="text-xs font-mono font-bold text-brand">TICKET-4412</span>
             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400">Resolved</span>
           </div>
-          <h3 className="font-bold text-base text-[var(--text-primary)] dark:text-white">Refund Request for Double Charge</h3>
-          <p className="text-xs text-[var(--text-secondary)]">Issue resolved on Jul 20. Refund of ₹150 processed to ParkEase Wallet.</p>
+          <h3 className="font-bold text-base text-txt-primary">Refund Request for Double Charge</h3>
+          <p className="text-xs text-txt-secondary">Issue resolved on Jul 20. Refund of ₹150 processed to ParkEase Wallet.</p>
         </div>
 
         <div className="card p-6 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-bold text-[#0F766E] dark:text-[#14B8A6]">TICKET-4419</span>
+            <span className="text-xs font-mono font-bold text-brand">TICKET-4419</span>
             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">In Progress</span>
           </div>
-          <h3 className="font-bold text-base text-[var(--text-primary)] dark:text-white">Gate 2 QR Scanner Latency</h3>
-          <p className="text-xs text-[var(--text-secondary)]">Assigned to Facility Operator. Investigating camera optical sensor.</p>
+          <h3 className="font-bold text-base text-txt-primary">Gate 2 QR Scanner Latency</h3>
+          <p className="text-xs text-txt-secondary">Assigned to Facility Operator. Investigating camera optical sensor.</p>
         </div>
       </div>
     </div>

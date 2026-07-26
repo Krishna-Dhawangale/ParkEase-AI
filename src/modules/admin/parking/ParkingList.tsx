@@ -183,7 +183,7 @@ export default function ParkingList() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`rounded-xl px-4 py-3 text-sm font-bold shadow-xl ${toast.type === 'success' ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950' : 'bg-rose-600 text-white'}`}
+            className={`rounded-xl px-4 py-3 text-sm font-bold shadow-xl ${toast.type === 'success' ? 'bg-bg-app text-txt-primary dark:bg-white dark:text-slate-950' : 'bg-rose-600 text-txt-primary'}`}
             role="status"
           >
             {toast.message}
@@ -193,14 +193,14 @@ export default function ParkingList() {
 
       <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-bdr bg-white px-3 py-1 text-xs font-bold text-txt-muted shadow-sm dark:border-bdr dark:bg-bg-app dark:text-txt-secondary">
             <Zap className="h-3.5 w-3.5 text-brand-600" />
             Live parking operations
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-txt-primary dark:text-txt-primary">
             Parking Management
           </h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 max-w-2xl text-sm text-txt-muted dark:text-txt-secondary">
             Manage enterprise parking locations, capacity, pricing, availability, and operational status.
           </p>
         </motion.div>
@@ -209,7 +209,7 @@ export default function ParkingList() {
           <button
             type="button"
             onClick={() => { setLoading(true); window.setTimeout(() => { setLoading(false); showToast('Latest parking telemetry loaded.'); }, 650); }}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="inline-flex items-center gap-2 rounded-xl border border-bdr bg-white px-4 py-2.5 text-sm font-bold text-txt-primary shadow-sm transition hover:bg-bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-bdr dark:bg-bg-app dark:text-txt-primary dark:hover:bg-bg-elevated"
           >
             <RefreshCw className="h-4 w-4" />
             Refresh
@@ -217,7 +217,7 @@ export default function ParkingList() {
           <button
             type="button"
             onClick={() => handleExport(zones)}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="inline-flex items-center gap-2 rounded-xl border border-bdr bg-white px-4 py-2.5 text-sm font-bold text-txt-primary shadow-sm transition hover:bg-bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-bdr dark:bg-bg-app dark:text-txt-primary dark:hover:bg-bg-elevated"
           >
             <Download className="h-4 w-4" />
             Export all
@@ -242,28 +242,28 @@ export default function ParkingList() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.04 }}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-950"
+              className="rounded-2xl border border-bdr bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-bdr dark:bg-bg-app"
             >
               <div className="flex items-center justify-between">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bg-secondary text-txt-primary dark:bg-bg-elevated dark:text-txt-primary">
                   <Icon className="h-5 w-5" />
                 </div>
                 <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300">+8.4%</span>
               </div>
-              <p className="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{card.label}</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{card.value}</p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{card.detail}</p>
+              <p className="mt-4 text-sm font-semibold text-txt-muted dark:text-txt-secondary">{card.label}</p>
+              <p className="mt-1 text-2xl font-bold text-txt-primary dark:text-txt-primary">{card.value}</p>
+              <p className="mt-1 text-xs text-txt-muted dark:text-txt-secondary">{card.detail}</p>
             </motion.div>
           );
         })}
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <div className="rounded-2xl border border-bdr bg-white p-5 shadow-sm dark:border-bdr dark:bg-bg-app">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">Occupancy and Revenue Trend</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Seven-day operational trend across filtered portfolio.</p>
+              <h2 className="text-base font-bold text-txt-primary dark:text-txt-primary">Occupancy and Revenue Trend</h2>
+              <p className="text-sm text-txt-muted dark:text-txt-secondary">Seven-day operational trend across filtered portfolio.</p>
             </div>
           </div>
           <div className="h-72">
@@ -285,8 +285,8 @@ export default function ParkingList() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">Operational Mix</h2>
+        <div className="rounded-2xl border border-bdr bg-white p-5 shadow-sm dark:border-bdr dark:bg-bg-app">
+          <h2 className="text-base font-bold text-txt-primary dark:text-txt-primary">Operational Mix</h2>
           <div className="mt-5 space-y-4">
             {[
               ['EV Slots', stats.evSlots, stats.totalSlots, 'bg-emerald-500'],
@@ -298,10 +298,10 @@ export default function ParkingList() {
               return (
                 <div key={String(label)}>
                   <div className="mb-1 flex items-center justify-between text-sm">
-                    <span className="font-semibold text-slate-700 dark:text-slate-200">{label}</span>
-                    <span className="text-slate-500 dark:text-slate-400">{value} slots</span>
+                    <span className="font-semibold text-txt-primary dark:text-txt-primary">{label}</span>
+                    <span className="text-txt-muted dark:text-txt-secondary">{value} slots</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                  <div className="h-2 overflow-hidden rounded-full bg-bg-secondary dark:bg-bg-elevated">
                     <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
                   </div>
                 </div>
@@ -311,7 +311,7 @@ export default function ParkingList() {
           <button
             type="button"
             onClick={() => setError('Mock telemetry service timed out while loading the city capacity feed.')}
-            className="mt-6 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="mt-6 w-full rounded-xl border border-bdr px-4 py-2.5 text-sm font-bold text-txt-primary transition hover:bg-bg-primary dark:border-bdr dark:text-txt-primary dark:hover:bg-bg-elevated"
           >
             Simulate error state
           </button>
@@ -337,22 +337,22 @@ export default function ParkingList() {
 
       <Dialog.Root open={!!deleteZone || bulkDeleteIds.length > 0} onOpenChange={(open) => { if (!open) { setDeleteZone(null); setBulkDeleteIds([]); } }}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-1.5rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl outline-none dark:border-slate-800 dark:bg-slate-950">
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-bg-app/45 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-1.5rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-bdr bg-white p-6 text-center shadow-2xl outline-none dark:border-bdr dark:bg-bg-app">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
               <AlertTriangle className="h-6 w-6" />
             </div>
-            <Dialog.Title className="mt-4 text-lg font-bold text-slate-900 dark:text-white">
+            <Dialog.Title className="mt-4 text-lg font-bold text-txt-primary dark:text-txt-primary">
               Delete parking {bulkDeleteIds.length > 0 ? 'locations' : 'location'}
             </Dialog.Title>
-            <Dialog.Description className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            <Dialog.Description className="mt-2 text-sm text-txt-muted dark:text-txt-secondary">
               {bulkDeleteIds.length > 0
                 ? `This will delete ${bulkDeleteIds.length} selected parking locations from the mock data.`
                 : `This will delete ${deleteZone?.name}. This action cannot be undone.`}
             </Dialog.Description>
             <div className="mt-6 flex justify-center gap-3">
-              <button type="button" onClick={() => { setDeleteZone(null); setBulkDeleteIds([]); }} className="rounded-xl px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">Cancel</button>
-              <button type="button" onClick={bulkDeleteIds.length > 0 ? handleBulkDelete : handleDelete} className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">Delete</button>
+              <button type="button" onClick={() => { setDeleteZone(null); setBulkDeleteIds([]); }} className="rounded-xl px-4 py-2 text-sm font-bold text-txt-primary transition hover:bg-bg-secondary dark:text-txt-primary dark:hover:bg-bg-elevated">Cancel</button>
+              <button type="button" onClick={bulkDeleteIds.length > 0 ? handleBulkDelete : handleDelete} className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-txt-primary transition hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">Delete</button>
             </div>
           </Dialog.Content>
         </Dialog.Portal>

@@ -51,18 +51,18 @@ export function ProfilePage() {
             <div className="w-20 h-20 rounded-2xl gradient-brand flex items-center justify-center text-white text-3xl font-bold">
               {isAdmin ? 'A' : 'U'}
             </div>
-            <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white dark:bg-[var(--border)] border border-[var(--border)] dark:border-[var(--border)] flex items-center justify-center shadow-soft">
-              <Camera className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+            <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white dark:bg-bg-secondary border border-bdr flex items-center justify-center shadow-soft">
+              <Camera className="w-3.5 h-3.5 text-txt-secondary" />
             </button>
           </div>
 
           <div className="flex-1">
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-xl font-bold text-[var(--text-primary)] dark:text-white">
+                <h1 className="text-xl font-bold text-txt-primary">
                   {isAdmin ? 'Girish Kumar' : 'Standard User'}
                 </h1>
-                <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">
+                <p className="text-sm text-txt-secondary">
                   {user?.email || 'user@parkease.ai'} · +91 98765 43210
                 </p>
                 <div className="flex items-center gap-2 mt-2">
@@ -89,16 +89,16 @@ export function ProfilePage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 sm:border-l sm:border-[var(--border)] sm:dark:border-[var(--border)] sm:pl-6">
+          <div className="grid grid-cols-3 gap-4 sm:border-l sm:border-bdr sm:dark:border-bdr sm:pl-6">
             {[
-              { icon: Car, label: 'Total Trips', value: '142', color: 'text-[var(--brand)]' },
+              { icon: Car, label: 'Total Trips', value: '142', color: 'text-brand' },
               { icon: IndianRupee, label: 'Spent', value: '₹18.4K', color: 'text-blue-600' },
               { icon: Leaf, label: 'Green Score', value: '847', color: 'text-green-600' },
             ].map(stat => (
               <div key={stat.label} className="text-center">
                 <stat.icon className={cn('w-5 h-5 mx-auto mb-1', stat.color)} />
-                <div className="text-lg font-bold text-[var(--text-primary)] dark:text-white">{stat.value}</div>
-                <div className="text-[11px] text-[var(--text-secondary)]">{stat.label}</div>
+                <div className="text-lg font-bold text-txt-primary">{stat.value}</div>
+                <div className="text-[11px] text-txt-secondary">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -106,7 +106,7 @@ export function ProfilePage() {
       </motion.div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] dark:border-[var(--border)] rounded-2xl p-1">
+      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar bg-bg-card border border-bdr rounded-2xl p-1">
         {tabs.map(tab => (
           <button
             key={tab}
@@ -114,8 +114,8 @@ export function ProfilePage() {
             className={cn(
               'flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold whitespace-nowrap transition-all',
               activeTab === tab
-                ? 'bg-[var(--brand)] text-white'
-                : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-white'
+                ? 'bg-brand text-white'
+                : 'text-txt-secondary hover:text-txt-primary dark:hover:text-txt-primary'
             )}
           >
             {tab}
@@ -143,21 +143,21 @@ export function ProfilePage() {
             >
               <div className={cn(
                 'w-9 h-9 rounded-xl flex items-center justify-center mb-3',
-                item.color === 'brand' && 'bg-[var(--brand)]/10 dark:bg-[var(--brand-light)]/10',
+                item.color === 'brand' && 'bg-brand/10 dark:bg-[var(--brand-light)]/10',
                 item.color === 'success' && 'bg-green-50 dark:bg-green-900/20',
                 item.color === 'amber' && 'bg-amber-50 dark:bg-amber-900/20',
                 item.color === 'info' && 'bg-blue-50 dark:bg-blue-900/20',
               )}>
                 <item.icon className={cn('w-4.5 h-4.5', {
-                  'text-[var(--brand)] dark:text-[var(--brand-light)]': item.color === 'brand',
+                  'text-brand': item.color === 'brand',
                   'text-green-600 dark:text-green-400': item.color === 'success',
                   'text-amber-600 dark:text-amber-400': item.color === 'amber',
                   'text-blue-600 dark:text-blue-400': item.color === 'info',
                 })} size={18} />
               </div>
-              <div className="text-lg font-bold text-[var(--text-primary)] dark:text-white">{item.value}</div>
-              <div className="text-xs font-medium text-[var(--text-secondary)]">{item.label}</div>
-              <div className="text-[11px] text-[var(--text-secondary)] mt-0.5">{item.sub}</div>
+              <div className="text-lg font-bold text-txt-primary">{item.value}</div>
+              <div className="text-xs font-medium text-txt-secondary">{item.label}</div>
+              <div className="text-[11px] text-txt-secondary mt-0.5">{item.sub}</div>
             </motion.div>
           ))}
         </div>
@@ -177,15 +177,15 @@ export function ProfilePage() {
               transition={{ delay: i * 0.1 }}
               className="card p-5 flex items-center gap-4"
             >
-              <div className="w-12 h-12 rounded-2xl bg-[var(--bg-primary)] dark:bg-[var(--border)] flex items-center justify-center">
-                <Car className="w-6 h-6 text-[var(--text-secondary)]" />
+              <div className="w-12 h-12 rounded-2xl bg-bg-primary dark:bg-bg-secondary flex items-center justify-center">
+                <Car className="w-6 h-6 text-txt-secondary" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-[var(--text-primary)] dark:text-white">{vehicle.number}</span>
+                  <span className="font-bold text-txt-primary">{vehicle.number}</span>
                   {vehicle.primary && <span className="badge badge-brand text-[10px]">Primary</span>}
                 </div>
-                <div className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">{vehicle.brand} · {vehicle.type} · {vehicle.color}</div>
+                <div className="text-sm text-txt-secondary">{vehicle.brand} · {vehicle.type} · {vehicle.color}</div>
               </div>
               <div className="flex gap-2">
                 <button className="btn-ghost p-2"><Edit2 className="w-4 h-4" /></button>
@@ -193,7 +193,7 @@ export function ProfilePage() {
               </div>
             </motion.div>
           ))}
-          <button className="card w-full p-4 border-dashed flex items-center justify-center gap-2 text-sm font-semibold text-[var(--brand)] dark:text-[var(--brand-light)] hover:bg-[var(--brand)]/5 transition-colors">
+          <button className="card w-full p-4 border-dashed flex items-center justify-center gap-2 text-sm font-semibold text-brand hover:bg-brand/5 transition-colors">
             <Plus className="w-4 h-4" />
             Add New Vehicle
           </button>
@@ -203,30 +203,30 @@ export function ProfilePage() {
       {/* History Tab */}
       <ProfileTab active={activeTab === 'History'}>
         <div className="card overflow-hidden">
-          <div className="px-5 py-4 border-b border-[var(--border)] dark:border-[var(--border)]">
-            <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Booking History</h3>
+          <div className="px-5 py-4 border-b border-bdr">
+            <h3 className="font-bold text-txt-primary">Booking History</h3>
           </div>
-          <div className="divide-y divide-[var(--border)] dark:divide-[var(--border)]">
+          <div className="divide-y divide-bdr">
             {mockRecentBookings.map((booking, i) => (
               <motion.div
                 key={booking.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.08 }}
-                className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)]/30 transition-colors cursor-pointer"
+                className="flex items-center gap-4 px-5 py-4 hover:bg-bg-primary dark:hover:bg-[var(--border)]/30 transition-colors cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-xl bg-[var(--brand)]/10 dark:bg-[var(--brand-light)]/10 flex items-center justify-center">
-                  <Car className="w-4.5 h-4.5 text-[var(--brand)] dark:text-[var(--brand-light)]" size={18} />
+                <div className="w-9 h-9 rounded-xl bg-brand/10 dark:bg-[var(--brand-light)]/10 flex items-center justify-center">
+                  <Car className="w-4.5 h-4.5 text-brand" size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[var(--text-primary)] dark:text-white truncate">{booking.parking}</p>
-                  <p className="text-xs text-[var(--text-secondary)]">Slot {booking.slot} · {booking.time} · {booking.duration}</p>
+                  <p className="text-sm font-semibold text-txt-primary truncate">{booking.parking}</p>
+                  <p className="text-xs text-txt-secondary">Slot {booking.slot} · {booking.time} · {booking.duration}</p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-bold text-[var(--text-primary)] dark:text-white">₹{booking.amount}</p>
+                  <p className="text-sm font-bold text-txt-primary">₹{booking.amount}</p>
                   <span className={cn(
                     'text-[10px] font-bold px-2 py-0.5 rounded-full',
-                    booking.status === 'active' && 'bg-[var(--brand)]/10 text-[var(--brand)]',
+                    booking.status === 'active' && 'bg-brand/10 text-brand',
                     booking.status === 'completed' && 'bg-green-50 text-green-600',
                     booking.status === 'upcoming' && 'bg-blue-50 text-blue-600',
                     booking.status === 'cancelled' && 'bg-red-50 text-red-600',
@@ -243,19 +243,19 @@ export function ProfilePage() {
       {/* Rewards Tab */}
       <ProfileTab active={activeTab === 'Rewards'}>
         <div className="space-y-4">
-          <div className="card p-6 gradient-brand text-white">
+          <div className="card p-6 gradient-brand text-txt-primary">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-white/70 text-sm">Total Green Points</p>
+                <p className="text-txt-primary/70 text-sm">Total Green Points</p>
                 <p className="text-4xl font-bold">2,840</p>
-                <p className="text-white/60 text-xs mt-1">≈ ₹284 redeemable value</p>
+                <p className="text-txt-primary/60 text-xs mt-1">≈ ₹284 redeemable value</p>
               </div>
               <Medal className="w-12 h-12 text-[#F59E0B]" />
             </div>
             <div className="h-2 bg-white/20 rounded-full overflow-hidden">
               <div className="h-full bg-[#F59E0B] rounded-full" style={{ width: '56.8%' }} />
             </div>
-            <p className="text-xs text-white/60 mt-1.5">1,160 more points to Platinum status</p>
+            <p className="text-xs text-txt-primary/60 mt-1.5">1,160 more points to Platinum status</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -267,9 +267,9 @@ export function ProfilePage() {
             ].map(r => (
               <div key={r.title} className="card p-4">
                 <div className="text-2xl mb-2">{r.icon}</div>
-                <div className="font-bold text-[var(--text-primary)] dark:text-white">{r.value}</div>
-                <div className="text-xs text-[var(--text-secondary)] font-medium">{r.title}</div>
-                <div className="text-[11px] text-[var(--text-secondary)]">{r.desc}</div>
+                <div className="font-bold text-txt-primary">{r.value}</div>
+                <div className="text-xs text-txt-secondary font-medium">{r.title}</div>
+                <div className="text-[11px] text-txt-secondary">{r.desc}</div>
               </div>
             ))}
           </div>
@@ -305,22 +305,22 @@ export function ProfilePage() {
             }
           ].map(section => (
             <div key={section.title} className="card overflow-hidden">
-              <div className="px-5 py-3 border-b border-[var(--border)] dark:border-[var(--border)]">
-                <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{section.title}</p>
+              <div className="px-5 py-3 border-b border-bdr">
+                <p className="text-xs font-bold text-txt-secondary uppercase tracking-wider">{section.title}</p>
               </div>
-              <div className="divide-y divide-[var(--border)] dark:divide-[var(--border)]">
+              <div className="divide-y divide-bdr">
                 {section.items.map(item => (
-                  <div key={item.label} className="flex items-center justify-between px-5 py-4 hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)]/30 transition-colors cursor-pointer"
+                  <div key={item.label} className="flex items-center justify-between px-5 py-4 hover:bg-bg-primary dark:hover:bg-[var(--border)]/30 transition-colors cursor-pointer"
                     onClick={item.label === 'Dark Mode' ? toggleTheme : undefined}
                   >
                     <div className="flex items-center gap-3">
-                      <item.icon className="w-4 h-4 text-[var(--text-secondary)]" />
-                      <span className="text-sm text-[var(--text-primary)] dark:text-white">{item.label}</span>
+                      <item.icon className="w-4 h-4 text-txt-secondary" />
+                      <span className="text-sm text-txt-primary">{item.label}</span>
                     </div>
                     {item.action === 'toggle' ? (
                       <div className={cn(
                         'w-10 h-6 rounded-full relative transition-colors cursor-pointer',
-                        item.value ? 'bg-[var(--brand)]' : 'bg-[var(--border)] dark:bg-[var(--border)]'
+                        item.value ? 'bg-brand' : 'bg-[var(--border)] dark:bg-bg-secondary'
                       )}>
                         <div className={cn(
                           'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform',
@@ -329,8 +329,8 @@ export function ProfilePage() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[var(--text-secondary)]">{item.value}</span>
-                        <ChevronRight className="w-4 h-4 text-[var(--text-secondary)]" />
+                        <span className="text-xs text-txt-secondary">{item.value}</span>
+                        <ChevronRight className="w-4 h-4 text-txt-secondary" />
                       </div>
                     )}
                   </div>

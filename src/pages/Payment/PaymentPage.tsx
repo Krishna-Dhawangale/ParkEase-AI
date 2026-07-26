@@ -12,7 +12,7 @@ const paymentMethods = [
   { id: 'credit', label: 'Credit Card', icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20', desc: 'Visa, Mastercard, Amex, RuPay' },
   { id: 'debit', label: 'Debit Card', icon: CreditCard, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', desc: 'All major bank cards' },
   { id: 'wallet', label: 'Wallet', icon: Wallet, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20', desc: 'Paytm, PhonePe, Amazon Pay' },
-  { id: 'netbanking', label: 'Net Banking', icon: Building2, color: 'text-[var(--brand)]', bg: 'bg-[var(--brand)]/5 dark:bg-[var(--brand-light)]/10', desc: 'All 50+ banks supported' },
+  { id: 'netbanking', label: 'Net Banking', icon: Building2, color: 'text-brand', bg: 'bg-brand/5 dark:bg-[var(--brand-light)]/10', desc: 'All 50+ banks supported' },
 ];
 
 export function PaymentPage() {
@@ -45,8 +45,8 @@ export function PaymentPage() {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">Payment</h1>
-            <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">Secure payment powered by ParkEase Pay™</p>
+            <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Payment</h1>
+            <p className="text-sm text-txt-secondary">Secure payment powered by ParkEase Pay™</p>
           </div>
         </div>
 
@@ -54,7 +54,7 @@ export function PaymentPage() {
           {/* Payment methods */}
           <div className="lg:col-span-3 space-y-4">
             <div className="card p-5">
-              <h3 className="font-bold text-[var(--text-primary)] dark:text-white mb-4">Select Payment Method</h3>
+              <h3 className="font-bold text-txt-primary mb-4">Select Payment Method</h3>
               <div className="space-y-2">
                 {paymentMethods.map((method, i) => (
                   <motion.button
@@ -66,22 +66,22 @@ export function PaymentPage() {
                     className={cn(
                       'w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left',
                       selectedMethod === method.id
-                        ? 'border-[var(--brand)] bg-[var(--brand)]/5 dark:bg-[var(--brand-light)]/5'
-                        : 'border-[var(--border)] dark:border-[var(--border)] hover:border-[var(--brand)]/30'
+                        ? 'border-[var(--brand)] bg-brand/5 dark:bg-[var(--brand-light)]/5'
+                        : 'border-bdr hover:border-[var(--brand)]/30'
                     )}
                   >
                     <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', method.bg)}>
                       <method.icon className={cn('w-5 h-5', method.color)} />
                     </div>
                     <div className="flex-1">
-                      <div className="font-semibold text-[var(--text-primary)] dark:text-white text-sm">{method.label}</div>
-                      <div className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">{method.desc}</div>
+                      <div className="font-semibold text-txt-primary text-sm">{method.label}</div>
+                      <div className="text-xs text-txt-secondary">{method.desc}</div>
                     </div>
                     <div className={cn(
                       'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all',
-                      selectedMethod === method.id ? 'border-[var(--brand)] bg-[var(--brand)]' : 'border-[var(--border)] dark:border-[var(--border)]'
+                      selectedMethod === method.id ? 'border-[var(--brand)] bg-brand' : 'border-bdr'
                     )}>
-                      {selectedMethod === method.id && <Check className="w-3 h-3 text-white" />}
+                      {selectedMethod === method.id && <Check className="w-3 h-3 text-txt-primary" />}
                     </div>
                   </motion.button>
                 ))}
@@ -95,7 +95,7 @@ export function PaymentPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="card p-5"
               >
-                <h3 className="font-bold text-[var(--text-primary)] dark:text-white mb-4">Enter UPI ID</h3>
+                <h3 className="font-bold text-txt-primary mb-4">Enter UPI ID</h3>
                 <div className="relative">
                   <input
                     type="text"
@@ -104,16 +104,16 @@ export function PaymentPage() {
                     placeholder="yourname@upi"
                     className="input-field pr-24"
                   />
-                  <button className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs font-bold text-[var(--brand)] bg-[var(--brand)]/10 rounded-lg hover:bg-[var(--brand)]/20 transition-colors">
+                  <button className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs font-bold text-brand bg-brand/10 rounded-lg hover:bg-brand/20 transition-colors">
                     Verify
                   </button>
                 </div>
-                <p className="text-xs text-[var(--text-secondary)] mt-2">Supports GPay, PhonePe, Paytm, BHIM, any UPI app</p>
+                <p className="text-xs text-txt-secondary mt-2">Supports GPay, PhonePe, Paytm, BHIM, any UPI app</p>
 
-                <div className="mt-4 p-3 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)] border border-[var(--border)] dark:border-[var(--border)]">
-                  <p className="text-xs font-semibold text-[var(--text-primary)] dark:text-white mb-2">Scan QR Code</p>
+                <div className="mt-4 p-3 rounded-xl bg-bg-primary border border-bdr">
+                  <p className="text-xs font-semibold text-txt-primary mb-2">Scan QR Code</p>
                   {/* QR placeholder */}
-                  <div className="w-32 h-32 mx-auto bg-white dark:bg-[var(--border)] rounded-xl border border-[var(--border)] dark:border-[var(--border)] flex items-center justify-center">
+                  <div className="w-32 h-32 mx-auto bg-bg-card dark:bg-bg-secondary rounded-xl border border-bdr flex items-center justify-center">
                     <div className="grid grid-cols-5 gap-0.5 p-2">
                       {Array.from({ length: 25 }).map((_, i) => (
                         <div key={i} className={cn('w-3 h-3 rounded-sm', Math.random() > 0.5 ? 'bg-[var(--text-primary)] dark:bg-white' : 'bg-transparent')} />
@@ -130,28 +130,28 @@ export function PaymentPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="card p-5 space-y-4"
               >
-                <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Card Details</h3>
+                <h3 className="font-bold text-txt-primary">Card Details</h3>
                 <div>
-                  <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1.5">Card Number</label>
+                  <label className="text-xs font-semibold text-txt-secondary block mb-1.5">Card Number</label>
                   <input placeholder="1234 5678 9012 3456" className="input-field" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1.5">Expiry</label>
+                    <label className="text-xs font-semibold text-txt-secondary block mb-1.5">Expiry</label>
                     <input placeholder="MM / YY" className="input-field" />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1.5">CVV</label>
+                    <label className="text-xs font-semibold text-txt-secondary block mb-1.5">CVV</label>
                     <input placeholder="•••" className="input-field" type="password" maxLength={3} />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1.5">Name on Card</label>
+                  <label className="text-xs font-semibold text-txt-secondary block mb-1.5">Name on Card</label>
                   <input placeholder="GIRISH KUMAR" className="input-field" />
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" className="accent-[var(--brand)]" />
-                  <span className="text-xs text-[var(--text-secondary)]">Save this card for future bookings</span>
+                  <span className="text-xs text-txt-secondary">Save this card for future bookings</span>
                 </label>
               </motion.div>
             ) : null}
@@ -159,7 +159,7 @@ export function PaymentPage() {
             {/* Security badges */}
             <div className="flex items-center justify-center gap-4 flex-wrap">
               {['PCI DSS', 'SSL Secured', '3D Secure', 'RBI Compliant'].map(badge => (
-                <div key={badge} className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+                <div key={badge} className="flex items-center gap-1.5 text-xs text-txt-secondary">
                   <Lock className="w-3 h-3" />
                   {badge}
                 </div>
@@ -175,24 +175,24 @@ export function PaymentPage() {
               transition={{ delay: 0.1 }}
               className="card p-5"
             >
-              <h3 className="font-bold text-[var(--text-primary)] dark:text-white mb-4">Booking Summary</h3>
+              <h3 className="font-bold text-txt-primary mb-4">Booking Summary</h3>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-bg-primary">
                   <div className="w-9 h-9 rounded-xl gradient-brand flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-white" />
+                    <Zap className="w-4 h-4 text-txt-primary" />
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-[var(--text-primary)] dark:text-white">Slot A-12</div>
-                    <div className="text-xs text-[var(--text-secondary)]">Central Metro Hub · 2 hrs</div>
+                    <div className="text-sm font-bold text-txt-primary">Slot A-12</div>
+                    <div className="text-xs text-txt-secondary">Central Metro Hub · 2 hrs</div>
                   </div>
                 </div>
 
                 <div className="space-y-2 text-sm">
                   {summaryItems.map(item => (
                     <div key={item.label} className="flex justify-between">
-                      <span className="text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">{item.label}</span>
+                      <span className="text-txt-secondary">{item.label}</span>
                       {item.value && (
-                        <span className={cn('font-semibold', item.green ? 'text-green-600' : 'text-[var(--text-primary)] dark:text-white')}>
+                        <span className={cn('font-semibold', item.green ? 'text-green-600' : 'text-txt-primary')}>
                           {item.value}
                         </span>
                       )}
@@ -200,10 +200,10 @@ export function PaymentPage() {
                   ))}
                 </div>
 
-                <div className="border-t border-[var(--border)] dark:border-[var(--border)] pt-3">
+                <div className="border-t border-bdr pt-3">
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-[var(--text-primary)] dark:text-white">Total</span>
-                    <span className="text-2xl font-bold text-[var(--brand)]">₹129.80</span>
+                    <span className="font-bold text-txt-primary">Total</span>
+                    <span className="text-2xl font-bold text-brand">₹129.80</span>
                   </div>
                 </div>
               </div>
@@ -251,7 +251,7 @@ export function PaymentPage() {
               )}
             </motion.button>
 
-            <p className="text-center text-[11px] text-[var(--text-secondary)]">
+            <p className="text-center text-[11px] text-txt-secondary">
               Your payment is secured with 256-bit SSL encryption
             </p>
           </div>

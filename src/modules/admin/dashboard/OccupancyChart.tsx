@@ -23,12 +23,12 @@ const CustomTooltip = ({
   const pct = ((entry.value / total) * 100).toFixed(1);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+    <div className="rounded-xl border border-bdr bg-white px-3 py-2 shadow-lg dark:border-bdr dark:bg-bg-elevated">
       <div className="flex items-center gap-2">
         <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-        <span className="text-sm font-medium text-slate-900 dark:text-white">{entry.name}</span>
+        <span className="text-sm font-medium text-txt-primary dark:text-txt-primary">{entry.name}</span>
       </div>
-      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+      <p className="mt-1 text-xs text-txt-muted dark:text-txt-secondary">
         {entry.value} slots · {pct}%
       </p>
     </div>
@@ -47,12 +47,12 @@ const OccupancyChart = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.5 }}
-      className="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900"
+      className="rounded-2xl border border-bdr bg-white p-6 shadow-soft dark:border-bdr dark:bg-bg-card"
     >
       {/* Header */}
       <div className="mb-4">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Occupancy Rate</h3>
-        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Current slot distribution</p>
+        <h3 className="text-sm font-semibold text-txt-primary dark:text-txt-primary">Occupancy Rate</h3>
+        <p className="mt-0.5 text-xs text-txt-muted dark:text-txt-secondary">Current slot distribution</p>
       </div>
 
       {/* Chart */}
@@ -81,10 +81,10 @@ const OccupancyChart = () => {
 
         {/* Center Label */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <span className="text-3xl font-bold tracking-tight text-txt-primary dark:text-txt-primary">
             {occupancyPct}%
           </span>
-          <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+          <span className="text-[11px] font-medium text-txt-secondary dark:text-txt-muted">
             Occupied
           </span>
         </div>
@@ -95,8 +95,8 @@ const OccupancyChart = () => {
         {occupancyData.map((item) => (
           <div key={item.name} className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-            <span className="text-xs text-slate-600 dark:text-slate-400">{item.name}</span>
-            <span className="ml-auto text-xs font-semibold text-slate-900 dark:text-white">{item.value}</span>
+            <span className="text-xs text-txt-muted dark:text-txt-secondary">{item.name}</span>
+            <span className="ml-auto text-xs font-semibold text-txt-primary dark:text-txt-primary">{item.value}</span>
           </div>
         ))}
       </div>

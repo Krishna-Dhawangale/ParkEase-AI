@@ -63,20 +63,20 @@ export function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">Analytics</h1>
-          <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">
+          <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Analytics</h1>
+          <p className="text-sm text-txt-secondary mt-0.5">
             Comprehensive parking intelligence and trends
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] dark:border-[var(--border)] rounded-xl p-1">
+          <div className="flex bg-bg-card border border-bdr rounded-xl p-1">
             {(['week', 'month', 'year'] as const).map(range => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
                 className={cn(
                   'px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all',
-                  timeRange === range ? 'bg-[var(--brand)] text-white' : 'text-[var(--text-secondary)]'
+                  timeRange === range ? 'bg-brand text-white' : 'text-txt-secondary'
                 )}
               >
                 {range}
@@ -97,8 +97,8 @@ export function AnalyticsPage() {
             transition={{ delay: i * 0.06 }}
             className="card p-4"
           >
-            <div className="text-xs text-[var(--text-secondary)] mb-1">{item.metric}</div>
-            <div className="text-lg font-bold text-[var(--text-primary)] dark:text-white">{item.current}</div>
+            <div className="text-xs text-txt-secondary mb-1">{item.metric}</div>
+            <div className="text-lg font-bold text-txt-primary">{item.current}</div>
             <div className="flex items-center gap-1 mt-1">
               {item.positive ? (
                 <ArrowUpRight className="w-3 h-3 text-green-600" />
@@ -108,7 +108,7 @@ export function AnalyticsPage() {
               <span className={cn('text-xs font-semibold', item.positive ? 'text-green-600' : 'text-red-600')}>
                 {item.change}
               </span>
-              <span className="text-[10px] text-[var(--text-secondary)]">vs last</span>
+              <span className="text-[10px] text-txt-secondary">vs last</span>
             </div>
           </motion.div>
         ))}
@@ -124,11 +124,11 @@ export function AnalyticsPage() {
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Revenue Trend</h3>
-              <p className="text-xs text-[var(--text-secondary)] mt-0.5">Monthly revenue with bookings overlay</p>
+              <h3 className="font-bold text-txt-primary">Revenue Trend</h3>
+              <p className="text-xs text-txt-secondary mt-0.5">Monthly revenue with bookings overlay</p>
             </div>
             <div className="flex items-center gap-3 text-xs">
-              <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-[var(--brand)]" /> Revenue</div>
+              <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-brand" /> Revenue</div>
               <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-[#F59E0B]" /> Bookings</div>
             </div>
           </div>
@@ -153,8 +153,8 @@ export function AnalyticsPage() {
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Daily Bookings</h3>
-              <p className="text-xs text-[var(--text-secondary)] mt-0.5">This week's booking distribution</p>
+              <h3 className="font-bold text-txt-primary">Daily Bookings</h3>
+              <p className="text-xs text-txt-secondary mt-0.5">This week's booking distribution</p>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={240}>
@@ -179,17 +179,17 @@ export function AnalyticsPage() {
           className="card p-5"
         >
           <div className="flex items-center gap-2 mb-4">
-            <Clock className="w-4 h-4 text-[var(--brand)]" />
-            <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Peak Hours</h3>
+            <Clock className="w-4 h-4 text-brand" />
+            <h3 className="font-bold text-txt-primary">Peak Hours</h3>
           </div>
           <div className="space-y-2.5">
             {peakHours.map(h => (
               <div key={h.time}>
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs text-[var(--text-secondary)]">{h.time}</span>
-                  <span className="text-xs font-semibold text-[var(--text-primary)] dark:text-white">{h.avg}%</span>
+                  <span className="text-xs text-txt-secondary">{h.time}</span>
+                  <span className="text-xs font-semibold text-txt-primary">{h.avg}%</span>
                 </div>
-                <div className="h-2 bg-[var(--border)] dark:bg-[var(--border)] rounded-full overflow-hidden">
+                <div className="h-2 bg-[var(--border)] dark:bg-bg-secondary rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${h.avg}%` }}
@@ -211,7 +211,7 @@ export function AnalyticsPage() {
         >
           <div className="flex items-center gap-2 mb-4">
             <Car className="w-4 h-4 text-blue-600" />
-            <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Vehicle Types</h3>
+            <h3 className="font-bold text-txt-primary">Vehicle Types</h3>
           </div>
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
@@ -236,7 +236,7 @@ export function AnalyticsPage() {
             {mockVehicleTypes.map((v, i) => (
               <div key={v.name} className="flex items-center gap-1">
                 <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: vehicleColors[i] }} />
-                <span className="text-[11px] text-[var(--text-secondary)]">{v.name}</span>
+                <span className="text-[11px] text-txt-secondary">{v.name}</span>
               </div>
             ))}
           </div>
@@ -251,7 +251,7 @@ export function AnalyticsPage() {
         >
           <div className="flex items-center gap-2 mb-4">
             <Leaf className="w-4 h-4 text-green-600" />
-            <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Green Impact</h3>
+            <h3 className="font-bold text-txt-primary">Green Impact</h3>
           </div>
           <ResponsiveContainer width="100%" height={160}>
             <LineChart data={greenMetrics} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
@@ -264,8 +264,8 @@ export function AnalyticsPage() {
             </LineChart>
           </ResponsiveContainer>
           <div className="flex items-center justify-center gap-4 mt-2">
-            <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-green-600" /><span className="text-[11px] text-[var(--text-secondary)]">CO₂</span></div>
-            <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-blue-600" /><span className="text-[11px] text-[var(--text-secondary)]">Fuel</span></div>
+            <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-green-600" /><span className="text-[11px] text-txt-secondary">CO₂</span></div>
+            <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-blue-600" /><span className="text-[11px] text-txt-secondary">Fuel</span></div>
           </div>
         </motion.div>
       </div>
@@ -280,7 +280,7 @@ export function AnalyticsPage() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Star className="w-4 h-4 text-[#F59E0B]" />
-            <h3 className="font-bold text-[var(--text-primary)] dark:text-white">Customer Ratings</h3>
+            <h3 className="font-bold text-txt-primary">Customer Ratings</h3>
           </div>
           <span className="badge badge-brand">4.8 average</span>
         </div>
@@ -294,10 +294,10 @@ export function AnalyticsPage() {
           ].map(rating => (
             <div key={rating.stars} className="space-y-1">
               <div className="flex items-center justify-center gap-0.5">
-                <span className="text-xs font-semibold text-[var(--text-primary)] dark:text-white">{rating.stars}</span>
+                <span className="text-xs font-semibold text-txt-primary">{rating.stars}</span>
                 <Star className="w-3 h-3 text-[#F59E0B] fill-[#F59E0B]" />
               </div>
-              <div className="h-16 bg-[var(--border)] dark:bg-[var(--border)] rounded-lg overflow-hidden flex items-end">
+              <div className="h-16 bg-[var(--border)] dark:bg-bg-secondary rounded-lg overflow-hidden flex items-end">
                 <motion.div
                   initial={{ height: 0 }}
                   animate={{ height: `${rating.pct}%` }}
@@ -305,7 +305,7 @@ export function AnalyticsPage() {
                   className="w-full bg-[#F59E0B] rounded-t-lg"
                 />
               </div>
-              <div className="text-center text-[10px] text-[var(--text-secondary)]">{rating.pct}%</div>
+              <div className="text-center text-[10px] text-txt-secondary">{rating.pct}%</div>
             </div>
           ))}
         </div>

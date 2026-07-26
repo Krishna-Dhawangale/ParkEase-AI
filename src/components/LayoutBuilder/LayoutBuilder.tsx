@@ -96,12 +96,12 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
         EV_CHARGING: 'bg-blue-500',
         VIP: 'bg-amber-400'
       };
-      return `${statusColors[cell.slot.status as SlotStatus]} text-white`;
+      return `${statusColors[cell.slot.status as SlotStatus]} text-txt-primary`;
     }
     
     switch (cell.type) {
-      case 'WALL': return 'bg-slate-800';
-      case 'LANE': return 'bg-slate-300';
+      case 'WALL': return 'bg-bg-elevated';
+      case 'LANE': return 'bg-bg-hover';
       case 'ENTRY': return 'bg-emerald-600 flex items-center justify-center text-white text-xs';
       case 'EXIT': return 'bg-rose-600 flex items-center justify-center text-white text-xs';
       default: return 'bg-transparent';
@@ -163,8 +163,8 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
                 onClick={() => setSelectedTool(tool)}
                 className={`py-2 px-3 rounded-lg text-sm transition-colors ${
                   selectedTool === tool 
-                    ? 'bg-[var(--color-primary)] text-white' 
-                    : 'bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700'
+                    ? 'bg-[var(--color-primary)] text-txt-primary' 
+                    : 'bg-gray-100 dark:bg-bg-elevated hover:bg-gray-200 dark:hover:bg-bg-hover'
                 }`}
               >
                 {tool}
@@ -198,9 +198,9 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
       </div>
 
       {/* Grid Canvas */}
-      <div className="flex-1 overflow-auto bg-gray-50 dark:bg-slate-900 rounded-xl border border-[var(--color-border)] flex items-center justify-center p-8">
+      <div className="flex-1 overflow-auto bg-gray-50 dark:bg-bg-card rounded-xl border border-[var(--color-border)] flex items-center justify-center p-8">
         <div 
-          className="grid gap-[2px] bg-gray-300 dark:bg-slate-700 border-2 border-gray-300 dark:border-slate-700"
+          className="grid gap-[2px] bg-gray-300 dark:bg-bg-hover border-2 border-gray-300 dark:border-bdr"
           style={{
             gridTemplateColumns: `repeat(${gridSize.width}, 40px)`,
             gridTemplateRows: `repeat(${gridSize.height}, 40px)`,

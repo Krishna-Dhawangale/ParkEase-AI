@@ -25,16 +25,16 @@ const CustomTooltip = ({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-800">
-      <p className="mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</p>
+    <div className="rounded-xl border border-bdr bg-white p-3 shadow-lg dark:border-bdr dark:bg-bg-elevated">
+      <p className="mb-2 text-xs font-semibold text-txt-muted dark:text-txt-secondary">{label}</p>
       {payload.map((entry) => (
         <div key={entry.name} className="flex items-center gap-2 text-sm">
           <span
             className="h-2 w-2 rounded-full"
             style={{ backgroundColor: entry.color }}
           />
-          <span className="text-slate-600 dark:text-slate-300">{entry.name}:</span>
-          <span className="font-semibold text-slate-900 dark:text-white">
+          <span className="text-txt-muted dark:text-txt-secondary">{entry.name}:</span>
+          <span className="font-semibold text-txt-primary dark:text-txt-primary">
             ₹{(entry.value / 1000).toFixed(0)}K
           </span>
         </div>
@@ -51,26 +51,26 @@ const RevenueChart = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}
-      className="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900"
+      className="rounded-2xl border border-bdr bg-white p-6 shadow-soft dark:border-bdr dark:bg-bg-card"
     >
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Revenue Overview</h3>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Monthly revenue breakdown</p>
+          <h3 className="text-sm font-semibold text-txt-primary dark:text-txt-primary">Revenue Overview</h3>
+          <p className="mt-0.5 text-xs text-txt-muted dark:text-txt-secondary">Monthly revenue breakdown</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-blue-500" />
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Revenue</span>
+            <span className="text-[11px] text-txt-muted dark:text-txt-secondary">Revenue</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Profit</span>
+            <span className="text-[11px] text-txt-muted dark:text-txt-secondary">Profit</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-rose-400" />
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Expenses</span>
+            <span className="text-[11px] text-txt-muted dark:text-txt-secondary">Expenses</span>
           </div>
         </div>
       </div>
@@ -79,7 +79,7 @@ const RevenueChart = () => {
       <div className="h-[280px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={revenueData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-100 dark:text-slate-800" />
+            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-txt-primary dark:text-txt-primary" />
             <XAxis
               dataKey="month"
               tick={{ fontSize: 11, fill: '#94A3B8' }}

@@ -11,22 +11,97 @@ export default {
         sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
+        /* ── Design Token Surface Colors ── */
+        bg: {
+          app: 'var(--bg-app)',
+          primary: 'var(--bg-primary)',
+          secondary: 'var(--bg-secondary)',
+          card: 'var(--bg-card)',
+          elevated: 'var(--bg-elevated)',
+          input: 'var(--bg-input)',
+          hover: 'var(--bg-hover)',
+          active: 'var(--bg-active)',
+          overlay: 'var(--bg-overlay)',
+        },
+
+        /* ── Design Token Text Colors ── */
+        txt: {
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
+          disabled: 'var(--text-disabled)',
+          inverse: 'var(--text-inverse)',
+        },
+
+        /* ── Design Token Border Colors ── */
+        bdr: {
+          DEFAULT: 'var(--border)',
+          light: 'var(--border-light)',
+          focus: 'var(--border-focus)',
+        },
+
+        /* ── Brand Colors ── */
         brand: {
           50: 'rgba(var(--brand-rgb), 0.05)',
           100: 'rgba(var(--brand-rgb), 0.1)',
           200: 'rgba(var(--brand-rgb), 0.2)',
           300: 'rgba(var(--brand-rgb), 0.3)',
           400: 'rgba(var(--brand-rgb), 0.4)',
+          DEFAULT: 'var(--brand)',
           500: 'var(--brand)',
-          600: 'var(--brand-light)',
-          700: 'var(--brand-light)',
-          800: 'var(--brand-light)',
-          900: 'var(--brand-light)',
+          light: 'var(--brand-light)',
+          hover: 'var(--brand-hover)',
+          subtle: 'var(--brand-subtle)',
         },
-        amber: {
-          400: '#F0A500',
-          500: '#CF7500',
+
+        /* ── Semantic Colors ── */
+        semantic: {
+          success: 'var(--success)',
+          'success-bg': 'var(--success-bg)',
+          'success-border': 'var(--success-border)',
+          danger: 'var(--danger)',
+          'danger-bg': 'var(--danger-bg)',
+          'danger-border': 'var(--danger-border)',
+          warning: 'var(--warning)',
+          'warning-bg': 'var(--warning-bg)',
+          'warning-border': 'var(--warning-border)',
+          info: 'var(--info)',
+          'info-bg': 'var(--info-bg)',
+          'info-border': 'var(--info-border)',
         },
+
+        /* ── Parking-Specific Semantic ── */
+        parking: {
+          available: 'var(--parking-available)',
+          occupied: 'var(--parking-occupied)',
+          reserved: 'var(--parking-reserved)',
+          maintenance: 'var(--parking-maintenance)',
+          electric: 'var(--parking-electric)',
+          disabled: 'var(--parking-disabled)',
+          emergency: 'var(--parking-emergency)',
+          vip: 'var(--parking-vip)',
+        },
+
+        /* ── Portal Accent Colors ── */
+        owner: {
+          DEFAULT: 'var(--owner-accent)',
+          light: 'var(--owner-accent-light)',
+          subtle: 'var(--owner-accent-subtle)',
+        },
+        admin: {
+          DEFAULT: 'var(--admin-accent)',
+          light: 'var(--admin-accent-light)',
+          subtle: 'var(--admin-accent-subtle)',
+        },
+
+        /* ── Glass ── */
+        glass: {
+          bg: 'var(--glass-bg)',
+          border: 'var(--glass-border)',
+          heavy: 'var(--glass-bg-heavy)',
+        },
+
+        /* ── Surface (backwards compat) ── */
         surface: {
           50: 'var(--bg-primary)',
           100: 'var(--bg-secondary)',
@@ -35,7 +110,13 @@ export default {
           dark: 'var(--bg-primary)',
           'dark-card': 'var(--bg-card)',
           'dark-border': 'var(--border)',
-        }
+        },
+
+        /* ── Amber Accent ── */
+        amber: {
+          400: '#F0A500',
+          500: '#CF7500',
+        },
       },
       borderRadius: {
         '2xl': '16px',
@@ -43,10 +124,12 @@ export default {
         '4xl': '24px',
       },
       boxShadow: {
-        'soft': '0 1px 3px 0 rgba(0,0,0,0.04), 0 1px 2px -1px rgba(0,0,0,0.04)',
-        'card': '0 4px 6px -1px rgba(0,0,0,0.04), 0 2px 4px -2px rgba(0,0,0,0.04)',
-        'hover': '0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -4px rgba(0,0,0,0.05)',
-        'glow': '0 0 0 3px rgba(240,165,0,0.15)',
+        'xs': 'var(--shadow-xs)',
+        'soft': 'var(--shadow-sm)',
+        'card': 'var(--shadow-card)',
+        'hover': 'var(--shadow-hover)',
+        'modal': 'var(--shadow-modal)',
+        'glow': 'var(--shadow-glow)',
         'glow-amber': '0 0 0 3px rgba(240,165,0,0.15)',
       },
       animation: {

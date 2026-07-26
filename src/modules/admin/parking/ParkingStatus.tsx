@@ -17,7 +17,7 @@ const config = {
     icon: Clock,
   },
   Closed: {
-    colors: 'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    colors: 'border-bdr bg-bg-secondary text-txt-primary dark:border-bdr dark:bg-bg-elevated dark:text-txt-secondary',
     icon: XCircle,
   },
   Full: {

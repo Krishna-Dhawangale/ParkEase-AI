@@ -153,12 +153,12 @@ export function ProjectWorkflowPage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px]">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0F766E]/10 dark:bg-[#14B8A6]/10 text-[#0F766E] dark:text-[#14B8A6] text-xs font-bold mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0F766E]/10 dark:bg-[#14B8A6]/10 text-brand text-xs font-bold mb-3">
             <CheckCircle2 className="w-3.5 h-3.5" />
             SRS-aligned prototype workflow
           </div>
-          <h1 className="text-3xl font-bold text-[#111827] dark:text-white tracking-tight">ParkEase AI Project Workflow</h1>
-          <p className="text-sm text-[#6B7280] dark:text-[#94A3B8] mt-2 leading-relaxed">
+          <h1 className="text-3xl font-bold text-txt-primary tracking-tight">ParkEase AI Project Workflow</h1>
+          <p className="text-sm text-txt-secondary mt-2 leading-relaxed">
             This screen translates the SRS into the product journey: search nearby parking, get an explainable AI slot, reserve, pay, receive OTP and QR ticket, verify at the gate, monitor through a digital twin, and manage operations through a SaaS admin layer.
           </p>
         </div>
@@ -169,8 +169,8 @@ export function ProjectWorkflowPage() {
             ['6', 'AI modules'],
           ].map(([value, label]) => (
             <div key={label} className="card-flat p-4 text-center">
-              <div className="text-2xl font-bold text-[#111827] dark:text-white">{value}</div>
-              <div className="text-[11px] text-[#6B7280] dark:text-[#94A3B8]">{label}</div>
+              <div className="text-2xl font-bold text-txt-primary">{value}</div>
+              <div className="text-[11px] text-txt-secondary">{label}</div>
             </div>
           ))}
         </div>
@@ -179,8 +179,8 @@ export function ProjectWorkflowPage() {
       <section className="card-flat p-5">
         <div className="flex items-center justify-between gap-3 mb-5">
           <div>
-            <h2 className="font-bold text-[#111827] dark:text-white">End-to-End User Journey</h2>
-            <p className="text-xs text-[#6B7280] dark:text-[#94A3B8] mt-1">From planning a trip to secure exit verification.</p>
+            <h2 className="font-bold text-txt-primary">End-to-End User Journey</h2>
+            <p className="text-xs text-txt-secondary mt-1">From planning a trip to secure exit verification.</p>
           </div>
           <span className="badge badge-brand">Complete flow</span>
         </div>
@@ -196,14 +196,14 @@ export function ProjectWorkflowPage() {
             >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="w-9 h-9 rounded-xl bg-[#0F766E]/10 dark:bg-[#14B8A6]/10 flex items-center justify-center">
-                  <step.icon className="w-4 h-4 text-[#0F766E] dark:text-[#14B8A6]" />
+                  <step.icon className="w-4 h-4 text-brand" />
                 </div>
                 <span className="text-[10px] font-bold text-[#9CA3AF]">{String(index + 1).padStart(2, '0')}</span>
               </div>
-              <h3 className="text-sm font-bold text-[#111827] dark:text-white">{step.title}</h3>
-              <p className="text-xs text-[#6B7280] dark:text-[#94A3B8] leading-relaxed mt-1 min-h-[54px]">{step.desc}</p>
+              <h3 className="text-sm font-bold text-txt-primary">{step.title}</h3>
+              <p className="text-xs text-txt-secondary leading-relaxed mt-1 min-h-[54px]">{step.desc}</p>
               <div className="mt-3 flex items-center justify-between text-[11px]">
-                <span className="font-semibold text-[#0F766E] dark:text-[#14B8A6]">{step.owner}</span>
+                <span className="font-semibold text-brand">{step.owner}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-[#9CA3AF] group-hover:text-[#0F766E]" />
               </div>
             </motion.a>
@@ -213,7 +213,7 @@ export function ProjectWorkflowPage() {
 
       <div className="grid xl:grid-cols-3 gap-5">
         <section className="xl:col-span-2 card-flat p-5">
-          <h2 className="font-bold text-[#111827] dark:text-white mb-4">AI And Smart Parking Modules</h2>
+          <h2 className="font-bold text-txt-primary mb-4">AI And Smart Parking Modules</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {aiModules.map((module, index) => (
               <motion.div
@@ -227,29 +227,29 @@ export function ProjectWorkflowPage() {
                   <module.icon className="w-4 h-4" />
                 </div>
                 <div className="flex items-baseline justify-between gap-2">
-                  <h3 className="text-sm font-bold text-[#111827] dark:text-white">{module.title}</h3>
-                  <span className="text-sm font-bold text-[#0F766E] dark:text-[#14B8A6]">{module.value}</span>
+                  <h3 className="text-sm font-bold text-txt-primary">{module.title}</h3>
+                  <span className="text-sm font-bold text-brand">{module.value}</span>
                 </div>
-                <p className="text-xs text-[#6B7280] dark:text-[#94A3B8] leading-relaxed mt-1">{module.desc}</p>
+                <p className="text-xs text-txt-secondary leading-relaxed mt-1">{module.desc}</p>
               </motion.div>
             ))}
           </div>
         </section>
 
         <section className="card-flat p-5">
-          <h2 className="font-bold text-[#111827] dark:text-white mb-4">System Actors</h2>
+          <h2 className="font-bold text-txt-primary mb-4">System Actors</h2>
           <div className="space-y-3">
             {actors.map((actor) => (
               <div key={actor.label} className="rounded-2xl border border-[#E5E7EB] dark:border-[#334155] bg-white dark:bg-[#1E293B] p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#F8FAFC] dark:bg-[#0F172A] flex items-center justify-center">
-                    <actor.icon className="w-4 h-4 text-[#0F766E] dark:text-[#14B8A6]" />
+                  <div className="w-8 h-8 rounded-xl bg-bg-primary dark:bg-bg-primary flex items-center justify-center">
+                    <actor.icon className="w-4 h-4 text-brand" />
                   </div>
-                  <h3 className="text-sm font-bold text-[#111827] dark:text-white">{actor.label}</h3>
+                  <h3 className="text-sm font-bold text-txt-primary">{actor.label}</h3>
                 </div>
                 <div className="space-y-1.5">
                   {actor.items.map((item) => (
-                    <div key={item} className="flex items-start gap-2 text-xs text-[#6B7280] dark:text-[#94A3B8]">
+                    <div key={item} className="flex items-start gap-2 text-xs text-txt-secondary">
                       <CheckCircle2 className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
                       <span>{item}</span>
                     </div>
@@ -263,7 +263,7 @@ export function ProjectWorkflowPage() {
 
       <div className="grid xl:grid-cols-2 gap-5">
         <section className="card-flat p-5">
-          <h2 className="font-bold text-[#111827] dark:text-white mb-4">SaaS Architecture Blueprint</h2>
+          <h2 className="font-bold text-txt-primary mb-4">SaaS Architecture Blueprint</h2>
           <div className="space-y-3">
             {architecture.map((layer, index) => (
               <div key={layer.layer} className="flex gap-3 rounded-2xl border border-[#E5E7EB] dark:border-[#334155] bg-white dark:bg-[#1E293B] p-4">
@@ -273,9 +273,9 @@ export function ProjectWorkflowPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold text-[#9CA3AF]">L{index + 1}</span>
-                    <h3 className="text-sm font-bold text-[#111827] dark:text-white">{layer.layer}</h3>
+                    <h3 className="text-sm font-bold text-txt-primary">{layer.layer}</h3>
                   </div>
-                  <p className="text-xs text-[#6B7280] dark:text-[#94A3B8] leading-relaxed mt-1">{layer.detail}</p>
+                  <p className="text-xs text-txt-secondary leading-relaxed mt-1">{layer.detail}</p>
                 </div>
               </div>
             ))}
@@ -283,7 +283,7 @@ export function ProjectWorkflowPage() {
         </section>
 
         <section className="card-flat p-5">
-          <h2 className="font-bold text-[#111827] dark:text-white mb-4">Prototype Screen Map</h2>
+          <h2 className="font-bold text-txt-primary mb-4">Prototype Screen Map</h2>
           <div className="overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-[#334155]">
             {prototypeMap.map(([screen, purpose], index) => (
               <div
@@ -293,8 +293,8 @@ export function ProjectWorkflowPage() {
                   index !== prototypeMap.length - 1 && 'border-b border-[#E5E7EB] dark:border-[#334155]'
                 )}
               >
-                <span className="text-xs font-bold text-[#111827] dark:text-white">{screen}</span>
-                <span className="text-xs text-[#6B7280] dark:text-[#94A3B8]">{purpose}</span>
+                <span className="text-xs font-bold text-txt-primary">{screen}</span>
+                <span className="text-xs text-txt-secondary">{purpose}</span>
               </div>
             ))}
           </div>

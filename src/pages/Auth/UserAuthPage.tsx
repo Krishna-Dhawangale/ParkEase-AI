@@ -83,7 +83,7 @@ export const UserAuthPage: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black font-sans text-white select-none">
+    <div className="relative w-full h-screen overflow-hidden bg-black font-sans text-txt-primary select-none">
       {/* Looping Video Background */}
       <video
         src="/auth-bg.mp4"
@@ -103,9 +103,9 @@ export const UserAuthPage: React.FC = () => {
         className="absolute top-6 left-6 flex items-center gap-2 z-20 hover:opacity-80 transition-opacity cursor-pointer"
       >
         <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0F766E] to-[#14B8A6] flex items-center justify-center">
-          <Car className="w-4.5 h-4.5 text-white" />
+          <Car className="w-4.5 h-4.5 text-txt-primary" />
         </div>
-        <span className="font-bold text-[14px] text-white">ParkEase AI</span>
+        <span className="font-bold text-[14px] text-txt-primary">ParkEase AI</span>
       </button>
 
       {/* Center Authentication Panel */}
@@ -118,10 +118,10 @@ export const UserAuthPage: React.FC = () => {
         >
           {/* Form Header */}
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold tracking-tight text-white">
+            <h2 className="text-2xl font-bold tracking-tight text-txt-primary">
               {isSignUp ? 'Create your account' : 'Welcome back'}
             </h2>
-            <p className="text-xs text-white/60 mt-1">
+            <p className="text-xs text-txt-primary/60 mt-1">
               {isSignUp ? 'Sign up to access the smart portal' : 'Enter credentials to access the platform'}
             </p>
           </div>
@@ -133,7 +133,7 @@ export const UserAuthPage: React.FC = () => {
               onClick={() => { setIsSignUp(false); setError(''); }}
               className={cn(
                 'flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer',
-                !isSignUp ? 'bg-[#0F766E] text-white shadow-md' : 'text-white/60 hover:text-white'
+                !isSignUp ? 'bg-[#0F766E] text-txt-primary shadow-md' : 'text-txt-primary/60 hover:text-txt-primary'
               )}
             >
               Sign In
@@ -143,7 +143,7 @@ export const UserAuthPage: React.FC = () => {
               onClick={() => { setIsSignUp(true); setError(''); }}
               className={cn(
                 'flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer',
-                isSignUp ? 'bg-[#0F766E] text-white shadow-md' : 'text-white/60 hover:text-white'
+                isSignUp ? 'bg-[#0F766E] text-txt-primary shadow-md' : 'text-txt-primary/60 hover:text-txt-primary'
               )}
             >
               Create Account
@@ -152,23 +152,23 @@ export const UserAuthPage: React.FC = () => {
 
           {/* Demo Credentials Helper */}
           {!isSignUp && (
-            <div className="mb-4 p-3 rounded-xl bg-white/5 border border-white/10 text-white/70 text-xs space-y-1.5 font-sans text-left">
-              <div className="font-semibold text-white">Demo Accounts:</div>
+            <div className="mb-4 p-3 rounded-xl bg-bg-hover border border-white/10 text-txt-primary/70 text-xs space-y-1.5 font-sans text-left">
+              <div className="font-semibold text-txt-primary">Demo Accounts:</div>
               <div className="grid grid-cols-3 gap-2 text-[10px]">
                 <div>
-                  <span className="text-white/40 block">User Email:</span>
+                  <span className="text-txt-primary/40 block">User Email:</span>
                   <code className="text-teal-300 font-mono select-all">user@parkease.ai</code>
-                  <span className="text-white/40 block mt-0.5">Pass: <code className="text-teal-300 font-mono">user123</code></span>
+                  <span className="text-txt-primary/40 block mt-0.5">Pass: <code className="text-teal-300 font-mono">user123</code></span>
                 </div>
                 <div>
-                  <span className="text-white/40 block">Partner Email:</span>
+                  <span className="text-txt-primary/40 block">Partner Email:</span>
                   <code className="text-teal-300 font-mono select-all">owner@parkease.ai</code>
-                  <span className="text-white/40 block mt-0.5">Pass: <code className="text-teal-300 font-mono">owner123</code></span>
+                  <span className="text-txt-primary/40 block mt-0.5">Pass: <code className="text-teal-300 font-mono">owner123</code></span>
                 </div>
                 <div>
-                  <span className="text-white/40 block">Admin Email:</span>
+                  <span className="text-txt-primary/40 block">Admin Email:</span>
                   <code className="text-teal-300 font-mono select-all">admin@parkease.ai</code>
-                  <span className="text-white/40 block mt-0.5">Pass: <code className="text-teal-300 font-mono">admin123</code></span>
+                  <span className="text-txt-primary/40 block mt-0.5">Pass: <code className="text-teal-300 font-mono">admin123</code></span>
                 </div>
               </div>
             </div>
@@ -197,49 +197,49 @@ export const UserAuthPage: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-1.5"
               >
-                <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">Full Name</label>
+                <label className="text-[11px] font-bold text-txt-primary/70 uppercase tracking-wider block">Full Name</label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-txt-primary/40" />
                   <input
                     type="text"
                     value={fullName}
                     onChange={e => setFullName(e.target.value)}
                     placeholder="Girish Kumar"
-                    className="w-full bg-white/5 border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
+                    className="w-full bg-bg-hover border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-txt-primary placeholder-white/30 outline-none transition-all"
                   />
                 </div>
               </motion.div>
             )}
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">Email Address</label>
+              <label className="text-[11px] font-bold text-txt-primary/70 uppercase tracking-wider block">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-txt-primary/40" />
                 <input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="admin@parkease.ai"
-                  className="w-full bg-white/5 border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition-all"
+                  className="w-full bg-bg-hover border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-txt-primary placeholder-white/30 outline-none transition-all"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">Password</label>
+              <label className="text-[11px] font-bold text-txt-primary/70 uppercase tracking-wider block">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-txt-primary/40" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-white/5 border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-10 text-sm text-white placeholder-white/30 outline-none transition-all"
+                  className="w-full bg-bg-hover border border-white/10 focus:border-[#14B8A6] focus:bg-white/10 rounded-xl py-3 pl-10 pr-10 text-sm text-txt-primary placeholder-white/30 outline-none transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-txt-primary/40 hover:text-txt-primary transition-colors cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -249,7 +249,7 @@ export const UserAuthPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#0F766E] hover:bg-[#0D6B63] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[#0F766E]/20 flex items-center justify-center gap-2 mt-4 cursor-pointer"
+              className="w-full bg-[#0F766E] hover:bg-[#0D6B63] disabled:opacity-50 text-txt-primary font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[#0F766E]/20 flex items-center justify-center gap-2 mt-4 cursor-pointer"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -263,7 +263,7 @@ export const UserAuthPage: React.FC = () => {
           </form>
 
           {/* Security indicator */}
-          <div className="flex items-center justify-center gap-1.5 mt-5 text-[10px] text-white/40">
+          <div className="flex items-center justify-center gap-1.5 mt-5 text-[10px] text-txt-primary/40">
             <Shield className="w-3.5 h-3.5" />
             Secured by ParkEase AI Core Shield
           </div>
