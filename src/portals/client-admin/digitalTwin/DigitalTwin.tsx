@@ -49,17 +49,16 @@ import {
 import { getDigitalTwinStorageKey } from './sync';
 import { useTenantStore } from '../../../store';
 import { DigitalTwinService } from '../../../services/digital-twin.service';
+import { DigitalTwinHeader } from './components/DigitalTwinHeader';
+import { EditorToolbar } from './components/EditorToolbar';
+import { PropertiesPanel } from './components/PropertiesPanel';
+import { FloorNavigator } from './components/FloorNavigator';
+import { SettingsModal } from './components/SettingsModal';
+import type { BuilderSnapshot } from './data';
+
 
 type ToolMode = 'select' | 'move' | 'wall' | 'road' | 'slot' | 'zone' | 'gate' | 'camera' | 'object' | 'text';
 type PreviewMode = '2D' | '3D' | 'Simulation';
-type BuilderSnapshot = {
-  id: string;
-  label: string;
-  savedAt: string;
-  version: number;
-  activeFloorId: string;
-  project: TwinBuilderProject;
-};
 type PersistedBuilderState = {
   project: TwinBuilderProject;
   activeFloorId: string;
@@ -167,7 +166,7 @@ const loadBuilderState = (tenantId?: string): PersistedBuilderState => {
   }
 };
 
-const DigitalTwin = () => {
+const DigitalTwin = ({ readOnly = false }: { readOnly?: boolean }) => {
   const currentTenant = useTenantStore(s => s.currentTenant);
   const activeTenantId = currentTenant?.id ?? undefined;
   const [initialState] = useState(() => loadBuilderState(activeTenantId));
@@ -199,6 +198,7 @@ const DigitalTwin = () => {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
   const [toast, setToast] = useState('Autosave ready');
   const [validationOpen, setValidationOpen] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [versionHistory, setVersionHistory] = useState<BuilderSnapshot[]>(() => initialState.snapshots);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
@@ -248,7 +248,8 @@ const DigitalTwin = () => {
   const getAngleFromCenter = (clientX: number, clientY: number) => {
     const center = getBoardCenter();
     if (!center) return 0;
-    return (Math.atan2(clientY - center.y, clientX - center.x) * 180) / Math.PI;
+
+  return (Math.atan2(clientY - center.y, clientX - center.x) * 180) / Math.PI;
   };
 
   const getSelectedIdsForFloor = useCallback((floorObjects: TwinCanvasObject[]) => {
@@ -617,228 +618,21 @@ const DigitalTwin = () => {
     reader.readAsText(file);
   };
 
+  const updateCanvasSettings = (updates: Partial<typeof project.canvas>) => {
+    commit((draft) => ({ ...draft, canvas: { ...draft.canvas, ...updates } }), 'Canvas settings updated');
+  };
+
   const saveLayout = () => {
     commit((draft) => ({ ...draft, lastSaved: 'Saved just now' }), 'Layout saved');
+    showToast('Layout saved successfully!');
   };
 
   const visibleObjects = activeFloor.objects
     .filter((item) => !hiddenLayers.includes(item.layer) && !item.hidden)
     .sort((a, b) => a.zIndex - b.zIndex);
 
-  return (
-    <div className="flex h-[calc(100vh-6rem)] min-h-[760px] flex-col gap-3 overflow-hidden text-slate-900 dark:text-white">
-      <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={importJson} />
-      <div className="flex flex-col gap-3 border-b border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 xl:flex-row xl:items-center xl:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold tracking-tight">Digital Twin Builder</h1>
-            <span className="rounded-full border border-slate-200 px-2 py-0.5 text-xs font-bold text-slate-500 dark:border-slate-700">v{project.version}</span>
-          </div>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{currentTenant?.name || project.mallName} · Facility Layout · {project.lastSaved}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <select value={activeFloorId} onChange={(event) => setActiveFloorId(event.target.value)} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold outline-none dark:border-slate-700 dark:bg-slate-900">
-            {project.floors.map((floor) => <option key={floor.id} value={floor.id}>{floor.name}</option>)}
-          </select>
-          <button
-            onClick={() => setLayoutEditMode((value) => !value)}
-            className={cn(
-              'inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold transition',
-              layoutEditMode
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
-                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
-            )}
-            title={layoutEditMode ? 'Finish editing layout' : 'Edit layout'}
-          >
-            <Edit3 className="h-4 w-4" />
-            {layoutEditMode ? 'Editing Layout' : 'Edit Layout'}
-          </button>
-          <button onClick={undo} disabled={history.length === 0} className={iconButtonClass}><RotateCcw className="h-4 w-4" /></button>
-          <button onClick={redo} disabled={future.length === 0} className={iconButtonClass}><RotateCw className="h-4 w-4" /></button>
-          <button onClick={() => setPreviewMode(previewMode === '2D' ? '3D' : previewMode === '3D' ? 'Simulation' : '2D')} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold transition hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">{previewMode}</button>
-          <button onClick={saveLayout} className="inline-flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-white transition hover:bg-slate-900"><Save className="h-4 w-4" /> Save Draft</button>
-          <button onClick={() => { saveLayout(); showToast('Digital Twin Published successfully! Your facility is now LIVE.'); }} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"><Upload className="h-4 w-4" /> Publish</button>
-        </div>
-      </div>
-
-      <div className="flex min-h-0 flex-1 gap-3 overflow-hidden">
-        <aside className="hidden w-64 shrink-0 space-y-2 overflow-y-auto lg:block">
-          <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Layout Tools</h2>
-              <button onClick={generateParkingLayout} className="rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">Auto Generate</button>
-            </div>
-            <p className="text-xs text-gray-500 mb-2">Use these tools to rapidly bootstrap a parking facility layout.</p>
-          </section>
-
-          <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-bold">Version History</h2>
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{versionHistory.length} saved</span>
-            </div>
-            <div className="space-y-2">
-              {versionHistory.slice(0, 4).map((snapshot) => (
-                <button
-                  key={snapshot.id}
-                  onClick={() => restoreSnapshot(snapshot)}
-                  className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-left transition hover:border-blue-300 hover:bg-blue-50 dark:border-slate-800 dark:hover:border-blue-500 dark:hover:bg-blue-500/10"
-                >
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Version {snapshot.version}</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{snapshot.label}</p>
-                  </div>
-                  <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
-                    {new Date(snapshot.savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </button>
-              ))}
-              {versionHistory.length === 0 && (
-                <div className="rounded-xl bg-slate-50 p-3 text-xs font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-400">
-                  Auto-saved versions will appear here.
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-bold">Floors</h2>
-              <button onClick={addFloor} className="text-xs font-bold text-blue-600">+ Add Floor</button>
-            </div>
-            <div className="space-y-1">
-              {project.floors.map((floor) => (
-                <button key={floor.id} onClick={() => setActiveFloorId(floor.id)} className={cn('flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition hover:bg-slate-50 dark:hover:bg-slate-900', activeFloorId === floor.id && 'bg-blue-50 font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-300')}>
-                  <span className="flex items-center gap-2"><Layers className="h-4 w-4" /> {floor.name}</span>
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                </button>
-              ))}
-            </div>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              <button onClick={renameFloor} className="rounded-lg border border-slate-200 py-1.5 text-xs font-bold dark:border-slate-700">Rename</button>
-              <button onClick={duplicateFloor} className="rounded-lg border border-slate-200 py-1.5 text-xs font-bold dark:border-slate-700">Copy</button>
-              <button onClick={deleteFloor} className="rounded-lg border border-rose-200 py-1.5 text-xs font-bold text-rose-600 dark:border-rose-500/30">Delete</button>
-            </div>
-          </section>
-
-          <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <h2 className="mb-2 text-sm font-bold">Layers</h2>
-            <div className="space-y-1">
-              {layerNames.map((layer) => {
-                const hidden = hiddenLayers.includes(layer);
-                const locked = lockedLayers.includes(layer);
-                return (
-                  <div key={layer} className="flex items-center justify-between rounded-xl px-2 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-900">
-                    <span>{layer}</span>
-                    <div className="flex gap-1">
-                      <button onClick={() => setHiddenLayers((items) => hidden ? items.filter((item) => item !== layer) : [...items, layer])} className="p-1 text-slate-500">{hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
-                      <button onClick={() => setLockedLayers((items) => locked ? items.filter((item) => item !== layer) : [...items, layer])} className="p-1 text-slate-500">{locked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}</button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        </aside>
-
-        <main className="flex min-w-0 flex-1 flex-col gap-3 overflow-hidden">
-          <div className="flex items-center justify-between overflow-x-auto rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="flex items-center gap-1">
-              {toolItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button key={item.id} onClick={() => setTool(item.id)} title={item.label} className={cn('flex min-w-16 flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900', tool === item.id && 'bg-blue-600 text-white hover:bg-blue-600')}>
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="ml-3 flex items-center gap-1 border-l border-slate-200 pl-3 dark:border-slate-800">
-              <button onClick={() => setZoom((value) => Math.max(0.35, value - 0.1))} className={iconButtonClass}><Minus className="h-4 w-4" /></button>
-              <button onClick={() => setZoom(0.86)} className="rounded-lg px-2 py-2 text-xs font-bold">{Math.round(zoom * 100)}%</button>
-              <button onClick={() => setZoom((value) => Math.min(1.8, value + 0.1))} className={iconButtonClass}><Plus className="h-4 w-4" /></button>
-              <button onClick={() => setShowGrid((value) => !value)} className={cn(iconButtonClass, showGrid && 'bg-blue-50 text-blue-600 dark:bg-blue-500/10')}><Grid3X3 className="h-4 w-4" /></button>
-              <button onClick={() => setSnapToGrid((value) => !value)} className={cn('rounded-lg px-3 py-2 text-xs font-bold', snapToGrid ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10' : 'text-slate-500')}>Snap</button>
-              <button onClick={() => setPan({ x: 0, y: 0 })} className={iconButtonClass}><Maximize2 className="h-4 w-4" /></button>
-            </div>
-            <div className="ml-3 flex items-center gap-2 border-l border-slate-200 pl-3 dark:border-slate-800">
-              <div
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-                title="Drag the compass handle on the canvas to rotate"
-              >
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white shadow">N</span>
-                <span>{Math.round(layoutRotation)}°</span>
-              </div>
-              <button onClick={() => setLayoutRotation(0)} className={iconButtonClass} title="Reset north">Reset</button>
-            </div>
-          </div>
-
-          <div
-            className="relative min-h-0 flex-1 overflow-auto rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-[#020617]"
-            style={{ perspective: '1800px', perspectiveOrigin: '50% 20%' }}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerDown={(e) => {
-              if (e.target === e.currentTarget) {
-                if (previewMode === '3D') {
-                  setIsOrbiting(true);
-                } else {
-                  setIsPanningCanvas(true);
-                }
-                setCanvasDragStart({
-                  x: e.clientX, y: e.clientY,
-                  panX: pan.x, panY: pan.y,
-                  orbitX: cameraOrbit.x, orbitZ: cameraOrbit.z
-                });
-                e.currentTarget.setPointerCapture(e.pointerId);
-              }
-            }}
-            onWheel={(e) => {
-              if (e.ctrlKey || e.metaKey || previewMode === '3D' || e.shiftKey) {
-                const delta = e.deltaY > 0 ? -0.05 : 0.05;
-                setZoom((z) => Math.max(0.2, Math.min(3, z + delta)));
-              }
-            }}
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={onCanvasDrop}
-            onClick={() => setContextMenu(null)}
-          >
-            <div
-              ref={boardRef}
-              className={cn(
-                'relative mx-auto my-8 transition-transform duration-300 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900',
-                previewMode === '3D' && 'scene-3d'
-              )}
-              style={{
-                width: project.canvas.width,
-                height: project.canvas.height,
-                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotateZ(${layoutRotation}deg) ${previewMode === '3D' ? `rotateX(${cameraOrbit.x}deg) rotateZ(${cameraOrbit.z}deg)` : ''}`,
-                transformOrigin: 'top center',
-                transformStyle: 'preserve-3d',
-                backgroundImage: showGrid ? 'linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px), linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px)' : undefined,
-                backgroundSize: `${project.canvas.gridSize}px ${project.canvas.gridSize}px`,
-              }}
-            >
-              <button
-                type="button"
-                aria-label="Drag to rotate layout"
-                className="absolute right-6 top-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-white/70 bg-slate-950/85 text-white shadow-[0_16px_30px_-14px_rgba(15,23,42,0.9)] backdrop-blur"
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  const boardCenter = getBoardCenter();
-                  if (!boardCenter) return;
-                  setRotationDrag({
-                    startRotation: layoutRotation,
-                    startAngle: getAngleFromCenter(event.clientX, event.clientY),
-                  });
-                }}
-              >
-                <RotateCw className="h-4 w-4" />
-              </button>
-              <div className="pointer-events-none absolute right-5 top-[74px] z-40 rounded-full bg-slate-950/75 px-2 py-1 text-[10px] font-black tracking-[0.28em] text-white shadow-lg">DRAG TO ROTATE</div>
-
-              {visibleObjects.map((item) => {
+    const renderedObjects = useMemo(() => {
+    return visibleObjects.map((item) => {
                 const Icon = iconForType[item.type] ?? Box;
                 const selectedItem = selectedIds.includes(item.id);
                 const locked = item.locked || lockedLayers.includes(item.layer);
@@ -881,7 +675,7 @@ const DigitalTwin = () => {
                       if (locked && !layoutEditMode) return;
                       if (!event.shiftKey) setSelectedIds([item.id]);
                       else setSelectedIds((ids) => ids.includes(item.id) ? ids.filter((id) => id !== item.id) : [...ids, item.id]);
-                      if (!locked) {
+                      if (!locked && layoutEditMode) {
                         setDragState({ kind: 'move', id: item.id, startX: event.clientX, startY: event.clientY, originX: item.x, originY: item.y });
                       }
                     }}
@@ -999,7 +793,7 @@ const DigitalTwin = () => {
                         <Unlock className="h-3 w-3" />
                       </button>
                     )}
-                    {selectedItem && !locked && (
+                    {selectedItem && !locked && layoutEditMode && (
                       <>
                         <button
                           aria-label="Resize"
@@ -1023,7 +817,124 @@ const DigitalTwin = () => {
                     )}
                   </motion.div>
                 );
-              })}
+});
+  }, [visibleObjects, selectedIds, lockedLayers, layoutEditMode, contextMenu]);
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-6rem)] min-h-[760px] bg-slate-950 overflow-hidden text-slate-200 font-sans">
+      <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={importJson} />
+      
+      <DigitalTwinHeader 
+        project={project}
+        mallName={currentTenant?.name || project.mallName}
+        readOnly={readOnly}
+        activeFloorId={activeFloorId}
+        setActiveFloorId={setActiveFloorId}
+        undo={undo}
+        redo={redo}
+        canUndo={history.length > 0}
+        canRedo={future.length > 0}
+        saveLayout={saveLayout}
+        publishLayout={() => { saveLayout(); showToast('Digital Twin Published successfully! Your facility is now LIVE.'); }}
+        previewMode={previewMode}
+        setPreviewMode={setPreviewMode}
+        showSettingsMenu={() => setIsSettingsOpen(true)}
+        layoutEditMode={layoutEditMode && !readOnly}
+        setLayoutEditMode={setLayoutEditMode}
+      />
+
+      <div className="flex flex-1 overflow-hidden relative">
+        <EditorToolbar 
+          tool={tool}
+          setTool={setTool}
+          deleteSelected={deleteSelected}
+          hasSelection={selectedIds.length > 0}
+          layoutEditMode={layoutEditMode && !readOnly}
+        />
+        
+        <div className="flex flex-col flex-1 relative bg-slate-950 overflow-hidden">
+          {/* Zoom controls float */}
+          <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+             <div className="flex items-center gap-1 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-lg p-1 shadow-lg">
+                <button onClick={() => setZoom((value) => Math.max(0.35, value - 0.1))} className="p-2 text-slate-400 hover:text-white transition-colors"><Minus className="w-4 h-4" /></button>
+                <button onClick={() => setZoom(1)} className="px-2 py-0.5 text-[10px] font-bold text-slate-300 hover:text-white">{Math.round(zoom * 100)}%</button>
+                <button onClick={() => setZoom((value) => Math.min(1.8, value + 0.1))} className="p-2 text-slate-400 hover:text-white transition-colors"><Plus className="w-4 h-4" /></button>
+             </div>
+             
+             {!readOnly && layoutEditMode && (
+               <div className="flex flex-col gap-1 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-lg p-1 shadow-lg">
+                  <button onClick={() => setShowGrid((v) => !v)} className={cn("p-2 rounded-md transition-colors", showGrid ? "bg-brand-600/20 text-brand-400" : "text-slate-400 hover:text-white")} title="Toggle Grid"><Grid3X3 className="w-4 h-4" /></button>
+                  <button onClick={() => setSnapToGrid((v) => !v)} className={cn("p-2 rounded-md transition-colors text-xs font-bold", snapToGrid ? "bg-brand-600/20 text-brand-400" : "text-slate-400 hover:text-white")} title="Toggle Snap">SNAP</button>
+                  <button onClick={() => setPan({ x: 0, y: 0 })} className="p-2 text-slate-400 hover:text-white transition-colors" title="Center View"><Maximize2 className="w-4 h-4" /></button>
+               </div>
+             )}
+          </div>
+
+          <div 
+            className="flex-1 overflow-auto outline-none"
+            style={{ perspective: '1800px', perspectiveOrigin: '50% 20%' }}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerDown={(e) => {
+              if (e.button === 1 || e.target === e.currentTarget || (boardRef.current && e.target === boardRef.current)) {
+                if (previewMode === '3D') {
+                  setIsOrbiting(true);
+                } else {
+                  setIsPanningCanvas(true);
+                }
+                setCanvasDragStart({
+                  x: e.clientX, y: e.clientY,
+                  panX: pan.x, panY: pan.y,
+                  orbitX: cameraOrbit.x, orbitZ: cameraOrbit.z
+                });
+                e.currentTarget.setPointerCapture(e.pointerId);
+              }
+            }}
+            onWheel={(e) => {
+              const delta = e.deltaY > 0 ? -0.05 : 0.05;
+              setZoom((z) => Math.max(0.2, Math.min(3, z + delta)));
+            }}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={onCanvasDrop}
+            onClick={() => setContextMenu(null)}
+          >
+            <div
+              ref={boardRef}
+              className={cn(
+                'relative mx-auto my-8 transition-transform duration-300 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900',
+                previewMode === '3D' && 'scene-3d'
+              )}
+              style={{
+                width: project.canvas.width,
+                height: project.canvas.height,
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotateZ(${layoutRotation}deg) ${previewMode === '3D' ? `rotateX(${cameraOrbit.x}deg) rotateZ(${cameraOrbit.z}deg)` : ''}`,
+                transformOrigin: 'top center',
+                transformStyle: 'preserve-3d',
+                backgroundImage: showGrid ? 'linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px), linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px)' : undefined,
+                backgroundSize: `${project.canvas.gridSize}px ${project.canvas.gridSize}px`,
+              }}
+            >
+              <button
+                type="button"
+                aria-label="Drag to rotate layout"
+                className="absolute right-6 top-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-white/70 bg-slate-950/85 text-white shadow-[0_16px_30px_-14px_rgba(15,23,42,0.9)] backdrop-blur"
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  const boardCenter = getBoardCenter();
+                  if (!boardCenter) return;
+                  setRotationDrag({
+                    startRotation: layoutRotation,
+                    startAngle: getAngleFromCenter(event.clientX, event.clientY),
+                  });
+                }}
+              >
+                <RotateCw className="h-4 w-4" />
+              </button>
+              <div className="pointer-events-none absolute right-5 top-[74px] z-40 rounded-full bg-slate-950/75 px-2 py-1 text-[10px] font-black tracking-[0.28em] text-white shadow-lg">DRAG TO ROTATE</div>
+
+              {renderedObjects}
+
 
               {contextMenu && (
                 <div className="fixed z-[80] w-44 rounded-xl border border-slate-200 bg-white p-1 text-sm shadow-2xl dark:border-slate-700 dark:bg-slate-950" style={{ left: contextMenu.x, top: contextMenu.y }}>
@@ -1049,155 +960,47 @@ const DigitalTwin = () => {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="flex flex-wrap items-center gap-5 text-xs font-semibold text-slate-600 dark:text-slate-300">
-              {(Object.entries(twinStatusConfig) as [TwinObjectStatus, typeof twinStatusConfig.available][]).map(([key, conf]) => (
-                <div key={key} className="flex items-center gap-2"><span className="h-3 w-3 rounded" style={{ background: conf.color }} /> {conf.label}</div>
-              ))}
-            </div>
-          </div>
-        </main>
+          <FloorNavigator 
+            project={project}
+            activeFloorId={activeFloorId}
+            setActiveFloorId={setActiveFloorId}
+            addFloor={addFloor}
+            deleteFloor={deleteFloor}
+            layoutEditMode={layoutEditMode && !readOnly}
+            readOnly={readOnly}
+          />
+        </div>
 
-        <aside className="hidden w-80 shrink-0 space-y-3 overflow-y-auto xl:block">
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-bold">Properties</h2>
-              {selected?.status && <span className="rounded-full px-2 py-1 text-xs font-bold" style={{ background: twinStatusConfig[selected.status].bg, color: twinStatusConfig[selected.status].color }}>{twinStatusConfig[selected.status].label}</span>}
-            </div>
-            {selected ? (
-              <div className="space-y-3">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/70">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Object</p>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">{selected.type}</p>
-                    </div>
-                    <div className="rounded-full bg-white px-2 py-1 text-[11px] font-semibold text-slate-500 shadow-sm dark:bg-slate-950 dark:text-slate-400">Floor {activeFloor.level + 1}</div>
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                    <div className="rounded-lg bg-white px-2 py-2 dark:bg-slate-950">
-                      <div className="font-semibold uppercase tracking-wide">ID</div>
-                      <div className="mt-1 break-all text-slate-700 dark:text-slate-200">{selected.id}</div>
-                    </div>
-                    <div className="rounded-lg bg-white px-2 py-2 dark:bg-slate-950">
-                      <div className="font-semibold uppercase tracking-wide">Layer</div>
-                      <div className="mt-1 text-slate-700 dark:text-slate-200">{selected.layer}</div>
-                    </div>
-                  </div>
-                </div>
-                <input value={selected.name} onChange={(event) => updateObject(selected.id, { name: event.target.value })} className={cn(propertyInputClass, 'font-bold')} />
-                <div className="grid grid-cols-2 gap-2">
-                  <label className={propertyLabelClass}>X<input type="number" value={selected.x} onChange={(event) => updateObject(selected.id, { x: Number(event.target.value) })} className={propertyInputClass} /></label>
-                  <label className={propertyLabelClass}>Y<input type="number" value={selected.y} onChange={(event) => updateObject(selected.id, { y: Number(event.target.value) })} className={propertyInputClass} /></label>
-                  <label className={propertyLabelClass}>Width<input type="number" value={selected.width} onChange={(event) => updateObject(selected.id, { width: Number(event.target.value) })} className={propertyInputClass} /></label>
-                  <label className={propertyLabelClass}>Height<input type="number" value={selected.height} onChange={(event) => updateObject(selected.id, { height: Number(event.target.value) })} className={propertyInputClass} /></label>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <label className={propertyLabelClass}>Layer<select value={selected.layer} onChange={(event) => updateObject(selected.id, { layer: event.target.value })} className={propertyInputClass}>{layerNames.map((layer) => <option key={layer} value={layer}>{layer}</option>)}</select></label>
-                  <label className={propertyLabelClass}>Z Index<input type="number" value={selected.zIndex} onChange={(event) => updateObject(selected.id, { zIndex: Number(event.target.value) })} className={propertyInputClass} /></label>
-                </div>
-                <label className={propertyLabelClass}>Rotation<input type="range" min="0" max="360" value={selected.rotation} onChange={(event) => updateObject(selected.id, { rotation: Number(event.target.value) })} className="w-full" /></label>
-                <label className={propertyLabelClass}>Opacity<input type="range" min="0.25" max="1" step="0.05" value={selected.opacity} onChange={(event) => updateObject(selected.id, { opacity: Number(event.target.value) })} className="w-full" /></label>
-                <label className={propertyLabelClass}>Label<input value={selected.text ?? ''} onChange={(event) => updateObject(selected.id, { text: event.target.value })} className={propertyInputClass} placeholder="Optional label" /></label>
-                {selected.status && (
-                  <label className={propertyLabelClass}>Status
-                    <select value={selected.status} onChange={(event) => updateObject(selected.id, { status: event.target.value as TwinObjectStatus })} className={propertyInputClass}>
-                      {Object.keys(twinStatusConfig).map((status) => <option key={status} value={status}>{twinStatusConfig[status as TwinObjectStatus].label}</option>)}
-                    </select>
-                  </label>
-                )}
-                <div className="grid grid-cols-2 gap-2">
-                  <label className={propertyLabelClass}>Fill<input type="color" value={selected.fill === 'transparent' ? '#ffffff' : selected.fill} onChange={(event) => updateObject(selected.id, { fill: event.target.value })} className="mt-1 h-10 w-full rounded-lg border border-slate-200 dark:border-slate-700" /></label>
-                  <label className={propertyLabelClass}>Border<input type="color" value={selected.stroke === 'transparent' ? '#ffffff' : selected.stroke} onChange={(event) => updateObject(selected.id, { stroke: event.target.value })} className="mt-1 h-10 w-full rounded-lg border border-slate-200 dark:border-slate-700" /></label>
-                </div>
-                <label className={propertyLabelClass}>Price / Hour<input type="number" value={selected.price ?? 0} onChange={(event) => updateObject(selected.id, { price: Number(event.target.value) })} className={propertyInputClass} /></label>
-                <label className={propertyLabelClass}>Sensor ID<input value={selected.sensorId ?? ''} onChange={(event) => updateObject(selected.id, { sensorId: event.target.value })} className={propertyInputClass} /></label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => updateObject(selected.id, { hidden: !selected.hidden })} className={cn('rounded-xl border px-3 py-2 text-sm font-bold transition', selected.hidden ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200' : 'border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-200')}>{selected.hidden ? 'Show' : 'Hide'}</button>
-                  <button onClick={() => updateObject(selected.id, { locked: !selected.locked })} className={cn('rounded-xl border px-3 py-2 text-sm font-bold transition', selected.locked ? 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200' : 'border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-200')}>{selected.locked ? 'Unlock' : 'Lock'}</button>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={duplicateSelected} className="flex-1 rounded-xl border border-slate-200 py-2 text-sm font-bold dark:border-slate-700">Duplicate</button>
-                  <button onClick={deleteSelected} className="flex-1 rounded-xl bg-rose-600 py-2 text-sm font-bold text-white">Delete</button>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500 dark:bg-slate-900">Select any object to edit its properties.</div>
-            )}
-          </section>
-
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="mb-3 flex border-b border-slate-200 text-sm font-bold dark:border-slate-800">
-              <button className="border-b-2 border-blue-600 px-3 py-2 text-blue-600">Components</button>
-              <button className="px-3 py-2 text-slate-500">Zones</button>
-              <button className="px-3 py-2 text-slate-500">Objects</button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {componentPalette.map((item) => {
-                const Icon = iconForType[item.type] ?? Box;
-                return (
-                  <button
-                    key={item.type}
-                    draggable
-                    onDragStart={(event) => event.dataTransfer.setData('application/parkease-component', item.type)}
-                    onClick={() => addObject(item.type)}
-                    className="group rounded-xl border border-slate-200 p-3 text-left transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-sm dark:border-slate-800 dark:hover:border-blue-500"
-                  >
-                    <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: item.fill, color: item.stroke }}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <p className="text-xs font-bold text-slate-900 dark:text-white">{item.label}</p>
-                    <p className="text-[10px] text-slate-500">Drag to add</p>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <button onClick={() => setValidationOpen((value) => !value)} className="mb-3 flex w-full items-center justify-between text-sm font-bold">
-              Smart Validation <ChevronDown className={cn('h-4 w-4 transition', validationOpen && 'rotate-180')} />
-            </button>
-            {validationOpen && (
-              <div className="space-y-2">
-                {validation.map((warning) => (
-                  <div key={warning} className="flex gap-2 rounded-xl bg-amber-50 p-3 text-xs font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
-                    <ShieldAlert className="h-4 w-4 shrink-0" /> {warning}
-                  </div>
-                ))}
-                {validation.length === 0 && <div className="rounded-xl bg-emerald-50 p-3 text-xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">No validation issues detected.</div>}
-              </div>
-            )}
-          </section>
-        </aside>
+        <PropertiesPanel 
+          selected={selected}
+          updateObject={updateObject}
+          deleteSelected={deleteSelected}
+          layoutEditMode={layoutEditMode && !readOnly}
+          readOnly={readOnly}
+        />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-        {[
-          ['Total Slots', stats.total],
-          ['Available', stats.available],
-          ['Occupied', stats.occupied],
-          ['Reserved', stats.reserved],
-          ['VIP Slots', stats.vip],
-          ['EV Slots', stats.ev],
-        ].map(([label, value]) => (
-          <div key={label} className="rounded-lg border border-slate-200 bg-white p-4 text-center shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</p>
-            <p className="mt-1 text-2xl font-black text-slate-900 dark:text-white">{value}</p>
-          </div>
-        ))}
-      </div>
+      {isSettingsOpen && (
+        <SettingsModal 
+          onClose={() => setIsSettingsOpen(false)}
+          versionHistory={versionHistory}
+          restoreSnapshot={restoreSnapshot}
+          layerNames={layerNames}
+          hiddenLayers={hiddenLayers}
+          setHiddenLayers={setHiddenLayers}
+          lockedLayers={lockedLayers}
+          setLockedLayers={setLockedLayers}
+          validation={validation}
+          generateParkingLayout={generateParkingLayout}
+          triggerImport={() => fileInputRef.current?.click()}
+          exportJson={exportJson}
+          project={project}
+          updateCanvasSettings={updateCanvasSettings}
+        />
+      )}
 
-      <div className="fixed bottom-4 right-4 z-50 rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-xl dark:bg-white dark:text-slate-950">{toast}</div>
-
-      <div className="fixed bottom-4 left-1/2 z-40 hidden -translate-x-1/2 gap-2 rounded-lg border border-slate-200 bg-white/95 p-2 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 md:flex">
-        <button onClick={copySelected} className={iconButtonClass}><Copy className="h-4 w-4" /></button>
-        <button onClick={pasteClipboard} className={iconButtonClass}><Upload className="h-4 w-4" /></button>
-        <button onClick={duplicateSelected} className={iconButtonClass}><Copy className="h-4 w-4" /></button>
-        <button onClick={deleteSelected} className={cn(iconButtonClass, 'text-rose-600 dark:text-rose-300')}><Trash2 className="h-4 w-4" /></button>
-        <button onClick={() => fileInputRef.current?.click()} className="rounded-lg px-3 py-2 text-xs font-bold"><Upload className="mr-1 inline h-4 w-4" /> Import JSON</button>
-        <button onClick={exportJson} className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white"><Download className="mr-1 inline h-4 w-4" /> Export JSON</button>
-        <button onClick={() => showToast('PNG/PDF export queued from the current canvas')} className="rounded-lg px-3 py-2 text-xs font-bold">Export PNG/PDF</button>
+      <div className="fixed bottom-4 right-4 z-50 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-xl opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-300" style={{ display: toast ? 'block' : 'none' }}>
+        {toast}
       </div>
     </div>
   );

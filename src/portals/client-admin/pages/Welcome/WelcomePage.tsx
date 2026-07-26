@@ -51,7 +51,7 @@ export default function WelcomePage() {
               name: org.name,
               slug: org.id,
               status: org.status === 'ACTIVE' ? 'ACTIVE' : 'DRAFT',
-              plan: 'STARTER',
+              plan: 'BASIC',
               contactEmail: org.primaryContact?.email || '',
               contactPhone: org.primaryContact?.phone || '',
               isOnboarded: false,

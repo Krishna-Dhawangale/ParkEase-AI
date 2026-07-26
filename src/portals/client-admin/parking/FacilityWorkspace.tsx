@@ -7,6 +7,7 @@ import {
   ChevronLeft, AlertTriangle, CheckCircle2, Loader2, ArrowRight, Save, Edit2, Trash2, Undo
 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
+import DigitalTwin from '../digitalTwin/DigitalTwin';
 
 type Tab = 'overview' | 'pricing' | 'entry_exit' | 'digital_twin' | 'cameras' | 'policies' | 'go_live';
 
@@ -279,15 +280,15 @@ export default function FacilityWorkspace() {
           )}
           
           {activeTab === 'digital_twin' && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center">
-              <Map className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Digital Twin Builder</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6">
-                Map out your parking structure virtually. Create floors, slots, and device placements.
-              </p>
-              <Link to="/admin/digital-twin" className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium px-6 py-2.5 rounded-lg text-sm transition-all">
-                Open Digital Twin Builder
-              </Link>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden relative" style={{ minHeight: '600px' }}>
+              <div className="absolute top-4 right-4 z-10">
+                <Link to="/admin/digital-twin" className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-all shadow-lg">
+                  <Edit2 className="w-4 h-4" /> Edit Digital Twin
+                </Link>
+              </div>
+              <div className="w-full h-full scale-[0.8] origin-top">
+                <DigitalTwin readOnly={true} />
+              </div>
             </div>
           )}
 

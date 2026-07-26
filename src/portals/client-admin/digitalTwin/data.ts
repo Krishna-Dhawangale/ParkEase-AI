@@ -176,6 +176,8 @@ export interface TwinCanvasObject {
   locked?: boolean;
   hidden?: boolean;
   text?: string;
+  shape?: 'rectangle' | 'circle' | 'diamond' | 'hexagon' | 'custom';
+  customShapePath?: string;
   zIndex: number;
 }
 
@@ -191,7 +193,7 @@ export interface TwinBuilderProject {
   mallName: string;
   parkingName: string;
   location: string;
-  canvas: { width: number; height: number; gridSize: number };
+  canvas: { width: number; height: number; gridSize: number; shape?: 'rectangle' | 'circle' | 'diamond' | 'hexagon' | 'custom'; customShapePath?: string; };
   floors: TwinFloorPlan[];
   activeFloorId: string;
   lastSaved: string;
@@ -342,3 +344,12 @@ export const mockTwinBuilderProject: TwinBuilderProject = {
   lastSaved: 'Autosaved 18 seconds ago',
   version: 42,
 };
+
+export interface BuilderSnapshot {
+  id: string;
+  label: string;
+  savedAt: string;
+  version: number;
+  activeFloorId: string;
+  project: TwinBuilderProject;
+}

@@ -28,7 +28,7 @@ export default function OnboardingWizard() {
   if (!user) return <Navigate to="/admin/login" replace />;
 
   // If already approved, they shouldn't be here
-  if (user.onboardingStatus === 'APPROVED' || user.onboardingStatus === 'LIVE') {
+  if (user.onboardingStatus === 'PROFILE_SETUP_COMPLETE' || user.onboardingStatus === 'LIVE') {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
@@ -41,20 +41,20 @@ export default function OnboardingWizard() {
         // Submit profile
         if (!orgName) throw new Error('Organization name is required.');
         await OnboardingService.updateProfile(user.id, { orgName });
-        const updatedUser = { ...user, onboardingStatus: 'FACILITY_PENDING' as const };
+        const updatedUser = { ...user, onboardingStatus: 'PROFILE_SETUP_COMPLETE' as const };
         updateUser(updatedUser);
         setCurrentStep(1);
       } else if (currentStep === 1) {
         // Submit facility
         if (!facilityName || !address) throw new Error('Facility details are required.');
         await OnboardingService.createFacility(user.id, { name: facilityName, address, capacity: parseInt(capacity) });
-        const updatedUser = { ...user, onboardingStatus: 'DIGITAL_TWIN_PENDING' as const };
+        const updatedUser = { ...user, onboardingStatus: 'PROFILE_SETUP_COMPLETE' as const };
         updateUser(updatedUser);
         setCurrentStep(2);
       } else if (currentStep === 2) {
         // Submit digital twin
         await OnboardingService.skipDigitalTwinSetup(user.id);
-        const updatedUser = { ...user, onboardingStatus: 'REVIEW_PENDING' as const };
+        const updatedUser = { ...user, onboardingStatus: 'PROFILE_SETUP_COMPLETE' as const };
         updateUser(updatedUser);
         setCurrentStep(3);
       }
@@ -65,7 +65,7 @@ export default function OnboardingWizard() {
     }
   };
 
-  if (user.onboardingStatus === 'REVIEW_PENDING' || currentStep === 3) {
+  if (user.onboardingStatus === 'APPROVED' || currentStep === 3) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4">
         <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-8 text-center">
