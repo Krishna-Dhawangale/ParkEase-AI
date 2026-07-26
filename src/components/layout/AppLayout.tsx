@@ -3,9 +3,9 @@ import { Outlet, useLocation, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Search, Brain, GitMerge, CalendarCheck,
-  CreditCard, Ticket, User, Gift, HelpCircle,
-  Bell, Menu, X, ChevronLeft, ChevronRight,
-  Car, Zap, ChevronDown, Workflow, Settings, LogOut
+  CreditCard, Ticket, User, BarChart3, Lightbulb,
+  Bell, Menu, X, Sun, Moon, ChevronLeft, ChevronRight,
+  Car, Zap, ChevronDown, Workflow, Shield, Settings, LogOut
 } from 'lucide-react';
 import { useThemeStore, useSidebarStore, useAuthStore } from '../../store';
 import { cn } from '../../lib/utils';
