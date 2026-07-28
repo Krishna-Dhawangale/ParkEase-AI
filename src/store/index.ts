@@ -114,6 +114,7 @@ interface AuthStore {
   user: AuthUser | null;
   token: string | null;
   login: (token: string, user: AuthUser) => void;
+  updateUser: (user: AuthUser) => void;
   logout: () => void;
 }
 
@@ -139,7 +140,7 @@ if (initialUserStr) {
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
-  isAuthenticated: !!initialToken && !!initialUser,
+  isAuthenticated: !!initialToken && !!initialUserStr,
   user: initialUser,
   token: initialToken,
   login: (token, user) => {
@@ -156,11 +157,45 @@ export const useAuthStore = create<AuthStore>((set) => ({
     localStorage.setItem('parkease-user', JSON.stringify(normalizedUser));
     set({ isAuthenticated: true, user: normalizedUser, token });
   },
+  updateUser: (user) => {
+    localStorage.setItem('parkease-user', JSON.stringify(user));
+    set({ user });
+  },
   logout: () => {
     localStorage.removeItem('parkease-token');
     localStorage.removeItem('parkease-user');
+    localStorage.removeItem('parkease-tenant');
     set({ isAuthenticated: false, user: null, token: null });
+    useTenantStore.getState().clearTenant();
   },
+}));
+
+import type { Tenant } from '../types/models';
+
+interface TenantStore {
+  currentTenant: Tenant | null;
+  setTenant: (tenant: Tenant) => void;
+  clearTenant: () => void;
+}
+
+const initialTenantStr = localStorage.getItem('parkease-tenant');
+let initialTenant: Tenant | null = null;
+if (initialTenantStr) {
+  try {
+    initialTenant = JSON.parse(initialTenantStr);
+  } catch (e) {}
+}
+
+export const useTenantStore = create<TenantStore>((set) => ({
+  currentTenant: initialTenant,
+  setTenant: (tenant) => {
+    localStorage.setItem('parkease-tenant', JSON.stringify(tenant));
+    set({ currentTenant: tenant });
+  },
+  clearTenant: () => {
+    localStorage.removeItem('parkease-tenant');
+    set({ currentTenant: null });
+  }
 }));
 
 interface AdminSidebarStore {
@@ -175,4 +210,26 @@ export const useAdminSidebarStore = create<AdminSidebarStore>((set) => ({
   isMobileOpen: false,
   toggleCollapse: () => set((s) => ({ isCollapsed: !s.isCollapsed })),
   setMobileOpen: (open) => set({ isMobileOpen: open }),
+}));
+
+export interface WebSocketMessage {
+  type: 'BOOKING_UPDATE' | 'DEVICE_STATUS' | 'METRICS_UPDATE';
+  payload: any;
+  timestamp: number;
+}
+
+interface WebSocketStore {
+  isConnected: boolean;
+  isReconnecting: boolean;
+  lastMessage: WebSocketMessage | null;
+  setConnectionStatus: (status: { isConnected?: boolean; isReconnecting?: boolean }) => void;
+  setLastMessage: (msg: WebSocketMessage) => void;
+}
+
+export const useWebSocketStore = create<WebSocketStore>((set) => ({
+  isConnected: false,
+  isReconnecting: false,
+  lastMessage: null,
+  setConnectionStatus: (status) => set((state) => ({ ...state, ...status })),
+  setLastMessage: (msg) => set({ lastMessage: msg }),
 }));

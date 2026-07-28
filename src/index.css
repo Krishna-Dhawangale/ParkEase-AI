@@ -1,221 +1,40 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* ═══════════════════════════════════════════════════════════════
-     LIGHT MODE DESIGN TOKENS
-     Clean, professional, spacious, productivity-focused
-     ═══════════════════════════════════════════════════════════════ */
   :root {
-    /* ── Backgrounds ── */
-    --bg-app: #F5F7FA;
-    --bg-primary: #F8FAFC;
-    --bg-secondary: #EEF2F7;
+    --bg-primary: #F4F5F7;
+    --bg-secondary: #E9ECEF;
     --bg-card: #FFFFFF;
-    --bg-elevated: #FFFFFF;
-    --bg-overlay: rgba(15, 23, 42, 0.40);
-    --bg-input: #FFFFFF;
-    --bg-hover: rgba(0, 0, 0, 0.03);
-    --bg-active: rgba(0, 0, 0, 0.06);
-
-    /* ── Typography ── */
-    --text-primary: #1E293B;
-    --text-secondary: #64748B;
-    --text-muted: #94A3B8;
-    --text-disabled: #CBD5E1;
-    --text-inverse: #FFFFFF;
-
-    /* ── Borders ── */
-    --border: #E2E8F0;
-    --border-light: #F1F5F9;
-    --border-focus: #0F766E;
-
-    /* ── Brand (Teal — trust, mobility, technology) ── */
+    --text-primary: #1F2937;
+    --text-secondary: #4B5563;
+    --border: #D1D5DB;
     --brand: #0F766E;
     --brand-light: #14B8A6;
-    --brand-hover: #0D6B63;
-    --brand-subtle: rgba(15, 118, 110, 0.08);
-    --brand-rgb: 15, 118, 110;
-
-    /* ── Accent ── */
     --accent: #F59E0B;
-
-    /* ── Semantic: Success ── */
-    --success: #16A34A;
-    --success-bg: #F0FDF4;
-    --success-border: #BBF7D0;
-
-    /* ── Semantic: Danger ── */
-    --danger: #DC2626;
-    --danger-bg: #FEF2F2;
-    --danger-border: #FECACA;
-
-    /* ── Semantic: Warning ── */
-    --warning: #D97706;
-    --warning-bg: #FFFBEB;
-    --warning-border: #FDE68A;
-
-    /* ── Semantic: Info ── */
-    --info: #2563EB;
-    --info-bg: #EFF6FF;
-    --info-border: #BFDBFE;
-
-    /* ── Parking-Specific Semantic Colors ── */
-    --parking-available: #16A34A;
-    --parking-occupied: #DC2626;
-    --parking-reserved: #F59E0B;
-    --parking-maintenance: #6B7280;
-    --parking-electric: #2563EB;
-    --parking-disabled: #7C3AED;
-    --parking-emergency: #EA580C;
-    --parking-vip: #7C3AED;
-
-    /* ── Owner Portal Accent (Emerald — business, growth) ── */
-    --owner-accent: #059669;
-    --owner-accent-light: #10B981;
-    --owner-accent-subtle: rgba(5, 150, 105, 0.08);
-
-    /* ── Admin Portal Accent (Indigo — authority, control) ── */
-    --admin-accent: #4F46E5;
-    --admin-accent-light: #6366F1;
-    --admin-accent-subtle: rgba(79, 70, 229, 0.08);
-
-    /* ── Shadows (soft for light mode) ── */
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
-    --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04);
-    --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 20px rgba(0, 0, 0, 0.06);
-    --shadow-glow: 0 0 0 3px rgba(15, 118, 110, 0.15);
-
-    /* ── Glass ── */
-    --glass-bg: rgba(255, 255, 255, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.60);
-    --glass-bg-heavy: rgba(255, 255, 255, 0.90);
-
-    /* ── Sidebar ── */
-    --sidebar-bg: rgba(255, 255, 255, 0.75);
-    --sidebar-border: rgba(226, 232, 240, 0.80);
-    --sidebar-hover: rgba(0, 0, 0, 0.04);
-    --sidebar-active-bg: rgba(15, 118, 110, 0.10);
-
-    /* ── Navbar ── */
-    --navbar-bg: rgba(255, 255, 255, 0.70);
-    --navbar-border: rgba(226, 232, 240, 0.80);
-
-    /* ── Map Tiles (future) ── */
-    --map-filter: none;
+    --success: #10B981;
+    --danger: #EF4444;
+    --info: #3B82F6;
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     DARK MODE DESIGN TOKENS
-     Premium, modern, layered dark surfaces, comfortable for long use
-     ═══════════════════════════════════════════════════════════════ */
   .dark {
-    /* ── Backgrounds (layered — NO pure black) ── */
-    --bg-app: #0B1120;
-    --bg-primary: #0F172A;
-    --bg-secondary: #1A2744;
-    --bg-card: #1E293B;
-    --bg-elevated: #243349;
-    --bg-overlay: rgba(0, 0, 0, 0.60);
-    --bg-input: #1E293B;
-    --bg-hover: rgba(255, 255, 255, 0.06);
-    --bg-active: rgba(255, 255, 255, 0.10);
-
-    /* ── Typography (soft white — NO pure white) ── */
-    --text-primary: #E2E8F0;
-    --text-secondary: #94A3B8;
-    --text-muted: #64748B;
-    --text-disabled: #475569;
-    --text-inverse: #0F172A;
-
-    /* ── Borders ── */
-    --border: #334155;
-    --border-light: #1E293B;
-    --border-focus: #14B8A6;
-
-    /* ── Brand (brighter teal for dark backgrounds) ── */
+    --bg-primary: #111827;
+    --bg-secondary: #1F2937;
+    --bg-card: #1F2937;
+    --text-primary: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --border: #374151;
     --brand: #14B8A6;
     --brand-light: #2DD4BF;
-    --brand-hover: #0D9488;
-    --brand-subtle: rgba(20, 184, 166, 0.12);
-    --brand-rgb: 20, 184, 166;
-
-    /* ── Accent ── */
-    --accent: #FBBF24;
-
-    /* ── Semantic: Success ── */
-    --success: #22C55E;
-    --success-bg: rgba(34, 197, 94, 0.10);
-    --success-border: rgba(34, 197, 94, 0.20);
-
-    /* ── Semantic: Danger ── */
+    --accent: #F59E0B;
+    --success: #10B981;
     --danger: #EF4444;
-    --danger-bg: rgba(239, 68, 68, 0.10);
-    --danger-border: rgba(239, 68, 68, 0.20);
-
-    /* ── Semantic: Warning ── */
-    --warning: #F59E0B;
-    --warning-bg: rgba(245, 158, 11, 0.10);
-    --warning-border: rgba(245, 158, 11, 0.20);
-
-    /* ── Semantic: Info ── */
     --info: #3B82F6;
-    --info-bg: rgba(59, 130, 246, 0.10);
-    --info-border: rgba(59, 130, 246, 0.20);
-
-    /* ── Parking-Specific Semantic Colors (brighter for dark bg) ── */
-    --parking-available: #22C55E;
-    --parking-occupied: #EF4444;
-    --parking-reserved: #FBBF24;
-    --parking-maintenance: #9CA3AF;
-    --parking-electric: #3B82F6;
-    --parking-disabled: #A78BFA;
-    --parking-emergency: #FB923C;
-    --parking-vip: #A78BFA;
-
-    /* ── Owner Portal Accent (Emerald) ── */
-    --owner-accent: #10B981;
-    --owner-accent-light: #34D399;
-    --owner-accent-subtle: rgba(16, 185, 129, 0.12);
-
-    /* ── Admin Portal Accent (Indigo) ── */
-    --admin-accent: #6366F1;
-    --admin-accent-light: #818CF8;
-    --admin-accent-subtle: rgba(99, 102, 241, 0.12);
-
-    /* ── Shadows (darker, heavier for dark mode) ── */
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.20);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.20);
-    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.30), 0 1px 3px rgba(0, 0, 0, 0.20);
-    --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.40), 0 4px 10px rgba(0, 0, 0, 0.25);
-    --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.55), 0 8px 20px rgba(0, 0, 0, 0.35);
-    --shadow-glow: 0 0 0 3px rgba(20, 184, 166, 0.20);
-
-    /* ── Glass ── */
-    --glass-bg: rgba(30, 41, 59, 0.70);
-    --glass-border: rgba(51, 65, 85, 0.50);
-    --glass-bg-heavy: rgba(15, 23, 42, 0.95);
-
-    /* ── Sidebar ── */
-    --sidebar-bg: rgba(15, 23, 42, 0.75);
-    --sidebar-border: rgba(51, 65, 85, 0.50);
-    --sidebar-hover: rgba(255, 255, 255, 0.06);
-    --sidebar-active-bg: rgba(20, 184, 166, 0.12);
-
-    /* ── Navbar ── */
-    --navbar-bg: rgba(15, 23, 42, 0.70);
-    --navbar-border: rgba(51, 65, 85, 0.50);
-
-    /* ── Map Tiles (future — invert + hue-rotate for dark maps) ── */
-    --map-filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
   }
 
-  /* ── Reset ── */
   * {
     box-sizing: border-box;
     margin: 0;
@@ -223,31 +42,24 @@
   }
 
   html {
-    scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-    background-color: var(--bg-app);
-    background-image:
-      radial-gradient(circle at top left, rgba(var(--brand-rgb), 0.10), transparent 26%),
-      radial-gradient(circle at top right, rgba(37, 99, 235, 0.07), transparent 22%),
-      radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.05), transparent 20%),
-      linear-gradient(180deg, var(--glass-bg), transparent 24%);
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--bg-primary);
     color: var(--text-primary);
     min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-weight: 600;
   }
 
   ::selection {
-    background: rgba(var(--brand-rgb), 0.15);
-    color: var(--brand);
+    background: rgba(15, 118, 110, 0.2);
+    color: #0F766E;
   }
 
   ::-webkit-scrollbar {
@@ -261,389 +73,120 @@
 
   ::-webkit-scrollbar-thumb {
     background: var(--border);
-    border-radius: 999px;
+    border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   SCOPED THEME TRANSITION
-   Only applied temporarily during theme switching.
-   NOT global * — avoids interfering with dropdowns, charts,
-   skeletons, map rendering, modal animations, etc.
-   ═══════════════════════════════════════════════════════════════ */
-.theme-transitioning,
-.theme-transitioning *,
-.theme-transitioning *::before,
-.theme-transitioning *::after {
-  transition:
-    background-color 250ms ease,
-    color 200ms ease,
-    border-color 200ms ease,
-    box-shadow 250ms ease,
-    fill 200ms ease !important;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   REDUCED MOTION — Accessibility
-   ═══════════════════════════════════════════════════════════════ */
-@media (prefers-reduced-motion: reduce) {
-  .theme-transitioning,
-  .theme-transitioning *,
-  .theme-transitioning *::before,
-  .theme-transitioning *::after {
-    transition: none !important;
-  }
-
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    background: var(--text-secondary);
   }
 }
 
 @layer components {
-  /* ── Cards ── */
   .card {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 1.5rem;
-    box-shadow: var(--shadow-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    @apply bg-[var(--bg-card)] border border-[var(--border)] rounded-lg shadow-sm;
   }
 
-  .card:hover {
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
-    border-color: rgba(var(--brand-rgb), 0.22);
-  }
-
-  .card-flat {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 1.5rem;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-  }
-
-  /* ── Buttons ── */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 font-semibold rounded-2xl text-sm;
-    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-light) 100%);
-    color: var(--text-inverse);
-    box-shadow: 0 10px 24px rgba(var(--brand-rgb), 0.22);
-    transition: all 0.2s ease;
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-1px);
-    filter: brightness(1.08);
-    box-shadow: 0 14px 28px rgba(var(--brand-rgb), 0.26);
-  }
-
-  .btn-primary:active {
-    transform: translateY(0);
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--brand)] hover:bg-[#0d635c] text-white font-medium rounded text-sm transition-colors;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 font-semibold rounded-2xl text-sm;
-    background: var(--glass-bg);
-    color: var(--text-primary);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    transition: all 0.2s ease;
-  }
-
-  .btn-secondary:hover {
-    background: var(--bg-hover);
-    border-color: var(--border);
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-gray-50 dark:hover:bg-gray-800 font-medium rounded text-sm border border-[var(--border)] transition-colors;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl text-sm font-medium;
-    color: var(--text-secondary);
-    transition: all 0.2s ease;
+    @apply inline-flex items-center justify-center gap-2 px-3 py-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-sm font-medium transition-colors;
   }
 
-  .btn-ghost:hover {
-    color: var(--text-primary);
-    background: var(--bg-hover);
-  }
-
-  /* ── Input fields ── */
   .input-field {
-    @apply w-full px-4 py-2.5 rounded-2xl text-sm;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    transition: all 0.2s ease;
+    @apply w-full px-3 py-2 bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] focus:border-[var(--brand)] transition-colors;
   }
 
-  .input-field::placeholder {
-    color: var(--text-muted);
-  }
-
-  .input-field:focus {
-    outline: none;
-    border-color: var(--border-focus);
-    box-shadow: var(--shadow-glow);
-  }
-
-  /* ── Badges ── */
   .badge {
-    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border;
   }
 
   .badge-brand {
-    @apply badge;
-    background: var(--brand-subtle);
-    color: var(--brand);
+    @apply badge bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800;
   }
 
   .badge-success {
-    @apply badge;
-    background: var(--success-bg);
-    color: var(--success);
+    @apply badge bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800;
   }
 
   .badge-warning {
-    @apply badge;
-    background: var(--warning-bg);
-    color: var(--warning);
+    @apply badge bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800;
   }
 
   .badge-danger {
-    @apply badge;
-    background: var(--danger-bg);
-    color: var(--danger);
+    @apply badge bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800;
   }
 
   .badge-info {
-    @apply badge;
-    background: var(--info-bg);
-    color: var(--info);
+    @apply badge bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800;
   }
 
-  /* ── Typography Helpers ── */
-  .section-title {
-    @apply text-2xl font-bold tracking-tight;
-    color: var(--text-primary);
-  }
-
-  .section-subtitle {
-    @apply text-sm mt-1;
-    color: var(--text-secondary);
-  }
-
-  .gradient-brand {
-    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-light) 100%);
-  }
-
-  .gradient-text {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, var(--brand) 0%, var(--brand-light) 100%);
-  }
-
-  /* ── Glass surfaces ── */
-  .glass {
-    @apply backdrop-blur-md;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-  }
-
-  /* ── Sidebar ── */
   .sidebar-item {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-medium cursor-pointer;
-    color: var(--text-secondary);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    transition: all 0.2s ease;
-  }
-
-  .sidebar-item:hover {
-    color: var(--text-primary);
-    background: var(--sidebar-hover);
+    @apply flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer;
   }
 
   .sidebar-item.active {
-    color: var(--brand);
-    background: var(--sidebar-active-bg);
+    @apply text-[var(--brand)] bg-teal-50 dark:bg-teal-900/20;
   }
 
-  /* ── Stat & Content Cards ── */
   .stat-card {
-    @apply card p-5 flex flex-col gap-3;
-  }
-
-  .live-dot {
-    @apply inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse;
-  }
-
-  .skeleton {
-    @apply animate-pulse rounded-xl;
-    background: var(--border);
-  }
-
-  /* ── Page Containers ── */
-  .page-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-
-  .portal-surface {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 2rem;
-    box-shadow: var(--shadow-card);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-  }
-
-  .page-shell {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8;
-  }
-
-  .page-shell-wide {
-    @apply max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8;
-  }
-
-  .page-hero {
-    @apply portal-surface p-5 sm:p-6 lg:p-7 overflow-hidden relative;
-  }
-
-  .section-heading {
-    @apply flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between;
-  }
-
-  .section-kicker {
-    @apply text-[11px] font-bold uppercase tracking-[0.28em];
-    color: var(--brand);
-  }
-
-  .pill-tab {
-    @apply px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all border border-transparent;
+    @apply card p-4 flex flex-col gap-2;
   }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Digital Twin Slot Colors - Maintaining these for the canvas renderer */
+.slot-available { fill: #10B981; stroke: #059669; }
+.slot-occupied { fill: #EF4444; stroke: #B91C1C; }
+.slot-reserved { fill: #F59E0B; stroke: #D97706; }
+.slot-ev { fill: #3B82F6; stroke: #1D4ED8; }
+.slot-vip { fill: #8B5CF6; stroke: #6D28D9; }
+.slot-emergency { fill: #F97316; stroke: #C2410C; }
+.slot-maintenance { fill: #6B7280; stroke: #4B5563; }
 
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Custom Animations
-   ═══════════════════════════════════════════════════════════════ */
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.shimmer {
-  position: relative;
-  overflow: hidden;
-}
-
-.shimmer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-  animation: shimmer 1.5s ease-in-out infinite;
-}
-
-.dark .shimmer::after {
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Parking Slot Colors (SVG Digital Twin)
-   Use CSS variables for theme-adaptive parking state colors
-   ═══════════════════════════════════════════════════════════════ */
-.slot-available { fill: var(--parking-available); stroke: color-mix(in srgb, var(--parking-available) 80%, black); }
-.slot-occupied  { fill: var(--parking-occupied);  stroke: color-mix(in srgb, var(--parking-occupied) 80%, black); }
-.slot-reserved  { fill: var(--parking-reserved);  stroke: color-mix(in srgb, var(--parking-reserved) 80%, black); }
-.slot-ev        { fill: var(--parking-electric);   stroke: color-mix(in srgb, var(--parking-electric) 80%, black); }
-.slot-vip       { fill: var(--parking-vip);        stroke: color-mix(in srgb, var(--parking-vip) 80%, black); }
-.slot-emergency { fill: var(--parking-emergency);  stroke: color-mix(in srgb, var(--parking-emergency) 80%, black); }
-.slot-maintenance { fill: var(--parking-maintenance); stroke: color-mix(in srgb, var(--parking-maintenance) 80%, black); }
-
-/* ── Progress ring ── */
-.progress-ring {
-  transform: rotate(-90deg);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Gradient Mesh Background (Landing/Marketing)
-   ═══════════════════════════════════════════════════════════════ */
-.mesh-gradient {
-  background-color: #F8FAFC;
-  background-image:
-    radial-gradient(at 40% 20%, rgba(15, 118, 110, 0.08) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(20, 184, 166, 0.06) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(245, 158, 11, 0.05) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, rgba(15, 118, 110, 0.06) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(20, 184, 166, 0.08) 0px, transparent 50%);
-}
-
-.dark .mesh-gradient {
-  background-color: #0F172A;
-  background-image:
-    radial-gradient(at 40% 20%, rgba(15, 118, 110, 0.12) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(20, 184, 166, 0.08) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(245, 158, 11, 0.06) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, rgba(15, 118, 110, 0.08) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(20, 184, 166, 0.1) 0px, transparent 50%);
-}
-
-/* ── 3D Scene ── */
 .scene-3d {
   transform-style: preserve-3d;
   backface-visibility: hidden;
   will-change: transform;
 }
-
 .scene-3d > * {
   transform-style: preserve-3d;
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   Chart Tooltip Styling (Recharts)
-   ═══════════════════════════════════════════════════════════════ */
-.recharts-tooltip-wrapper .recharts-default-tooltip {
-  border-radius: 12px !important;
-  border: 1px solid var(--border) !important;
-  background: var(--bg-elevated) !important;
-  color: var(--text-primary) !important;
-  box-shadow: var(--shadow-card) !important;
-  font-family: 'Plus Jakarta Sans', sans-serif !important;
-  font-size: 12px !important;
+/* Custom Scrollbar for Floor Navigator */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   Map Theme Support (future Leaflet integration)
-   Apply dark filter to map tiles when in dark mode
-   ═══════════════════════════════════════════════════════════════ */
-.map-container .leaflet-tile-pane {
-  filter: var(--map-filter);
+/* Global Dark Scrollbar for Webkit */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.1);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }

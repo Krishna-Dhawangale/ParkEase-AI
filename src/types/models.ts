@@ -1,5 +1,30 @@
 import type { AuthUser } from './auth';
 
+export interface Tenant {
+  id: string;
+  name: string; // e.g., 'Phoenix Mall', 'Airport Authority'
+  slug: string;
+  status: 'ACTIVE' | 'SUSPENDED' | 'TRIAL' | 'DRAFT' | 'ONBOARDING' | 'INACTIVE';
+  plan: 'BASIC' | 'PRO' | 'ENTERPRISE';
+  type?: string;
+  contactPerson?: string;
+  contactEmail: string;
+  contactPhone: string;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  gstNumber?: string;
+  website?: string;
+  internalNotes?: string;
+  isOnboarded?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type SlotStatus =
   | 'AVAILABLE'
   | 'OCCUPIED'
@@ -55,7 +80,7 @@ export interface ParkingLayout {
 
 export interface ParkingLot {
   id: string;
-  ownerId: string;
+  tenantId: string;
   name: string;
   description: string;
   address: {
@@ -72,7 +97,7 @@ export interface ParkingLot {
   capacity: number;
   basePricePerHour: number;
   currency: string;
-  features: string[]; // e.g., 'CCTV', 'Covered', 'Valet'
+  features: string[];
   operatingHours: {
     [dayOfWeek: string]: { open: string; close: string; isClosed: boolean };
   };
@@ -81,3 +106,37 @@ export interface ParkingLot {
   createdAt: string;
   updatedAt: string;
 }
+
+// --- NEW HIERARCHY MODELS ---
+
+export interface Facility {
+  id: string;
+  tenantId: string;
+  name: string;
+  description: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+    coordinates: { lat: number; lng: number };
+  };
+  capacity: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Floor {
+  id: string;
+  facilityId: string;
+  name: string;
+  level: number;
+  layout: ParkingLayout;
+  capacity: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+

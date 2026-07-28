@@ -1,14 +1,16 @@
 import { Outlet } from 'react-router-dom';
-import AdminSidebar from '../modules/admin/components/AdminSidebar';
-import AdminNavbar from '../modules/admin/components/AdminNavbar';
+import AdminSidebar from '../portals/client-admin/components/AdminSidebar';
+import AdminNavbar from '../portals/client-admin/components/AdminNavbar';
 import { useAdminSidebarStore } from '../store';
+import { useWebSocket } from '../hooks/useWebSocket';
 import { cn } from '../lib/utils';
 
 const AdminLayout = () => {
   const { isCollapsed } = useAdminSidebarStore();
+  useWebSocket();
 
   return (
-    <div className="min-h-screen bg-bg-app text-txt-primary">
+    <div className="min-h-screen bg-[var(--bg-primary)]">
       <AdminNavbar />
       <AdminSidebar />
       <main

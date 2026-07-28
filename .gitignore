@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary refactor/patch scripts (agent-generated)
+*.cjs
+temp_*.tsx
+temp_*.txt
+
+# Source media originals (served from public/ instead)
+"Landing Page Video.mp4"
+"get Started audio.mp3"
+Landing\ Page\ Video.mp4
+get\ Started\ audio.mp3

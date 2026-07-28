@@ -8,6 +8,7 @@ import {
 import { mockParkingFacilities } from '../../lib/data';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useLiveFacilities } from '../../hooks/useLiveFacilities';
 
 const amenityIcons: Record<string, string> = {
   'CCTV': '📹',
@@ -25,6 +26,7 @@ export function ParkingSearchPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('ai');
   const [selectedParking, setSelectedParking] = useState<string | null>(null);
+  const facilities = useLiveFacilities();
 
   const filters = [
     { id: 'all', label: 'All' },
@@ -42,21 +44,21 @@ export function ParkingSearchPage() {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row h-full min-h-screen bg-bg-primary">
+    <div className="flex flex-col lg:flex-row h-full min-h-screen bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
       {/* Left Panel */}
       <div className="flex-1 lg:max-w-lg xl:max-w-xl overflow-y-auto">
         <div className="p-4 sm:p-6 space-y-5">
           {/* Header */}
           <div>
-            <h1 className="text-2xl font-bold text-txt-primary tracking-tight">Find Parking</h1>
-            <p className="text-sm text-txt-secondary mt-0.5">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">Find Parking</h1>
+            <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">
               AI-powered search across 500+ locations
             </p>
           </div>
 
           {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-txt-secondary" size={18} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-[var(--text-secondary)]" size={18} />
             <input
               type="text"
               value={searchQuery}
@@ -70,8 +72,8 @@ export function ParkingSearchPage() {
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
                   showFilters
-                    ? 'bg-brand text-white'
-                    : 'bg-white dark:bg-bg-secondary border border-bdr text-txt-secondary'
+                    ? 'bg-[var(--brand)] text-white'
+                    : 'bg-white dark:bg-[var(--border)] border border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)]'
                 )}
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -92,33 +94,33 @@ export function ParkingSearchPage() {
               >
                 <div className="card-flat p-4 space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-txt-primary">Advanced Filters</span>
-                    <button onClick={() => setShowFilters(false)} className="p-1 rounded-lg hover:bg-bg-primary dark:hover:bg-[var(--border)]">
-                      <X className="w-4 h-4 text-txt-secondary" />
+                    <span className="text-sm font-semibold text-[var(--text-primary)] dark:text-white">Advanced Filters</span>
+                    <button onClick={() => setShowFilters(false)} className="p-1 rounded-lg hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)]">
+                      <X className="w-4 h-4 text-[var(--text-secondary)]" />
                     </button>
                   </div>
 
                   <div>
-                    <p className="text-xs font-semibold text-txt-secondary mb-2">Price Range (per hour)</p>
+                    <p className="text-xs font-semibold text-[var(--text-secondary)] mb-2">Price Range (per hour)</p>
                     <div className="flex items-center gap-3">
                       <input type="range" min="0" max="500" defaultValue="200" className="flex-1 accent-[var(--brand)]" />
-                      <span className="text-sm font-semibold text-brand whitespace-nowrap">₹0–200</span>
+                      <span className="text-sm font-semibold text-[var(--brand)] whitespace-nowrap">₹0–200</span>
                     </div>
                   </div>
 
                   <div>
-                    <p className="text-xs font-semibold text-txt-secondary mb-2">Maximum Distance</p>
+                    <p className="text-xs font-semibold text-[var(--text-secondary)] mb-2">Maximum Distance</p>
                     <div className="flex items-center gap-3">
                       <input type="range" min="0" max="10" defaultValue="3" step="0.5" className="flex-1 accent-[var(--brand)]" />
-                      <span className="text-sm font-semibold text-brand whitespace-nowrap">3 km</span>
+                      <span className="text-sm font-semibold text-[var(--brand)] whitespace-nowrap">3 km</span>
                     </div>
                   </div>
 
                   <div>
-                    <p className="text-xs font-semibold text-txt-secondary mb-2">Amenities</p>
+                    <p className="text-xs font-semibold text-[var(--text-secondary)] mb-2">Amenities</p>
                     <div className="flex flex-wrap gap-2">
                       {['CCTV', 'EV Charging', 'Covered', 'Valet', 'Shuttle', 'Open Air'].map(a => (
-                        <button key={a} className="px-3 py-1 rounded-lg text-xs font-medium bg-bg-primary dark:bg-bg-secondary border border-bdr text-txt-secondary hover:border-[var(--brand)] hover:text-brand transition-all">
+                        <button key={a} className="px-3 py-1 rounded-lg text-xs font-medium bg-[var(--bg-primary)] dark:bg-[var(--border)] border border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--brand)] hover:text-[var(--brand)] transition-all">
                           {amenityIcons[a]} {a}
                         </button>
                       ))}
@@ -143,8 +145,8 @@ export function ParkingSearchPage() {
                 className={cn(
                   'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all',
                   activeFilter === f.id
-                    ? 'bg-brand text-white'
-                    : 'bg-bg-card border border-bdr text-txt-secondary'
+                    ? 'bg-[var(--brand)] text-white'
+                    : 'bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)]'
                 )}
               >
                 {f.label}
@@ -154,15 +156,15 @@ export function ParkingSearchPage() {
 
           {/* Sort */}
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-txt-secondary">
-              {mockParkingFacilities.length} results found
+            <span className="text-xs font-medium text-[var(--text-secondary)]">
+              {facilities.length} results found
             </span>
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-txt-secondary">Sort:</span>
+              <span className="text-xs text-[var(--text-secondary)]">Sort:</span>
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value)}
-                className="text-xs font-semibold text-brand bg-transparent border-none outline-none cursor-pointer"
+                className="text-xs font-semibold text-[var(--brand)] dark:text-[var(--brand-light)] bg-transparent border-none outline-none cursor-pointer"
               >
                 {sortOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
               </select>
@@ -171,7 +173,12 @@ export function ParkingSearchPage() {
 
           {/* Parking Cards */}
           <div className="space-y-4">
-            {mockParkingFacilities.map((facility, i) => (
+            {facilities.length === 0 ? (
+              <div className="text-center py-10 text-[var(--text-secondary)] text-sm">
+                No live facilities available. Wait for admin approval.
+              </div>
+            ) : (
+              facilities.map((facility, i) => (
               <motion.div
                 key={facility.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -184,7 +191,7 @@ export function ParkingSearchPage() {
                 )}
               >
                 {/* Image */}
-                <div className="relative h-36 overflow-hidden bg-bg-primary dark:bg-bg-secondary">
+                <div className="relative h-36 overflow-hidden bg-[var(--bg-primary)] dark:bg-[var(--border)]">
                   <img
                     src={facility.image}
                     alt={facility.name}
@@ -198,7 +205,7 @@ export function ParkingSearchPage() {
                   {/* Badges on image */}
                   <div className="absolute top-3 left-3 flex gap-1.5">
                     {facility.aiRecommended && (
-                      <span className="px-2 py-1 rounded-lg text-[10px] font-bold bg-brand text-white flex items-center gap-1">
+                      <span className="px-2 py-1 rounded-lg text-[10px] font-bold bg-[var(--brand)] text-white flex items-center gap-1">
                         <Zap className="w-2.5 h-2.5" /> AI Pick
                       </span>
                     )}
@@ -222,11 +229,11 @@ export function ParkingSearchPage() {
                     <div className="flex items-center gap-1">
                       <div className="flex">
                         {Array.from({ length: 5 }).map((_, j) => (
-                          <Star key={j} className={cn('w-3 h-3', j < Math.floor(facility.rating) ? 'text-[#F59E0B] fill-[#F59E0B]' : 'text-txt-primary/40')} />
+                          <Star key={j} className={cn('w-3 h-3', j < Math.floor(facility.rating) ? 'text-[#F59E0B] fill-[#F59E0B]' : 'text-white/40')} />
                         ))}
                       </div>
-                      <span className="text-[11px] text-txt-primary font-semibold">{facility.rating}</span>
-                      <span className="text-[10px] text-txt-primary/70">({facility.reviews.toLocaleString()})</span>
+                      <span className="text-[11px] text-white font-semibold">{facility.rating}</span>
+                      <span className="text-[10px] text-white/70">({facility.reviews.toLocaleString()})</span>
                     </div>
                   </div>
                 </div>
@@ -235,49 +242,49 @@ export function ParkingSearchPage() {
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-txt-primary text-sm truncate">{facility.name}</h3>
+                      <h3 className="font-bold text-[var(--text-primary)] dark:text-white text-sm truncate">{facility.name}</h3>
                       <div className="flex items-center gap-1 mt-1">
-                        <MapPin className="w-3 h-3 text-txt-secondary flex-shrink-0" />
-                        <span className="text-xs text-txt-secondary truncate">{facility.address}</span>
+                        <MapPin className="w-3 h-3 text-[var(--text-secondary)] flex-shrink-0" />
+                        <span className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)] truncate">{facility.address}</span>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <div className="text-lg font-bold text-txt-primary">₹{facility.price}</div>
-                      <div className="text-[11px] text-txt-secondary">per {facility.priceUnit}</div>
+                      <div className="text-lg font-bold text-[var(--text-primary)] dark:text-white">₹{facility.price}</div>
+                      <div className="text-[11px] text-[var(--text-secondary)]">per {facility.priceUnit}</div>
                     </div>
                   </div>
 
                   {/* Stats row */}
                   <div className="grid grid-cols-4 gap-2 mb-3">
-                    <div className="text-center p-2 rounded-xl bg-bg-primary">
+                    <div className="text-center p-2 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
                       <div className="text-xs font-bold text-green-600">{facility.available}</div>
-                      <div className="text-[10px] text-txt-secondary">Free</div>
+                      <div className="text-[10px] text-[var(--text-secondary)]">Free</div>
                     </div>
-                    <div className="text-center p-2 rounded-xl bg-bg-primary">
-                      <div className="text-xs font-bold text-txt-primary flex items-center justify-center gap-0.5">
+                    <div className="text-center p-2 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
+                      <div className="text-xs font-bold text-[var(--text-primary)] dark:text-white flex items-center justify-center gap-0.5">
                         <Navigation className="w-2.5 h-2.5" />{facility.distance}km
                       </div>
-                      <div className="text-[10px] text-txt-secondary">Distance</div>
+                      <div className="text-[10px] text-[var(--text-secondary)]">Distance</div>
                     </div>
-                    <div className="text-center p-2 rounded-xl bg-bg-primary">
-                      <div className="text-xs font-bold text-txt-primary">{facility.walkTime}m</div>
-                      <div className="text-[10px] text-txt-secondary">Walk</div>
+                    <div className="text-center p-2 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
+                      <div className="text-xs font-bold text-[var(--text-primary)] dark:text-white">{facility.walkTime}m</div>
+                      <div className="text-[10px] text-[var(--text-secondary)]">Walk</div>
                     </div>
-                    <div className="text-center p-2 rounded-xl bg-bg-primary">
-                      <div className="text-xs font-bold text-txt-primary flex items-center justify-center gap-0.5">
+                    <div className="text-center p-2 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
+                      <div className="text-xs font-bold text-[var(--text-primary)] dark:text-white flex items-center justify-center gap-0.5">
                         <Leaf className="w-2.5 h-2.5 text-green-500" />{facility.greenScore}
                       </div>
-                      <div className="text-[10px] text-txt-secondary">Green</div>
+                      <div className="text-[10px] text-[var(--text-secondary)]">Green</div>
                     </div>
                   </div>
 
                   {/* Availability bar */}
                   <div className="mb-3">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] text-txt-secondary">Availability</span>
-                      <span className="text-[11px] font-semibold text-brand">{Math.round(facility.available / facility.total * 100)}%</span>
+                      <span className="text-[11px] text-[var(--text-secondary)]">Availability</span>
+                      <span className="text-[11px] font-semibold text-[var(--brand)]">{Math.round(facility.available / facility.total * 100)}%</span>
                     </div>
-                    <div className="h-1.5 bg-[var(--border)] dark:bg-bg-secondary rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-[var(--border)] dark:bg-[var(--border)] rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${Math.round(facility.available / facility.total * 100)}%` }}
@@ -290,20 +297,20 @@ export function ParkingSearchPage() {
                   {/* Security + Amenities */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-1">
-                      <Shield className="w-3 h-3 text-brand" />
+                      <Shield className="w-3 h-3 text-[var(--brand)]" />
                       <div className="flex gap-0.5">
                         {Array.from({ length: 5 }).map((_, j) => (
-                          <div key={j} className={cn('w-2 h-2 rounded-sm', j < facility.security ? 'bg-brand' : 'bg-[var(--border)] dark:bg-bg-secondary')} />
+                          <div key={j} className={cn('w-2 h-2 rounded-sm', j < facility.security ? 'bg-[var(--brand)]' : 'bg-[var(--border)] dark:bg-[var(--border)]')} />
                         ))}
                       </div>
-                      <span className="text-[11px] text-txt-secondary">Security</span>
+                      <span className="text-[11px] text-[var(--text-secondary)]">Security</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      {facility.amenities.slice(0, 3).map(a => (
+                      {facility.amenities.slice(0, 3).map((a: string) => (
                         <span key={a} className="text-sm" title={a}>{amenityIcons[a]}</span>
                       ))}
                       {facility.amenities.length > 3 && (
-                        <span className="text-[10px] text-txt-secondary">+{facility.amenities.length - 3}</span>
+                        <span className="text-[10px] text-[var(--text-secondary)]">+{facility.amenities.length - 3}</span>
                       )}
                     </div>
                   </div>
@@ -317,14 +324,15 @@ export function ParkingSearchPage() {
                   </button>
                 </div>
               </motion.div>
-            ))}
+            ))
+            )}
           </div>
         </div>
       </div>
 
       {/* Right Panel - Map */}
       <div className="hidden lg:flex flex-1 relative">
-        <PremiumMapView selectedId={selectedParking} facilities={mockParkingFacilities} />
+        <PremiumMapView selectedId={selectedParking} facilities={facilities} />
       </div>
     </div>
   );
@@ -332,7 +340,7 @@ export function ParkingSearchPage() {
 
 function PremiumMapView({ selectedId, facilities }: { selectedId: string | null; facilities: typeof mockParkingFacilities }) {
   return (
-    <div className="relative w-full h-full bg-[var(--border)] dark:bg-bg-card overflow-hidden">
+    <div className="relative w-full h-full bg-[var(--border)] dark:bg-[var(--bg-card)] overflow-hidden">
       {/* Map SVG background */}
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 700" preserveAspectRatio="xMidYMid slice">
         {/* Background */}
@@ -425,7 +433,7 @@ function PremiumMapView({ selectedId, facilities }: { selectedId: string | null;
       {/* Map overlay controls */}
       <div className="absolute top-4 right-4 flex flex-col gap-2">
         {['+', '-', '⊕'].map((ctrl, i) => (
-          <button key={i} className="w-9 h-9 card rounded-xl flex items-center justify-center text-sm font-bold text-txt-secondary hover:text-brand transition-colors">
+          <button key={i} className="w-9 h-9 card rounded-xl flex items-center justify-center text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--brand)] transition-colors">
             {ctrl}
           </button>
         ))}
@@ -433,7 +441,7 @@ function PremiumMapView({ selectedId, facilities }: { selectedId: string | null;
 
       {/* Map legend */}
       <div className="absolute bottom-4 left-4 card p-3">
-        <p className="text-xs font-semibold text-txt-primary mb-2">Map Legend</p>
+        <p className="text-xs font-semibold text-[var(--text-primary)] dark:text-white mb-2">Map Legend</p>
         {[
           { color: 'var(--brand)', label: 'Parking Hub' },
           { color: '#F59E0B', label: 'AI Recommended' },
@@ -442,7 +450,7 @@ function PremiumMapView({ selectedId, facilities }: { selectedId: string | null;
         ].map(item => (
           <div key={item.label} className="flex items-center gap-2 mb-1">
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-            <span className="text-[11px] text-txt-secondary">{item.label}</span>
+            <span className="text-[11px] text-[var(--text-secondary)]">{item.label}</span>
           </div>
         ))}
       </div>
@@ -450,8 +458,8 @@ function PremiumMapView({ selectedId, facilities }: { selectedId: string | null;
       {/* Street-view style overlay */}
       <div className="absolute top-4 left-4 card px-3 py-2">
         <div className="flex items-center gap-2 text-xs">
-          <MapPin className="w-3.5 h-3.5 text-brand" />
-          <span className="font-semibold text-txt-primary">Bengaluru, KA</span>
+          <MapPin className="w-3.5 h-3.5 text-[var(--brand)]" />
+          <span className="font-semibold text-[var(--text-primary)] dark:text-white">Bengaluru, KA</span>
         </div>
       </div>
     </div>
