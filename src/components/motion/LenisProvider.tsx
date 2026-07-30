@@ -11,9 +11,9 @@ export function LenisProvider({ children }: LenisProviderProps) {
   const location = useLocation();
   const [isEnabled, setIsEnabled] = useState(true);
 
-  // We disable Lenis entirely on operational portals & digital twin canvas
+  // We disable Lenis entirely on digital twin canvas since it handles its own 3D scene controls
   useEffect(() => {
-    const disablePaths = ['/super-admin', '/client-admin', '/digital-twin'];
+    const disablePaths = ['/digital-twin'];
     const shouldDisable = disablePaths.some(path => location.pathname.startsWith(path));
     
     // Also respect user accessibility preferences

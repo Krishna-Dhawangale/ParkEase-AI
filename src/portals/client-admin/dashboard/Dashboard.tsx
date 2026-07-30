@@ -39,6 +39,7 @@ import {
 import { cn } from '../../../lib/utils';
 import type { RecentBooking, RecentAlert, PeakHourDataPoint, KPICard, RevenueDataPoint } from './data';
 import { Link } from 'react-router-dom';
+import { BentoGrid, BentoGridItem } from '../../../components/magicui/bento-grid';
 
 const getFormattedDate = () => {
   return new Intl.DateTimeFormat('en-IN', {
@@ -181,61 +182,43 @@ const Dashboard = () => {
         </div>
 
         {/* Core KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="card p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-8 h-8 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                <IndianRupee className="w-4 h-4" />
+        <BentoGrid className="grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-none">
+          <BentoGridItem
+            title="Today's Revenue"
+            header={<div className="text-3xl font-semibold mt-2">₹0</div>}
+            icon={<div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center"><IndianRupee className="w-5 h-5" /></div>}
+            description={<span className="flex items-center gap-1 text-xs text-gray-500"><TrendingUp className="w-3 h-3 text-emerald-500" /> 0% from yesterday</span>}
+            className="md:auto-rows-[12rem]"
+          />
+          <BentoGridItem
+            title="Bookings Today"
+            header={<div className="text-3xl font-semibold mt-2">0</div>}
+            icon={<div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center"><CalendarCheck className="w-5 h-5" /></div>}
+            description={<span className="flex items-center gap-1 text-xs text-gray-500"><Activity className="w-3 h-3 text-gray-400" /> 0 active right now</span>}
+            className="md:auto-rows-[12rem]"
+          />
+          <BentoGridItem
+            title="Vehicles Inside"
+            header={<div className="text-3xl font-semibold mt-2">0</div>}
+            icon={<div className="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center"><Car className="w-5 h-5" /></div>}
+            description={<span className="text-xs text-gray-500">0 entries / 0 exits</span>}
+            className="md:auto-rows-[12rem]"
+          />
+          <BentoGridItem
+            title="Available Spaces"
+            header={
+              <div>
+                <div className="text-3xl font-semibold mt-2">0 <span className="text-base font-normal text-gray-500">/ 0</span></div>
+                <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full mt-3 overflow-hidden">
+                  <div className="h-full bg-indigo-500 rounded-full" style={{ width: '0%' }}></div>
+                </div>
               </div>
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Today's Revenue</span>
-            </div>
-            <div>
-              <h3 className="text-2xl font-semibold">₹0</h3>
-              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-emerald-500" /> 0% from yesterday</p>
-            </div>
-          </div>
-
-          <div className="card p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-8 h-8 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <CalendarCheck className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Bookings Today</span>
-            </div>
-            <div>
-              <h3 className="text-2xl font-semibold">0</h3>
-              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1"><Activity className="w-3 h-3 text-gray-400" /> 0 active right now</p>
-            </div>
-          </div>
-
-          <div className="card p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-8 h-8 rounded bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                <Car className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Vehicles Inside</span>
-            </div>
-            <div>
-              <h3 className="text-2xl font-semibold">0</h3>
-              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">0 entries / 0 exits</p>
-            </div>
-          </div>
-
-          <div className="card p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-8 h-8 rounded bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                <Map className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Available Spaces</span>
-            </div>
-            <div>
-              <h3 className="text-2xl font-semibold">0 <span className="text-sm font-normal text-gray-500">/ 0</span></h3>
-              <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-indigo-500 rounded-full" style={{ width: '0%' }}></div>
-              </div>
-            </div>
-          </div>
-        </div>
+            }
+            icon={<div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center"><Map className="w-5 h-5" /></div>}
+            description=""
+            className="md:auto-rows-[12rem]"
+          />
+        </BentoGrid>
 
         {/* Quick Actions */}
         <div className="card border border-gray-200 dark:border-gray-800 p-1 rounded-lg bg-white dark:bg-[#09090b]">

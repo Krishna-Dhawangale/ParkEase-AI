@@ -3,6 +3,7 @@ import type { SADashboardOrganization } from '../../types/super-admin.types';
 import { SAEmptyState } from '../SAEmptyState';
 import { Building2 } from 'lucide-react';
 import { cn } from '../../../../lib/utils';
+import { motion } from 'framer-motion';
 
 interface Props {
   organizations: SADashboardOrganization[];
@@ -35,9 +36,25 @@ export function RecentOrganizationsTable({ organizations }: Props) {
                 <th className="px-5 py-3 font-medium"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-[13px]">
+            <motion.tbody 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-10%" }}
+              variants={{
+                visible: { transition: { staggerChildren: 0.1 } },
+                hidden: {}
+              }}
+              className="divide-y divide-slate-100 dark:divide-slate-800/50 text-[13px]"
+            >
               {organizations.map((org) => (
-                <tr key={org.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <motion.tr 
+                  key={org.id} 
+                  variants={{
+                    hidden: { opacity: 0, y: 10 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+                  }}
+                  className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                >
                   <td className="px-5 py-3 font-medium text-slate-900 dark:text-white">{org.name}</td>
                   <td className="px-5 py-3 text-slate-600 dark:text-slate-400">{org.facilities}</td>
                   <td className="px-5 py-3 text-slate-600 dark:text-slate-400">{org.plan}</td>
@@ -55,9 +72,9 @@ export function RecentOrganizationsTable({ organizations }: Props) {
                   <td className="px-5 py-3 text-right">
                     <button className="text-slate-400 hover:text-slate-600">⋮</button>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
-            </tbody>
+            </motion.tbody>
           </table>
         </div>
       ) : (

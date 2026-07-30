@@ -155,6 +155,7 @@ export interface SAFacility {
   organizationName: string;
   city: string;
   state: string;
+  coordinates?: { lat: number; lng: number };
   type: OrganizationType;
   approvalStatus: FacilityApprovalStatus;
   capacity: number;

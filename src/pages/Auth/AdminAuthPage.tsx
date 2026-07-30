@@ -11,6 +11,9 @@ export const AdminAuthPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   
   const login = useAuthStore(state => state.login);
   const navigate = useNavigate();
@@ -28,9 +31,12 @@ export const AdminAuthPage: React.FC = () => {
     try {
       const response = await AuthService.login({ email: normalizeEmail(email), password });
       
-      // Client Admins only
-      if (response.user.role === 'SUPER_ADMIN' || response.user.role === 'CUSTOMER') {
-        throw new Error('Unauthorized role for Client Portal. Use the appropriate login portal.');
+      // Client Admins only — block SUPER_ADMIN and CUSTOMER from this portal
+      if (response.user.role === 'SUPER_ADMIN') {
+        throw new Error('Super Admins must use the Super Admin portal to log in.');
+      }
+      if (response.user.role === 'CUSTOMER') {
+        throw new Error('This portal is for Client Admins only. Please use the Customer portal.');
       }
       
       if (response.user.accountStatus === 'DISABLED') {
@@ -51,6 +57,24 @@ export const AdminAuthPage: React.FC = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Please enter your email address.');
+      return;
+    }
+    setResetLoading(true);
+    setError('');
+    try {
+      await AuthService.resetPassword(normalizeEmail(email));
+      setResetSent(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset email.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -62,11 +86,11 @@ export const AdminAuthPage: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">ParkEase AI</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 uppercase tracking-wider font-semibold">
-            Client Portal
+            {forgotMode ? 'Reset Password' : 'Client Portal'}
           </p>
         </div>
 
-        {/* Login Card */}
+        {/* Card */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 sm:p-8">
           
           {error && (
@@ -76,57 +100,97 @@ export const AdminAuthPage: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[13px] font-medium text-slate-700 dark:text-slate-300">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="admin@organization.com"
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 rounded-lg py-2.5 pl-9 pr-4 text-sm text-slate-900 dark:text-white outline-none transition-all"
-                  required
-                />
+          {resetSent ? (
+            <div className="text-center space-y-4 py-4">
+              <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
+                <Shield className="w-7 h-7 text-emerald-600" />
               </div>
+              <h2 className="font-semibold text-slate-900 dark:text-white text-lg">Reset Email Sent</h2>
+              <p className="text-slate-500 text-sm">Check your inbox for a password reset link from Firebase. It may take a minute to arrive.</p>
+              <button onClick={() => { setForgotMode(false); setResetSent(false); setError(''); }} className="text-sm text-brand-600 dark:text-brand-400 hover:underline font-medium">
+                Back to Sign In
+              </button>
             </div>
-
-            <div className="space-y-1.5 pt-2">
-              <div className="flex items-center justify-between">
-                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-300">Password</label>
-                <button type="button" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">
-                  Forgot Password?
-                </button>
+          ) : forgotMode ? (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-300">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="admin@organization.com"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 rounded-lg py-2.5 pl-9 pr-4 text-sm text-slate-900 dark:text-white outline-none transition-all"
+                    required
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 rounded-lg py-2.5 pl-9 pr-4 text-sm text-slate-900 dark:text-white outline-none transition-all"
-                  required
-                />
+              <button
+                type="submit"
+                disabled={resetLoading}
+                className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg text-sm transition-all flex items-center justify-center gap-2 mt-4"
+              >
+                {resetLoading ? <div className="w-5 h-5 border-2 border-slate-400 border-t-white dark:border-t-slate-900 rounded-full animate-spin" /> : 'Send Reset Email'}
+              </button>
+              <button type="button" onClick={() => { setForgotMode(false); setError(''); }} className="w-full text-center text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                ← Back to Sign In
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-300">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="admin@organization.com"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 rounded-lg py-2.5 pl-9 pr-4 text-sm text-slate-900 dark:text-white outline-none transition-all"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg text-sm transition-all flex items-center justify-center gap-2 mt-6"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-slate-400 border-t-white dark:border-t-slate-900 rounded-full animate-spin" />
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
+              <div className="space-y-1.5 pt-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[13px] font-medium text-slate-700 dark:text-slate-300">Password</label>
+                  <button type="button" onClick={() => { setForgotMode(true); setError(''); }} className="text-xs text-brand-600 dark:text-brand-400 hover:underline">
+                    Forgot Password?
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 rounded-lg py-2.5 pl-9 pr-4 text-sm text-slate-900 dark:text-white outline-none transition-all"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg text-sm transition-all flex items-center justify-center gap-2 mt-6"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-slate-400 border-t-white dark:border-t-slate-900 rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+          )}
         </div>
         
         {/* Footer */}

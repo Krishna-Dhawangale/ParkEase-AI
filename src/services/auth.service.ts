@@ -1,187 +1,260 @@
 import type { AuthResponse, AuthUser, LoginCredentials, RegisterCredentials } from '../types/auth';
-import { mockUsers, mockTenants, normalizeEmail, persistMockUsers } from './api.mock';
 import { useTenantStore } from '../store';
+import { auth, db } from '../lib/firebase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
+  updateProfile as firebaseUpdateProfile,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential
+} from 'firebase/auth';
+import type { User as FirebaseUser } from 'firebase/auth';
+import { ref, get, set, child, update } from 'firebase/database';
 
-// Helper to generate a fake JWT
-const generateFakeJwt = (user: AuthUser): string => {
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = btoa(JSON.stringify({
-    sub: user.id,
-    email: user.email,
-    role: user.role,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 1 day
-  }));
-  const signature = 'fake-signature';
-  return `${header}.${payload}.${signature}`;
+// Helper to sync Firebase Auth user to our AuthUser
+const getOrCreateUserProfile = async (user: FirebaseUser, defaultRole: 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN' = 'CUSTOMER'): Promise<AuthUser> => {
+  const dbRef = ref(db);
+  const snapshot = await get(child(dbRef, `users/${user.uid}`));
+
+  if (snapshot.exists()) {
+    // Return the profile stored in Realtime DB
+    const data = snapshot.val();
+    
+    // requiresPasswordChange: trust DB value first; fall back to FORCE_RESET photoURL for legacy users
+    const requiresPasswordChange = data.requiresPasswordChange === true 
+      || user.photoURL === 'FORCE_RESET';
+
+    return {
+      id: user.uid,
+      email: user.email || '',
+      role: data.role || defaultRole,
+      firstName: data.firstName || '',
+      lastName: data.lastName || '',
+      tenantId: data.tenantId,
+      isEmailVerified: user.emailVerified,
+      accountStatus: data.accountStatus || 'ACTIVE',
+      createdAt: data.createdAt || user.metadata.creationTime || new Date().toISOString(),
+      requiresPasswordChange
+    };
+  } else {
+    // If no document exists, create a default CUSTOMER profile
+    const nameParts = (user.displayName || '').split(' ');
+    const firstName = nameParts[0] || 'User';
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+    
+    // For local dev, hardcode the super admin just in case they haven't set it in firestore manually
+    let role = defaultRole;
+    if (user.email === 'admin@parkease.ai') {
+      role = 'SUPER_ADMIN';
+    }
+
+    const newUserProfile: AuthUser = {
+      id: user.uid,
+      email: user.email || '',
+      role: role,
+      firstName,
+      lastName,
+      isEmailVerified: user.emailVerified,
+      accountStatus: 'ACTIVE',
+      createdAt: user.metadata.creationTime || new Date().toISOString()
+    };
+
+    await set(ref(db, `users/${user.uid}`), newUserProfile);
+    return newUserProfile;
+  }
 };
 
-// Default passwords for seed users (only used when no mockPassword entry exists)
-const SEED_PASSWORDS: Record<string, string> = {
-  'admin@parkease.com': 'admin123',
-  'user@parkease.com': 'user123',
+const mapFirebaseError = (error: any, defaultMessage: string = 'Authentication failed'): string => {
+  const code = error?.code;
+  const message = error?.message || 'No message';
+  switch (code) {
+    case 'auth/invalid-credential':
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+      return `Invalid email or password. Detailed Error: ${code} - ${message}`;
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists.';
+    case 'auth/weak-password':
+      return 'Password should be at least 6 characters.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.';
+    case 'auth/too-many-requests':
+      return 'Too many failed login attempts. Please try again later.';
+    case 'auth/popup-closed-by-user':
+      return 'Sign-in popup was closed before completion.';
+    case 'permission-denied':
+      return 'Database Error: Permissions denied. Please set Realtime Database rules to true.';
+    default:
+      // If it's a DB error, it might not have 'auth/' prefix
+      if (error?.message?.includes('Missing or insufficient permissions') || error?.message?.includes('Permission denied')) {
+        return 'Database Error: Permissions denied. Please set Realtime Database rules to true.';
+      }
+      return defaultMessage;
+  }
 };
 
 export const AuthService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    const email = normalizeEmail(credentials.email ?? '');
-    const password = credentials.password ?? '';
-
-    if (!email || !password) {
+    if (!credentials.email || !credentials.password) {
       throw new Error('Email and password are required.');
     }
 
-    const user = mockUsers.find(u => u.email === email);
-    
-    if (!user) {
-      // Development-only: log which users exist for debugging
-      if (import.meta.env.DEV) {
-        console.warn('[AuthService] User not found for email:', email);
-        console.warn('[AuthService] Available users:', mockUsers.map(u => u.email));
-      }
-      throw new Error('Invalid email or password');
-    }
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
+      const user = await getOrCreateUserProfile(userCredential.user);
+      
+      // Obtain actual JWT token from Firebase
+      const token = await userCredential.user.getIdToken();
 
-    // Check account status — DISABLED and SUSPENDED cannot login
-    // INVITED is allowed (first-time login with temporary password)
-    if (user.accountStatus === 'DISABLED') {
-      throw new Error('Your account has been disabled. Please contact support.');
+      return { token, user };
+    } catch (error: any) {
+      console.error('[Firebase Login Error]', error);
+      throw new Error(mapFirebaseError(error, 'Invalid email or password'));
     }
-
-    // Check password against mockPasswords (for temporary/changed passwords)
-    // or fall back to seed passwords for hardcoded users
-    const mockPasswords: Record<string, string> = JSON.parse(localStorage.getItem('mockPasswords') || '{}');
-    const storedPassword = mockPasswords[email];
-    
-    if (storedPassword) {
-      // A specific password was set for this user (temporary or changed)
-      if (password !== storedPassword) {
-        if (import.meta.env.DEV) {
-          console.warn('[AuthService] Password mismatch for:', email);
-        }
-        throw new Error('Invalid email or password');
-      }
-    } else {
-      // No specific password — check seed defaults
-      const seedPassword = SEED_PASSWORDS[email];
-      if (!seedPassword || password !== seedPassword) {
-        if (import.meta.env.DEV) {
-          console.warn('[AuthService] No password entry found for:', email);
-        }
-        throw new Error('Invalid email or password');
-      }
-    }
-
-    // Set tenant context if applicable
-    if (user.tenantId) {
-      const tenant = mockTenants.find(t => t.id === user.tenantId);
-      if (tenant) {
-        useTenantStore.getState().setTenant(tenant);
-      }
-    }
-
-    return {
-      token: generateFakeJwt(user),
-      user
-    };
   },
 
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    const email = normalizeEmail(credentials.email ?? '');
-
-    if (mockUsers.some(u => u.email === email)) {
-      throw new Error('Email already registered');
+    if (!credentials.email || !credentials.password) {
+      throw new Error('Email and password are required.');
     }
 
-    const newUser: AuthUser = {
-      id: `new-user-${Date.now()}`,
-      email,
-      role: credentials.role,
-      firstName: credentials.firstName,
-      lastName: credentials.lastName,
-      isEmailVerified: false,
-      accountStatus: 'ACTIVE',
-      createdAt: new Date().toISOString()
-    };
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
+      
+      // Update the user's profile with their first and last name in Auth
+      const displayName = `${credentials.firstName} ${credentials.lastName}`.trim();
+      await firebaseUpdateProfile(userCredential.user, { displayName });
 
-    mockUsers.push(newUser);
-    persistMockUsers();
+      // Create their profile in Realtime DB
+      const user = await getOrCreateUserProfile(userCredential.user, credentials.role);
+      
+      // Override the names in DB to ensure accuracy from registration form
+      user.firstName = credentials.firstName;
+      user.lastName = credentials.lastName;
+      await set(ref(db, `users/${user.uid || user.id}`), user);
 
-    // Store password
-    const mockPasswords: Record<string, string> = JSON.parse(localStorage.getItem('mockPasswords') || '{}');
-    if (credentials.password) {
-      mockPasswords[email] = credentials.password;
-      localStorage.setItem('mockPasswords', JSON.stringify(mockPasswords));
+      const token = await userCredential.user.getIdToken();
+
+      return { token, user };
+    } catch (error: any) {
+      console.error('[Firebase Register Error]', error);
+      throw new Error(mapFirebaseError(error, 'Registration failed'));
     }
+  },
 
-    return {
-      token: generateFakeJwt(newUser),
-      user: newUser
-    };
+  resetPassword: async (email: string): Promise<void> => {
+    if (!email) throw new Error('Email is required');
+    try {
+      await sendPasswordResetEmail(auth, email);
+      if (import.meta.env.DEV) {
+        console.log(`[AuthService] Password reset sent for: ${email}`);
+      }
+    } catch (error: any) {
+      console.error('[Firebase Reset Password Error]', error);
+      throw new Error(mapFirebaseError(error, 'Failed to send password reset email'));
+    }
+  },
+
+  loginWithGoogle: async (): Promise<AuthResponse> => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      
+      const user = await getOrCreateUserProfile(userCredential.user);
+      const token = await userCredential.user.getIdToken();
+
+      return { token, user };
+    } catch (error: any) {
+      console.error('[Firebase Google Login Error]', error);
+      throw new Error(mapFirebaseError(error, 'Google authentication failed'));
+    }
   },
 
   validateToken: async (token: string): Promise<AuthUser> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    try {
-      const payloadBase64 = token.split('.')[1];
-      const payload = JSON.parse(atob(payloadBase64));
-      
-      const user = mockUsers.find(u => u.id === payload.sub);
-      if (!user) throw new Error('User not found');
-      
-      return user;
-    } catch (error) {
-      throw new Error('Invalid token');
-    }
+    // In a real full-stack app, this validates the JWT.
+    // For client-only Firebase, onAuthStateChanged is typically used instead.
+    // We will attempt to get the current logged-in user directly.
+    return new Promise((resolve, reject) => {
+      const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+        unsubscribe(); // Stop listening once we get the initial state
+        if (firebaseUser) {
+          try {
+            const user = await getOrCreateUserProfile(firebaseUser);
+            resolve(user);
+          } catch (e) {
+            reject(new Error('Invalid token'));
+          }
+        } else {
+          reject(new Error('User not authenticated'));
+        }
+      });
+    });
   },
 
   changePassword: async (userId: string, currentPass: string, newPass: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const user = mockUsers.find(u => u.id === userId);
-    if (!user) throw new Error('User not found');
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error('Not authenticated. Please log in again.');
 
-    const email = normalizeEmail(user.email);
-    const mockPasswords: Record<string, string> = JSON.parse(localStorage.getItem('mockPasswords') || '{}');
-    
-    // Verify current password
-    const storedPassword = mockPasswords[email];
-    const seedPassword = SEED_PASSWORDS[email];
-    const expectedPassword = storedPassword || seedPassword;
-
-    if (expectedPassword && currentPass !== expectedPassword) {
-      throw new Error('Incorrect current password.');
+    // Step 1: Re-authenticate the user with their current (temp) password
+    try {
+      const credential = EmailAuthProvider.credential(currentUser.email!, currentPass);
+      await reauthenticateWithCredential(currentUser, credential);
+    } catch (error: any) {
+      throw new Error('Current password is incorrect. Please try again.');
     }
 
-    // Save new password (replaces temporary password)
-    mockPasswords[email] = newPass;
-    localStorage.setItem('mockPasswords', JSON.stringify(mockPasswords));
+    // Step 2: Update to the new password in Firebase Auth
+    await updatePassword(currentUser, newPass);
 
-    // Update user state
-    user.requiresPasswordChange = false;
-    user.accountStatus = 'ACTIVE';
-    
-    // Advance onboarding status if applicable
-    if (user.onboardingStatus === 'ACCOUNT_CREATED') {
-      user.onboardingStatus = 'PASSWORD_CHANGED';
-    }
+    // Step 3: Clear the FORCE_RESET photoURL tag in Firebase Auth
+    await firebaseUpdateProfile(currentUser, { photoURL: '' });
 
-    // Persist user state changes
-    persistMockUsers();
+    // Step 4: Clear requiresPasswordChange flag in Realtime Database
+    await update(ref(db, `users/${currentUser.uid}`), {
+      requiresPasswordChange: false
+    });
   },
 
   updateProfile: async (userId: string, data: Partial<AuthUser>): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const user = mockUsers.find(u => u.id === userId);
-    if (!user) throw new Error('User not found');
+    const currentUser = auth.currentUser;
+    if (!currentUser || currentUser.uid !== userId) throw new Error('User not found or not authenticated');
     
-    Object.assign(user, data);
-    persistMockUsers();
+    try {
+      // Update Firebase Auth displayName if name changed
+      if (data.firstName || data.lastName) {
+        const nameParts = (currentUser.displayName || '').split(' ');
+        const currentFirst = nameParts[0] || '';
+        const currentLast = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+        
+        const newFirst = data.firstName || currentFirst;
+        const newLast = data.lastName || currentLast;
+        
+        await firebaseUpdateProfile(currentUser, {
+          displayName: `${newFirst} ${newLast}`.trim()
+        });
+      }
+
+      // Always persist any profile fields to Realtime DB
+      const dbUpdates: Record<string, unknown> = {};
+      const allowedFields: (keyof AuthUser)[] = [
+        'firstName', 'lastName', 'phone', 'city', 'contactEmail',
+        'profileSetupComplete', 'onboardingStatus', 'accountStatus'
+      ];
+      for (const field of allowedFields) {
+        if (data[field] !== undefined) {
+          dbUpdates[field] = data[field];
+        }
+      }
+      if (Object.keys(dbUpdates).length > 0) {
+        await update(ref(db, `users/${userId}`), dbUpdates);
+      }
+    } catch (error: any) {
+      throw new Error(mapFirebaseError(error, 'Failed to update profile'));
+    }
   }
 };
+

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Server, Eye, Pause, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Server, Eye, Pause, ShieldCheck, AlertTriangle, Map as MapIcon, List as ListIcon } from 'lucide-react';
 import { SAPageHeader } from '../components/SAPageHeader';
 import { SADataTable, type ColumnDef } from '../components/SADataTable';
 import { SAStatusBadge } from '../components/SAStatusBadge';
 import { SAFilterBar } from '../components/SAFilterBar';
 import { SAConfirmDialog } from '../components/SAConfirmDialog';
 import { SuperAdminService } from '../services/super-admin.service';
+import { SharedMap, type MapMarker } from '../../../components/map/SharedMap';
 import type { SAFacility, PaginationParams } from '../types/super-admin.types';
 
 export function FacilitiesPage() {
@@ -69,7 +70,7 @@ export function FacilitiesPage() {
       cell: (f) => (
         <div className="text-sm">
           <div>{f.city}, {f.state}</div>
-          <div className="text-xs text-slate-500">{f.type.replace(/_/g, ' ')}</div>
+          <div className="text-xs text-slate-500">{f.type?.replace(/_/g, ' ')}</div>
         </div>
       )
     },
@@ -142,12 +143,38 @@ export function FacilitiesPage() {
     }
   ];
 
+  const mapMarkers: MapMarker[] = data
+    .filter((f) => f.coordinates)
+    .map((f) => {
+      let color = '#10b981'; // Green for Live
+      if (f.approvalStatus === 'SUSPENDED' || f.approvalStatus === 'PAUSED') color = '#f59e0b';
+      if (f.approvalStatus === 'DRAFT' || f.approvalStatus === 'UNDER_REVIEW') color = '#64748b';
+      return {
+        id: f.id,
+        lat: f.coordinates!.lat,
+        lng: f.coordinates!.lng,
+        title: f.name,
+      };
+    });
+
   return (
-    <div className="space-y-6">
-      <SAPageHeader 
-        title="Facilities"
-        description="Monitor all parking facilities operating on the platform."
-      />
+    <div className="space-y-6 flex flex-col h-full">
+      <div className="flex items-center justify-between">
+        <SAPageHeader 
+          title="Facilities"
+          description="Monitor all parking facilities operating on the platform."
+        />
+      </div>
+
+      {/* Map View at the top */}
+      <div className="w-full h-[400px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shrink-0">
+        <SharedMap 
+          center={{ lat: 40.7128, lng: -74.0060 }} 
+          zoom={10} 
+          markers={mapMarkers} 
+          useClustering={true}
+        />
+      </div>
 
       <SAFilterBar 
         searchPlaceholder="Search facilities by name, org, or city..."

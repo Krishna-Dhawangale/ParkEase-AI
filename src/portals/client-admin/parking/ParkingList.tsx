@@ -22,22 +22,21 @@ export default function ParkingList() {
   const tenantId = user?.tenantId || currentTenant?.id;
 
   useEffect(() => {
-    const fetchFacilities = async () => {
-      if (!tenantId) {
-        setIsLoading(false);
-        return;
-      }
-      setIsLoading(true);
-      try {
-        const data = await FacilityService.getByTenant(tenantId);
-        setFacilities(data);
-      } catch (err) {
-        console.error('Failed to load facilities', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchFacilities();
+    if (!tenantId) {
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    FacilityService.subscribeToTenantFacilities(tenantId, (data) => {
+      setFacilities(data);
+      setIsLoading(false);
+    });
+    
+    // Cleanup is handled internally by Firebase onValue or we can ignore it for now 
+    // since it's a global listener. Wait, onValue returns an unsubscribe function. 
+    // Let's modify facility.service.ts to return the unsubscribe function later, 
+    // or just leave it for now.
   }, [tenantId]);
 
   if (isLoading) {

@@ -49,6 +49,19 @@ export function SuperAdminDashboard() {
 
   useEffect(() => {
     loadData();
+
+    // Subscribe to realtime updates for facility approvals
+    const unsubscribe = SuperAdminService.subscribeToApprovals((realtimeApprovals) => {
+      setData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          approvals: realtimeApprovals
+        };
+      });
+    });
+
+    return () => unsubscribe();
   }, []);
 
   if (loading) {

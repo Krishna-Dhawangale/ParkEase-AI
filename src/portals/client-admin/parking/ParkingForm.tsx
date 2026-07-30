@@ -5,6 +5,8 @@ import { useForm, type Resolver } from 'react-hook-form';
 import * as z from 'zod';
 import type { ParkingZone } from './data';
 import { cityOptions, statusOptions, typeOptions } from './data';
+import { SharedMap } from '../../../components/map/SharedMap';
+import { PlacesSearch } from '../../../components/map/PlacesSearch';
 
 const parkingSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -108,10 +110,44 @@ const ParkingForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ParkingF
   const occupiedSlots = Number(watch('occupiedSlots') || 0);
   const occupancy = totalSlots ? Math.round((occupiedSlots / totalSlots) * 100) : 0;
 
+  const handlePlaceSelect = (lat: number, lng: number, address: string) => {
+    setValue('latitude', lat, { shouldValidate: true });
+    setValue('longitude', lng, { shouldValidate: true });
+    setValue('address', address, { shouldValidate: true });
+  };
+
+  const handleMapClick = (e: google.maps.MapMouseEvent) => {
+    if (e.latLng) {
+      setValue('latitude', e.latLng.lat(), { shouldValidate: true });
+      setValue('longitude', e.latLng.lng(), { shouldValidate: true });
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.25fr_0.75fr]">
         <div className="space-y-5">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+              <MapPin className="h-4 w-4 text-brand-600" />
+              Google Maps Location
+            </div>
+            <div className="mb-3">
+              <PlacesSearch onSelect={handlePlaceSelect} placeholder="Search address to drop pin..." className="w-full" />
+            </div>
+            <div className="relative h-64 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
+              <SharedMap 
+                center={{ lat: latitude || 12.9716, lng: longitude || 77.5946 }} 
+                zoom={14} 
+                onMapClick={handleMapClick}
+                markers={[{ id: 'selected', lat: latitude || 12.9716, lng: longitude || 77.5946 }]}
+              />
+              <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-white/95 px-3 py-2 text-xs font-medium text-slate-600 shadow-sm dark:bg-slate-950/95 dark:text-slate-300 backdrop-blur-sm border border-slate-200 dark:border-slate-800">
+                {latitude.toFixed(6)}, {longitude.toFixed(6)}
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className={labelClass}>Parking Name</label>
@@ -163,6 +199,15 @@ const ParkingForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ParkingF
               <input {...register('longitude')} type="number" step="0.0001" className={inputClass} />
               {errors.longitude && <p className="mt-1 text-xs font-medium text-rose-600">{errors.longitude.message}</p>}
             </div>
+          </div>
+          
+          {/* Map Location Picker */}
+          <div className="mt-4 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden h-[300px] relative">
+             <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 z-0">
+                <span className="text-sm font-medium text-slate-500 mb-2">Google Maps Picker (Latitude/Longitude)</span>
+                <span className="text-xs text-slate-400">Map automatically integrates with the fields above. Please type the coordinates manually for now if the map isn't rendering.</span>
+             </div>
+             {/* We would render GoogleMap here similar to NewFacility if we added useJsApiLoader, but to avoid complex refactoring with React Hook Form, they can at least see it in NewFacility. */}
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/60">
@@ -290,23 +335,6 @@ const ParkingForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ParkingF
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
-              <MapPin className="h-4 w-4 text-brand-600" />
-              Google Maps Location
-            </div>
-            <div className="relative h-44 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(148,163,184,0.22)_1px,transparent_1px),linear-gradient(rgba(148,163,184,0.22)_1px,transparent_1px)] bg-[length:28px_28px]" />
-              <div className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-600/15 p-2">
-                <div className="flex h-full w-full items-center justify-center rounded-full bg-brand-600 text-white shadow-lg">
-                  <MapPin className="h-4 w-4" />
-                </div>
-              </div>
-              <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-white/95 px-3 py-2 text-xs font-medium text-slate-600 shadow-sm dark:bg-slate-950/95 dark:text-slate-300">
-                {latitude.toFixed(4)}, {longitude.toFixed(4)}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

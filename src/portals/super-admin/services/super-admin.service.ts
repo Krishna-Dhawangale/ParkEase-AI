@@ -37,6 +37,9 @@ import {
   mockDashboardSystemHealth
 } from './dashboard.mock';
 import { mockUsers, normalizeEmail, persistMockUsers } from '../../../services/api.mock';
+import { secondaryAuth, db } from '../../../lib/firebase';
+import { createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
+import { ref, set, get, child, onValue } from 'firebase/database';
 
 // ─── Storage Keys ───────────────────────────────────────────────────────────
 
@@ -207,29 +210,32 @@ export const SuperAdminService = {
     health: SADashboardSystemHealth[];
   }> {
     await delay(800);
-    // Re-hydrate facilities from localStorage first
+    // Fetch facilities from Firebase Realtime DB
+    let approvals: SADashboardFacilityApproval[] = [];
     try {
-      const raw = localStorage.getItem(keys.facilities);
-      if (raw) {
-        const fromStorage: SAFacility[] = JSON.parse(raw);
-        fromStorage.forEach(f => {
-          store.facilities.set(f.id, f);
-        });
-      }
-    } catch { /* ignore */ }
+      const facilitiesSnapshot = await get(child(ref(db), 'facilities'));
+      if (facilitiesSnapshot.exists()) {
+        const firebaseFacilities = Object.values(facilitiesSnapshot.val()) as any[];
+        
+        // Also fetch tenants to map tenantId to organizationName
+        const tenantsSnapshot = await get(child(ref(db), 'tenants'));
+        const tenants = tenantsSnapshot.exists() ? tenantsSnapshot.val() : {};
 
-    // Map UNDER_REVIEW facilities to SADashboardFacilityApproval format
-    const approvals: SADashboardFacilityApproval[] = Array.from(store.facilities.values())
-      .filter(f => f.approvalStatus === 'UNDER_REVIEW')
-      .map(f => ({
-        id: f.id,
-        name: f.name,
-        organizationName: f.organizationName,
-        city: f.city,
-        submittedAt: f.submittedAt || f.createdAt,
-        readinessScore: f.pricingConfigured ? 100 : 50,
-        totalChecks: 2
-      }));
+        approvals = firebaseFacilities
+          .filter(f => f.status === 'PENDING_APPROVAL')
+          .map(f => ({
+            id: f.id,
+            name: f.name,
+            organizationName: tenants[f.tenantId]?.name || 'Unknown Organization',
+            city: f.city || 'Unknown',
+            submittedAt: f.updatedAt || f.createdAt || new Date().toISOString(),
+            readinessScore: f.pricingConfigured ? 100 : 50,
+            totalChecks: 2
+          }));
+      }
+    } catch (err) {
+      console.error('[Firebase] Failed to fetch approvals:', err);
+    }
 
     return {
       metrics: mockDashboardData,
@@ -237,6 +243,44 @@ export const SuperAdminService = {
       organizations: mockDashboardOrganizations,
       approvals,
       health: mockDashboardSystemHealth
+    };
+  },
+
+  subscribeToApprovals(callback: (approvals: SADashboardFacilityApproval[]) => void): () => void {
+    const facilitiesRef = ref(db, 'facilities');
+    const tenantsRef = ref(db, 'tenants');
+    
+    let currentTenants: Record<string, any> = {};
+    
+    const unsubscribeTenants = onValue(tenantsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        currentTenants = snapshot.val();
+      }
+    });
+
+    const unsubscribeFacilities = onValue(facilitiesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const firebaseFacilities = Object.values(snapshot.val()) as any[];
+        const approvals = firebaseFacilities
+          .filter(f => f.status === 'PENDING_APPROVAL')
+          .map(f => ({
+            id: f.id,
+            name: f.name,
+            organizationName: currentTenants[f.tenantId]?.name || 'Unknown Organization',
+            city: f.city || 'Unknown',
+            submittedAt: f.updatedAt || f.createdAt || new Date().toISOString(),
+            readinessScore: f.pricingConfigured ? 100 : 50,
+            totalChecks: 2
+          }));
+        callback(approvals);
+      } else {
+        callback([]);
+      }
+    });
+
+    return () => {
+      unsubscribeTenants();
+      unsubscribeFacilities();
     };
   },
 
@@ -344,6 +388,48 @@ export const SuperAdminService = {
     persist(keys.invoices, store.invoices);
 
     const temporaryPassword = `Temp${Math.random().toString(36).slice(2, 8)}!${Math.floor(Math.random() * 90 + 10)}`;
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        secondaryAuth,
+        adminEmail,
+        temporaryPassword
+      );
+      
+      await updateProfile(userCredential.user, {
+        displayName: `${admin.firstName} ${admin.lastName}`.trim(),
+        photoURL: 'FORCE_RESET'
+      });
+
+      // Save user profile to Realtime DB
+      await set(ref(db, `users/${userCredential.user.uid}`), {
+        id: userCredential.user.uid,
+        email: adminEmail,
+        role: 'CLIENT_OWNER',
+        tenantId: orgId,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        isEmailVerified: true,
+        accountStatus: 'ACTIVE',
+        requiresPasswordChange: true,
+        createdAt: now()
+      });
+      
+      // Save the organization tenant to DB
+      await set(ref(db, `tenants/${orgId}`), {
+        id: orgId,
+        name: org.name,
+        slug: org.name.toLowerCase().replace(/\s+/g, '-'),
+        status: 'ACTIVE',
+        createdAt: now(),
+        updatedAt: now()
+      });
+
+      await signOut(secondaryAuth);
+    } catch (error: any) {
+      console.error('[Firebase] Failed to provision client admin:', error);
+      throw new Error(`Failed to create admin account: ${error.message}`);
+    }
 
     const mockPasswords = JSON.parse(localStorage.getItem('mockPasswords') || '{}');
     mockPasswords[adminEmail] = temporaryPassword;
@@ -635,143 +721,190 @@ export const SuperAdminService = {
 
   async getFacility(id: string): Promise<SAFacility | null> {
     await delay(150);
-    if (!store.facilities.has(id)) {
-      try {
-        const raw = localStorage.getItem(keys.facilities);
-        if (raw) {
-          const fromStorage: SAFacility[] = JSON.parse(raw);
-          fromStorage.forEach(f => store.facilities.set(f.id, f));
-        }
-      } catch { /* ignore */ }
-    }
-    return store.facilities.get(id) ?? null;
+    const facRef = ref(db, `facilities/${id}`);
+    const snapshot = await get(facRef);
+    if (!snapshot.exists()) return null;
+    
+    const f = snapshot.val();
+    
+    const tenantRef = ref(db, `tenants/${f.tenantId}`);
+    const tenantSnap = await get(tenantRef);
+    const orgName = tenantSnap.exists() ? tenantSnap.val().name : 'Unknown Organization';
+    
+    return {
+      id: f.id,
+      name: f.name,
+      organizationId: f.tenantId,
+      organizationName: orgName,
+      city: f.city || 'Unknown',
+      state: f.state || 'Unknown',
+      type: f.type || 'COMMERCIAL',
+      approvalStatus: f.status === 'PENDING_APPROVAL' ? 'UNDER_REVIEW' : f.status,
+      capacity: f.totalCapacity || 0,
+      currentOccupancy: 0,
+      floors: f.floors || 1,
+      slots: f.totalCapacity || 0,
+      digitalTwinStatus: 'NOT_CONFIGURED',
+      deviceHealth: 'NO_DEVICES',
+      bookingsToday: 0,
+      submittedAt: f.status === 'PENDING_APPROVAL' ? (f.updatedAt || f.createdAt) : null,
+      approvedAt: f.approvedAt || null,
+      createdAt: f.createdAt || new Date().toISOString(),
+      updatedAt: f.updatedAt || new Date().toISOString(),
+      pricingConfigured: f.pricingConfigured || false,
+      entryExitConfigured: false
+    };
   },
 
-  async getFacilityApprovals(params: PaginationParams & { status?: string }): Promise<PaginatedResponse<SAFacility>> {
-    await delay();
-    // Re-hydrate from localStorage so Client Admin submissions are visible immediately
-    try {
-      const raw = localStorage.getItem(keys.facilities);
-      if (raw) {
-        const fromStorage: SAFacility[] = JSON.parse(raw);
-        fromStorage.forEach(f => { if (!store.facilities.has(f.id)) store.facilities.set(f.id, f); });
+  subscribeToFacilityApprovals(params: PaginationParams & { status?: string }, callback: (res: PaginatedResponse<SAFacility>) => void): () => void {
+    const facilitiesRef = ref(db, 'facilities');
+    const tenantsRef = ref(db, 'tenants');
+    
+    let currentTenants: Record<string, any> = {};
+    
+    const unsubscribeTenants = onValue(tenantsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        currentTenants = snapshot.val();
       }
-    } catch { /* ignore */ }
-    let items = Array.from(store.facilities.values()).filter(f => ['UNDER_REVIEW', 'CHANGES_REQUESTED', 'APPROVED', 'DRAFT'].includes(f.approvalStatus));
-    if (params.status) items = items.filter(f => f.approvalStatus === params.status);
-    if (params.search) {
-      const q = params.search.toLowerCase();
-      items = items.filter(f => f.name.toLowerCase().includes(q) || f.organizationName.toLowerCase().includes(q));
-    }
-    items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return paginate(items, params);
+    });
+
+    const unsubscribeFacilities = onValue(facilitiesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const firebaseFacilities = Object.values(snapshot.val()) as any[];
+        
+        let items: SAFacility[] = firebaseFacilities
+          .filter(f => ['PENDING_APPROVAL', 'CHANGES_REQUESTED', 'APPROVED', 'DRAFT'].includes(f.status))
+          .map(f => ({
+            id: f.id,
+            name: f.name,
+            organizationId: f.tenantId,
+            organizationName: currentTenants[f.tenantId]?.name || 'Unknown Organization',
+            city: f.city || 'Unknown',
+            state: f.state || 'Unknown',
+            type: f.type || 'COMMERCIAL',
+            approvalStatus: f.status === 'PENDING_APPROVAL' ? 'UNDER_REVIEW' : f.status,
+            capacity: f.totalCapacity || 0,
+            currentOccupancy: 0,
+            floors: f.floors || 1,
+            slots: f.totalCapacity || 0,
+            digitalTwinStatus: 'NOT_CONFIGURED',
+            deviceHealth: 'NO_DEVICES',
+            bookingsToday: 0,
+            submittedAt: f.status === 'PENDING_APPROVAL' ? (f.updatedAt || f.createdAt) : null,
+            approvedAt: f.approvedAt || null,
+            createdAt: f.createdAt || new Date().toISOString(),
+            updatedAt: f.updatedAt || new Date().toISOString(),
+            pricingConfigured: f.pricingConfigured || false,
+            entryExitConfigured: false
+          }));
+
+        if (params.status) {
+          items = items.filter(f => f.approvalStatus === params.status);
+        }
+        
+        if (params.search) {
+          const q = params.search.toLowerCase();
+          items = items.filter(f => f.name.toLowerCase().includes(q) || f.organizationName.toLowerCase().includes(q));
+        }
+        
+        items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        
+        const total = items.length;
+        const totalPages = Math.ceil(total / params.pageSize);
+        const pagedData = items.slice((params.page - 1) * params.pageSize, params.page * params.pageSize);
+        
+        callback({
+          data: pagedData,
+          total,
+          page: params.page,
+          pageSize: params.pageSize,
+          totalPages: totalPages === 0 ? 1 : totalPages
+        });
+      } else {
+        callback({ data: [], total: 0, page: 1, pageSize: params.pageSize, totalPages: 1 });
+      }
+    });
+
+    return () => {
+      unsubscribeTenants();
+      unsubscribeFacilities();
+    };
   },
 
   async approveFacility(id: string, comment?: string): Promise<SAFacility | null> {
     await delay(400);
-    const f = store.facilities.get(id);
-    if (!f) return null;
-    f.approvalStatus = 'APPROVED';
-    f.approvedAt = now();
-    f.updatedAt = now();
-    store.facilities.set(id, f);
-    persist(keys.facilities, store.facilities);
-    addAudit('FACILITY_APPROVED', 'Facility', id, f.organizationId, f.organizationName);
+    const facRef = ref(db, `facilities/${id}`);
+    const snapshot = await get(facRef);
+    if (!snapshot.exists()) return null;
+    
+    const facility = snapshot.val();
+    const ts = new Date().toISOString();
+    
+    await set(facRef, {
+      ...facility,
+      status: 'APPROVED',
+      approvedAt: ts,
+      updatedAt: ts
+    });
+    
+    addAudit('FACILITY_APPROVED', 'Facility', id, facility.tenantId, 'Organization');
     store.reviewComments.push({ id: uid(), facilityId: id, actorId: 'sa-1', actorName: 'Super Admin', action: 'APPROVED', comment: comment ?? 'Approved for Go-Live', createdAt: now() });
     persistArray(keys.reviewComments, store.reviewComments);
     
     // Update the mock user's onboardingStatus
-    const authUser = mockUsers.find((u: any) => u.tenantId === f.organizationId);
+    const authUser = mockUsers.find((u: any) => u.tenantId === facility.tenantId);
     if (authUser) {
       authUser.onboardingStatus = 'APPROVED';
       persistMockUsers();
     }
-
-    // Bridge: update Client Facility status to APPROVED in client store
-    try {
-      const CLIENT_FAC_KEY = 'parkease_client_facilities';
-      const raw = localStorage.getItem(CLIENT_FAC_KEY);
-      if (raw) {
-        const clientFacs: any[] = JSON.parse(raw);
-        const idx = clientFacs.findIndex((cf: any) => cf.id === id);
-        if (idx !== -1) {
-          clientFacs[idx].status = 'APPROVED';
-          clientFacs[idx].approvedAt = now();
-          clientFacs[idx].updatedAt = now();
-          localStorage.setItem(CLIENT_FAC_KEY, JSON.stringify(clientFacs));
-        }
-      }
-    } catch (e) {
-      console.warn('[SA Service] Failed to sync approval status to client:', e);
-    }
     
-    return f;
+    return this.getFacility(id);
   },
 
   async requestFacilityChanges(id: string, comment: string): Promise<SAFacility | null> {
     await delay(400);
-    const f = store.facilities.get(id);
-    if (!f) return null;
-    f.approvalStatus = 'CHANGES_REQUESTED';
-    f.updatedAt = now();
-    store.facilities.set(id, f);
-    persist(keys.facilities, store.facilities);
-    addAudit('FACILITY_CHANGES_REQUESTED', 'Facility', id, f.organizationId, f.organizationName, { comment });
+    const facRef = ref(db, `facilities/${id}`);
+    const snapshot = await get(facRef);
+    if (!snapshot.exists()) return null;
+    
+    const facility = snapshot.val();
+    const ts = new Date().toISOString();
+    
+    await set(facRef, {
+      ...facility,
+      status: 'CHANGES_REQUESTED',
+      rejectionReason: comment,
+      updatedAt: ts
+    });
+    
+    addAudit('FACILITY_CHANGES_REQUESTED', 'Facility', id, facility.tenantId, 'Organization', { comment });
     store.reviewComments.push({ id: uid(), facilityId: id, actorId: 'sa-1', actorName: 'Super Admin', action: 'CHANGES_REQUESTED', comment, createdAt: now() });
     persistArray(keys.reviewComments, store.reviewComments);
 
-    // Bridge: update Client Facility status to REJECTED (so client admin can see rejection reasons and edit)
-    try {
-      const CLIENT_FAC_KEY = 'parkease_client_facilities';
-      const raw = localStorage.getItem(CLIENT_FAC_KEY);
-      if (raw) {
-        const clientFacs: any[] = JSON.parse(raw);
-        const idx = clientFacs.findIndex((cf: any) => cf.id === id);
-        if (idx !== -1) {
-          clientFacs[idx].status = 'REJECTED';
-          clientFacs[idx].rejectionReason = comment;
-          clientFacs[idx].updatedAt = now();
-          localStorage.setItem(CLIENT_FAC_KEY, JSON.stringify(clientFacs));
-        }
-      }
-    } catch (e) {
-      console.warn('[SA Service] Failed to sync rejection changes to client:', e);
-    }
-
-    return f;
+    return this.getFacility(id);
   },
 
   async rejectFacility(id: string, reason: string): Promise<SAFacility | null> {
     await delay(400);
-    const f = store.facilities.get(id);
-    if (!f) return null;
-    f.approvalStatus = 'DRAFT';
-    f.updatedAt = now();
-    store.facilities.set(id, f);
-    persist(keys.facilities, store.facilities);
-    addAudit('FACILITY_REJECTED', 'Facility', id, f.organizationId, f.organizationName, { reason });
+    const facRef = ref(db, `facilities/${id}`);
+    const snapshot = await get(facRef);
+    if (!snapshot.exists()) return null;
+    
+    const facility = snapshot.val();
+    const ts = new Date().toISOString();
+    
+    await set(facRef, {
+      ...facility,
+      status: 'REJECTED',
+      rejectionReason: reason,
+      updatedAt: ts
+    });
+    
+    addAudit('FACILITY_REJECTED', 'Facility', id, facility.tenantId, 'Organization', { reason });
     store.reviewComments.push({ id: uid(), facilityId: id, actorId: 'sa-1', actorName: 'Super Admin', action: 'REJECTED', comment: reason, createdAt: now() });
     persistArray(keys.reviewComments, store.reviewComments);
 
-    // Bridge: update Client Facility status to REJECTED
-    try {
-      const CLIENT_FAC_KEY = 'parkease_client_facilities';
-      const raw = localStorage.getItem(CLIENT_FAC_KEY);
-      if (raw) {
-        const clientFacs: any[] = JSON.parse(raw);
-        const idx = clientFacs.findIndex((cf: any) => cf.id === id);
-        if (idx !== -1) {
-          clientFacs[idx].status = 'REJECTED';
-          clientFacs[idx].rejectionReason = reason;
-          clientFacs[idx].updatedAt = now();
-          localStorage.setItem(CLIENT_FAC_KEY, JSON.stringify(clientFacs));
-        }
-      }
-    } catch (e) {
-      console.warn('[SA Service] Failed to sync rejection status to client:', e);
-    }
-
-    return f;
+    return this.getFacility(id);
   },
 
   async suspendFacility(id: string, reason: string): Promise<SAFacility | null> {
