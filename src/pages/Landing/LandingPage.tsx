@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Car, ArrowRight, Shield, User } from 'lucide-react';
 import { useAuthStore } from '../../store';
+import { RevealTransition } from '../../components/motion/RevealTransition';
+import { HoverEffect } from '../../components/aceternity-ui/card-hover-effect';
 
 // Staggered word reveal
 function WordReveal({ text, delay = 0, className = '' }: { text: string; delay?: number; className?: string }) {
@@ -47,10 +49,6 @@ export function LandingPage() {
   const triggerIntroElements = videoProgress >= 38;
 
   const handleGetStarted = () => {
-    // Play audio
-    const audio = new Audio('/get-started.mp3');
-    audio.volume = 0.85;
-    audio.play().catch(() => {});
     // Transition after short delay
     setTimeout(() => setScreenState('auth'), 400);
   };
@@ -88,8 +86,7 @@ export function LandingPage() {
               className="absolute inset-0 bg-black pointer-events-none"
             />
 
-            {/* ═══ HERO — Left Aligned ═══ */}
-            <div className="absolute inset-0 flex items-center z-10">
+            <div className="absolute inset-0 flex items-center z-10 pointer-events-auto">
               <div className="pl-12 sm:pl-16 lg:pl-24 pr-8 max-w-[600px]">
                 <AnimatePresence>
                   {triggerIntroElements && (
@@ -229,9 +226,10 @@ export function LandingPage() {
             <video
               src="/auth-bg.mp4"
               autoPlay loop muted playsInline
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-40"
             />
-            <div className="absolute inset-0 bg-black/55" />
+            <div className="absolute inset-0 bg-black/40 bg-grid-pattern opacity-30" />
+            <div className="absolute inset-0 animate-aurora mix-blend-screen opacity-60" />
 
             {/* Brand badge */}
             <motion.div
@@ -248,48 +246,31 @@ export function LandingPage() {
 
             {/* Auth Panel */}
             <div className="absolute inset-0 flex items-center justify-center px-4 z-10">
-              <motion.div
-                initial={{ opacity: 0, y: 28, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.55, ease: 'easeOut' }}
-                className="w-full max-w-md bg-white/10 dark:bg-black/40 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl"
-              >
+              <RevealTransition delay={0.2} direction="up" className="w-full max-w-md">
+                <div className="w-full bg-white/5 dark:bg-black/20 liquid-glass rounded-[2rem] p-6 sm:p-8 relative overflow-hidden">
+                  <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[var(--brand-light)]/50 to-transparent" />
                 <div className="text-center mb-7">
                   <h2 className="text-2xl font-bold tracking-tight text-white">Select Portal</h2>
                   <p className="text-sm text-white/60 mt-1.5">Choose your destination to log in to ParkEase AI.</p>
                 </div>
 
                 <div className="space-y-3">
-                  {[
-                    { label: 'Customer Portal', sub: 'For drivers and standard users', icon: User, color: 'bg-blue-500/20 text-blue-400', path: '/login/user' },
-                    { label: 'Client Portal', sub: 'For parking facility owners and staff', icon: Car, color: 'bg-emerald-500/20 text-emerald-400', path: '/login/admin' },
-                    { label: 'Super Admin', sub: 'Platform control plane', icon: Shield, color: 'bg-[var(--brand)]/20 text-[var(--brand-light)]', path: '/super-admin/login' },
-                  ].map(({ label, sub, icon: Icon, color, path }, i) => (
-                    <motion.button
-                      key={path}
-                      initial={{ opacity: 0, x: -16 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.15 + i * 0.1 }}
-                      onClick={() => navigate(path)}
-                      className="w-full bg-white/8 hover:bg-white/15 border border-white/15 text-white p-4 rounded-xl flex items-center gap-4 transition-all group"
-                    >
-                      <div className={`w-11 h-11 rounded-full ${color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div className="text-left flex-1">
-                        <div className="font-semibold text-sm">{label}</div>
-                        <div className="text-xs text-white/45 mt-0.5">{sub}</div>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-white/25 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                    </motion.button>
-                  ))}
+                  <HoverEffect 
+                    items={[
+                      { title: 'Customer Portal', description: 'For drivers and standard users', icon: <User className="w-5 h-5 text-blue-400" />, link: '/login/user' },
+                      { title: 'Client Portal', description: 'For parking facility owners and staff', icon: <Car className="w-5 h-5 text-emerald-400" />, link: '/login/admin' },
+                      { title: 'Super Admin', description: 'Platform control plane', icon: <Shield className="w-5 h-5 text-[var(--brand-light)]" />, link: '/super-admin/login' },
+                    ]}
+                    className="grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-2 py-0"
+                  />
                 </div>
 
                 <div className="flex items-center justify-center gap-1.5 mt-5 text-[10px] text-white/35">
                   <Shield className="w-3 h-3" />
                   Secured by ParkEase AI Core Shield
                 </div>
-              </motion.div>
+                </div>
+              </RevealTransition>
             </div>
           </motion.div>
         )}

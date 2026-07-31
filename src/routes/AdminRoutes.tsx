@@ -26,7 +26,7 @@ import DeviceManager from '../portals/client-admin/devices/DeviceManager';
 export const adminRoutes = (
   <Route path="/admin" element={
     <RoleProtectedRoute
-      allowedRoles={['CLIENT_OWNER', 'CLIENT_ADMIN', 'PARKING_MANAGER', 'SECURITY_GUARD', 'CASHIER', 'MAINTENANCE']}
+      allowedRoles={['CLIENT_OWNER', 'CLIENT_ADMIN', 'PARKING_MANAGER', 'SECURITY_GUARD', 'CASHIER', 'MAINTENANCE', 'SUPER_ADMIN']}
       redirectTo="/login/admin"
     />
   }>

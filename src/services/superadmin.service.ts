@@ -1,37 +1,89 @@
 import { mockTenants, mockUsers } from './api.mock';
 import type { Tenant } from '../types/models';
 import type { AuthUser, Role } from '../types/auth';
+import { secondaryAuth, db } from '../lib/firebase';
+import { createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
+import { ref, set, get, child } from 'firebase/database';
 
 export const SuperAdminService = {
   getOrganizations: async (): Promise<Tenant[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return [...mockTenants];
+    const dbRef = ref(db);
+    const snapshot = await get(child(dbRef, `tenants`));
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      return Object.values(data);
+    }
+    return [];
   },
 
-  createOrganization: async (data: Partial<Tenant>): Promise<Tenant> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+  createOrganization: async (data: any): Promise<any> => {
+    // 1. Create Tenant in Firestore
     const newTenant: Tenant = {
       id: `tenant-${Date.now()}`,
-      name: data.name || '',
-      slug: (data.name || '').toLowerCase().replace(/\s+/g, '-'),
+      name: data.organization.name || '',
+      slug: (data.organization.name || '').toLowerCase().replace(/\s+/g, '-'),
       status: 'ONBOARDING',
-      plan: 'BASIC', // default
-      type: data.type,
-      contactPerson: data.contactPerson,
-      contactEmail: data.contactEmail || '',
-      contactPhone: data.contactPhone || '',
+      plan: data.subscription?.planId || 'BASIC',
+      type: data.organization.type || 'MALL',
+      contactPerson: data.contact?.name || '',
+      contactEmail: data.contact?.email || '',
+      contactPhone: data.contact?.phone || '',
       address: data.address,
-      gstNumber: data.gstNumber,
-      website: data.website,
-      internalNotes: data.internalNotes,
+      gstNumber: data.organization.gstNumber,
+      website: data.organization.website,
+      internalNotes: data.organization.internalNotes,
       isOnboarded: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
     
-    mockTenants.push(newTenant);
-    return newTenant;
+    await set(ref(db, 'tenants/' + newTenant.id), newTenant);
+
+    // 2. Create Client Admin via Secondary Firebase App
+    const tempPassword = generateSecureTempPassword();
+    let firebaseUser;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        secondaryAuth,
+        data.clientAdmin.email,
+        tempPassword
+      );
+      firebaseUser = userCredential.user;
+
+      // Update profile with name and our hidden FORCE_RESET flag
+      await updateProfile(firebaseUser, {
+        displayName: `${data.clientAdmin.firstName} ${data.clientAdmin.lastName}`.trim(),
+        photoURL: 'FORCE_RESET'
+      });
+
+      // Sign out of the secondary app so it's clean for the next use
+      await signOut(secondaryAuth);
+    } catch (error: any) {
+      console.error('[Firebase] Failed to provision client admin:', error);
+      throw new Error(`Failed to create admin account: ${error.message}`);
+    }
+
+    // 3. Return combined payload expected by the UI and save User Profile to Firestore
+    const clientAdmin: AuthUser = {
+      id: firebaseUser.uid,
+      email: firebaseUser.email || '',
+      role: 'CLIENT_ADMIN',
+      firstName: data.clientAdmin.firstName,
+      lastName: data.clientAdmin.lastName,
+      tenantId: newTenant.id,
+      isEmailVerified: false,
+      accountStatus: 'ACTIVE',
+      createdAt: new Date().toISOString()
+    };
+    
+    // Save the client admin profile to the 'users' collection in Realtime DB
+    await set(ref(db, 'users/' + clientAdmin.id), clientAdmin);
+
+    return {
+      organization: newTenant,
+      clientAdmin,
+      temporaryPassword: tempPassword
+    };
   },
 
   getClientAdmins: async (): Promise<AuthUser[]> => {

@@ -1,457 +1,388 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Search, MapPin, SlidersHorizontal, Star, Zap, Shield, Leaf,
-  Clock, ChevronRight, Filter, X, Car, Navigation, Check,
-  Wifi, Camera, Building2, TrendingUp, ArrowUpRight
-} from 'lucide-react';
-import { mockParkingFacilities } from '../../../lib/data';
-import { cn } from '../../../lib/utils';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const amenityIcons: Record<string, string> = {
-  'CCTV': '📹',
-  'EV Charging': '⚡',
-  'Covered': '🏠',
-  'Valet': '🎫',
-  'Open Air': '☀️',
-  'Shuttle': '🚌',
-};
+import { 
+  Search, Map as MapIcon, List, SlidersHorizontal, RotateCcw,
+  Bookmark, Star, MapPin, Navigation, Info, Car, Shield, Clock,
+  Zap, ChevronDown, Check, Settings
+} from 'lucide-react';
+import { Button } from '../../../components/ui/Button';
+import { Card } from '../../../components/ui/Card';
+import { useJsApiLoader, GoogleMap, MarkerF, InfoWindowF, DirectionsRenderer, PolylineF } from '@react-google-maps/api';
+import { Badge } from '../../../components/ui/Badge';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ref, onValue, off } from 'firebase/database';
+import { db } from '../../../lib/firebase';
 
 export function ParkingSearchPage() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState('ai');
-  const [selectedParking, setSelectedParking] = useState<string | null>(null);
+  const [view, setView] = useState<'map' | 'list'>('map');
+  const [selectedFacility, setSelectedFacility] = useState<any | null>(null);
+  const [directionsResponse, setDirectionsResponse] = useState<google.maps.DirectionsResult | null>(null);
 
-  const filters = [
-    { id: 'all', label: 'All' },
-    { id: 'ev', label: 'EV Charging' },
-    { id: 'covered', label: 'Covered' },
-    { id: 'valet', label: 'Valet' },
-    { id: 'recommended', label: 'AI Recommended' },
-  ];
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
+  });
 
-  const sortOptions = [
-    { id: 'ai', label: 'AI Recommended' },
-    { id: 'distance', label: 'Distance' },
-    { id: 'price', label: 'Price' },
-    { id: 'rating', label: 'Rating' },
-  ];
+  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [mapCenter, setMapCenter] = useState({ lat: 21.1458, lng: 79.0882 }); // Nagpur Center
+  
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
+          setUserLocation(loc);
+          setMapCenter(loc);
+        },
+        (error) => console.warn("Location permission denied", error)
+      );
+    }
+  }, []);
+
+  const mapOptions = {
+    disableDefaultUI: true,
+    zoomControl: true,
+    mapTypeControl: false,
+    scaleControl: false,
+    streetViewControl: false,
+    rotateControl: false,
+    fullscreenControl: false,
+    styles: [
+      { "featureType": "all", "elementType": "labels.text.fill", "stylers": [{ "color": "#333333" }] },
+      { "featureType": "all", "elementType": "labels.text.stroke", "stylers": [{ "color": "#ffffff" }] },
+      { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#e9e9e9" }] },
+      { "featureType": "landscape", "elementType": "geometry", "stylers": [{ "color": "#f5f5f5" }] },
+      { "featureType": "poi", "elementType": "geometry", "stylers": [{ "color": "#f5f5f5" }] },
+      { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#ffffff" }] }
+    ]
+  };
+
+  const [facilities, setFacilities] = useState<any[]>([]);
+
+  useEffect(() => {
+    const facilitiesRef = ref(db, 'facilities');
+    
+    const unsubscribe = onValue(facilitiesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data) {
+        setFacilities([]);
+        return;
+      }
+      
+      const parsed = Object.values(data);
+      // Strict filter for LIVE only.
+      let live = parsed.filter((f: any) => f.status === 'LIVE');
+      
+      const uiFacilities = live.map((f: any, idx: number) => {
+        const images = [
+          'https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&q=80&w=300&h=200',
+          'https://images.unsplash.com/photo-1621293954908-907159247fc8?auto=format&fit=crop&q=80&w=300&h=200',
+          'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&q=80&w=300&h=200'
+        ];
+        // Calculate dynamic values
+        const capacity = f.totalCapacity || 50;
+        const slots = capacity; // Base slots, simulated websocket will alter this
+        const price = f.pricing?.hourlyRate || 30;
+        
+        const availability = capacity > 0 ? (slots / capacity) * 100 : 0;
+        let status = 'High';
+        if (availability < 20) status = 'Low';
+        else if (availability < 50) status = 'Medium';
+        
+        return {
+          id: f.id, 
+          name: f.name, 
+          address: `${f.city}, ${f.state}`,
+          distance: `${(Math.random() * 5 + 0.5).toFixed(1)} km`,
+          slots: slots, 
+          capacity: capacity,
+          rating: (4.0 + Math.random()).toFixed(1), 
+          reviews: Math.floor(Math.random() * 200) + 10,
+          price: price,
+          image: images[idx % images.length], 
+          status,
+          lat: Number(f.latitude) || 21.1458, 
+          lng: Number(f.longitude) || 79.0882,
+          _lastUpdated: 0
+        };
+      });
+      
+      setFacilities(uiFacilities);
+    });
+    
+    // Simulate WebSocket for real-time occupancy updates
+    const wsInterval = setInterval(() => {
+      setFacilities(prev => prev.map(f => {
+        if (Math.random() > 0.6) {
+          const change = Math.floor(Math.random() * 3) - 1; // -1, 0, or +1
+          const newSlots = Math.max(0, Math.min(f.capacity, f.slots + change));
+          
+          const availability = (newSlots / f.capacity) * 100;
+          let newStatus = 'High';
+          if (availability < 20) newStatus = 'Low';
+          else if (availability < 50) newStatus = 'Medium';
+
+          return { ...f, slots: newSlots, status: newStatus, _lastUpdated: Date.now() };
+        }
+        return f;
+      }));
+    }, 4000);
+
+    return () => {
+      off(facilitiesRef, 'value', unsubscribe);
+      clearInterval(wsInterval);
+    };
+  }, []);
+
+  // Fetch Route via Google Maps Directions API when a facility is selected
+  useEffect(() => {
+    if (selectedFacility && isLoaded && window.google) {
+      const directionsService = new window.google.maps.DirectionsService();
+      
+      directionsService.route(
+        {
+          origin: userLocation || mapCenter,
+          destination: { lat: selectedFacility.lat, lng: selectedFacility.lng },
+          travelMode: window.google.maps.TravelMode.DRIVING,
+        },
+        (result, status) => {
+          if (status === window.google.maps.DirectionsStatus.OK) {
+            setDirectionsResponse(result);
+          } else {
+            setDirectionsResponse(null);
+            console.error(`[Directions API] Failed: ${status}`);
+            // If the map is rejecting the route, we just don't draw anything instead of drawing a straight line.
+          }
+        }
+      );
+    } else {
+      setDirectionsResponse(null);
+    }
+  }, [selectedFacility, isLoaded]);
 
   return (
-    <div className="flex flex-col lg:flex-row h-full min-h-screen bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
-      {/* Left Panel */}
-      <div className="flex-1 lg:max-w-lg xl:max-w-xl overflow-y-auto">
-        <div className="p-4 sm:p-6 space-y-5">
-          {/* Header */}
+    <div className="flex flex-col h-[calc(100vh-72px)] bg-white overflow-hidden">
+      {/* Sleek Filters Header */}
+      <motion.div 
+        initial={{ y: -10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="shrink-0 px-4 md:px-6 py-4 border-b border-gray-100 bg-white z-10"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)] dark:text-white tracking-tight">Find Parking</h1>
-            <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mt-0.5">
-              AI-powered search across 500+ locations
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Find Parking in Nagpur</h1>
+            <p className="text-sm text-gray-500 mt-1">Live availability & instant booking</p>
           </div>
-
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-[var(--text-secondary)]" size={18} />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search location, parking name..."
-              className="input-field pl-11 pr-28 py-3.5 text-sm"
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-                  showFilters
-                    ? 'bg-[var(--brand)] text-white'
-                    : 'bg-white dark:bg-[var(--border)] border border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)]'
-                )}
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                Filters
-              </button>
-            </div>
-          </div>
-
-          {/* Advanced Filters */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="overflow-hidden"
-              >
-                <div className="card-flat p-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-[var(--text-primary)] dark:text-white">Advanced Filters</span>
-                    <button onClick={() => setShowFilters(false)} className="p-1 rounded-lg hover:bg-[var(--bg-primary)] dark:hover:bg-[var(--border)]">
-                      <X className="w-4 h-4 text-[var(--text-secondary)]" />
-                    </button>
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-semibold text-[var(--text-secondary)] mb-2">Price Range (per hour)</p>
-                    <div className="flex items-center gap-3">
-                      <input type="range" min="0" max="500" defaultValue="200" className="flex-1 accent-[var(--brand)]" />
-                      <span className="text-sm font-semibold text-[var(--brand)] whitespace-nowrap">₹0–200</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-semibold text-[var(--text-secondary)] mb-2">Maximum Distance</p>
-                    <div className="flex items-center gap-3">
-                      <input type="range" min="0" max="10" defaultValue="3" step="0.5" className="flex-1 accent-[var(--brand)]" />
-                      <span className="text-sm font-semibold text-[var(--brand)] whitespace-nowrap">3 km</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-semibold text-[var(--text-secondary)] mb-2">Amenities</p>
-                    <div className="flex flex-wrap gap-2">
-                      {['CCTV', 'EV Charging', 'Covered', 'Valet', 'Shuttle', 'Open Air'].map(a => (
-                        <button key={a} className="px-3 py-1 rounded-lg text-xs font-medium bg-[var(--bg-primary)] dark:bg-[var(--border)] border border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--brand)] hover:text-[var(--brand)] transition-all">
-                          {amenityIcons[a]} {a}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button className="flex-1 btn-primary text-xs py-2">Apply Filters</button>
-                    <button className="btn-secondary text-xs py-2">Reset</button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Quick Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            {filters.map(f => (
-              <button
-                key={f.id}
-                onClick={() => setActiveFilter(f.id)}
-                className={cn(
-                  'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all',
-                  activeFilter === f.id
-                    ? 'bg-[var(--brand)] text-white'
-                    : 'bg-white dark:bg-[var(--bg-card)] border border-[var(--border)] dark:border-[var(--border)] text-[var(--text-secondary)]'
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Sort */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[var(--text-secondary)]">
-              {mockParkingFacilities.length} results found
-            </span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-[var(--text-secondary)]">Sort:</span>
-              <select
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value)}
-                className="text-xs font-semibold text-[var(--brand)] dark:text-[var(--brand-light)] bg-transparent border-none outline-none cursor-pointer"
-              >
-                {sortOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-              </select>
-            </div>
-          </div>
-
-          {/* Parking Cards */}
-          <div className="space-y-4">
-            {mockParkingFacilities.map((facility, i) => (
-              <motion.div
-                key={facility.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                onClick={() => setSelectedParking(facility.id)}
-                className={cn(
-                  'card overflow-hidden cursor-pointer transition-all',
-                  selectedParking === facility.id && 'ring-2 ring-[var(--brand)] dark:ring-[var(--brand-light)]'
-                )}
-              >
-                {/* Image */}
-                <div className="relative h-36 overflow-hidden bg-[var(--bg-primary)] dark:bg-[var(--border)]">
-                  <img
-                    src={facility.image}
-                    alt={facility.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = `https://via.placeholder.com/400x220/0F766E/FFFFFF?text=${facility.name.split(' ')[0]}`;
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-
-                  {/* Badges on image */}
-                  <div className="absolute top-3 left-3 flex gap-1.5">
-                    {facility.aiRecommended && (
-                      <span className="px-2 py-1 rounded-lg text-[10px] font-bold bg-[var(--brand)] text-white flex items-center gap-1">
-                        <Zap className="w-2.5 h-2.5" /> AI Pick
-                      </span>
-                    )}
-                    {facility.hasEV && (
-                      <span className="px-2 py-1 rounded-lg text-[10px] font-bold bg-blue-600 text-white">⚡ EV</span>
-                    )}
-                  </div>
-
-                  {/* Open/Close badge */}
-                  <div className="absolute top-3 right-3">
-                    <span className={cn(
-                      'px-2 py-1 rounded-lg text-[10px] font-bold',
-                      facility.isOpen ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                    )}>
-                      {facility.isOpen ? 'Open' : 'Closed'}
-                    </span>
-                  </div>
-
-                  {/* Bottom info on image */}
-                  <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
-                    <div className="flex items-center gap-1">
-                      <div className="flex">
-                        {Array.from({ length: 5 }).map((_, j) => (
-                          <Star key={j} className={cn('w-3 h-3', j < Math.floor(facility.rating) ? 'text-[#F59E0B] fill-[#F59E0B]' : 'text-white/40')} />
-                        ))}
-                      </div>
-                      <span className="text-[11px] text-white font-semibold">{facility.rating}</span>
-                      <span className="text-[10px] text-white/70">({facility.reviews.toLocaleString()})</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card Body */}
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-[var(--text-primary)] dark:text-white text-sm truncate">{facility.name}</h3>
-                      <div className="flex items-center gap-1 mt-1">
-                        <MapPin className="w-3 h-3 text-[var(--text-secondary)] flex-shrink-0" />
-                        <span className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)] truncate">{facility.address}</span>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="text-lg font-bold text-[var(--text-primary)] dark:text-white">₹{facility.price}</div>
-                      <div className="text-[11px] text-[var(--text-secondary)]">per {facility.priceUnit}</div>
-                    </div>
-                  </div>
-
-                  {/* Stats row */}
-                  <div className="grid grid-cols-4 gap-2 mb-3">
-                    <div className="text-center p-2 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
-                      <div className="text-xs font-bold text-green-600">{facility.available}</div>
-                      <div className="text-[10px] text-[var(--text-secondary)]">Free</div>
-                    </div>
-                    <div className="text-center p-2 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
-                      <div className="text-xs font-bold text-[var(--text-primary)] dark:text-white flex items-center justify-center gap-0.5">
-                        <Navigation className="w-2.5 h-2.5" />{facility.distance}km
-                      </div>
-                      <div className="text-[10px] text-[var(--text-secondary)]">Distance</div>
-                    </div>
-                    <div className="text-center p-2 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
-                      <div className="text-xs font-bold text-[var(--text-primary)] dark:text-white">{facility.walkTime}m</div>
-                      <div className="text-[10px] text-[var(--text-secondary)]">Walk</div>
-                    </div>
-                    <div className="text-center p-2 rounded-xl bg-[var(--bg-primary)] dark:bg-[var(--bg-primary)]">
-                      <div className="text-xs font-bold text-[var(--text-primary)] dark:text-white flex items-center justify-center gap-0.5">
-                        <Leaf className="w-2.5 h-2.5 text-green-500" />{facility.greenScore}
-                      </div>
-                      <div className="text-[10px] text-[var(--text-secondary)]">Green</div>
-                    </div>
-                  </div>
-
-                  {/* Availability bar */}
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] text-[var(--text-secondary)]">Availability</span>
-                      <span className="text-[11px] font-semibold text-[var(--brand)]">{Math.round(facility.available / facility.total * 100)}%</span>
-                    </div>
-                    <div className="h-1.5 bg-[var(--border)] dark:bg-[var(--border)] rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.round(facility.available / facility.total * 100)}%` }}
-                        transition={{ delay: 0.3 + i * 0.1, duration: 0.6 }}
-                        className="h-full rounded-full bg-green-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Security + Amenities */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-1">
-                      <Shield className="w-3 h-3 text-[var(--brand)]" />
-                      <div className="flex gap-0.5">
-                        {Array.from({ length: 5 }).map((_, j) => (
-                          <div key={j} className={cn('w-2 h-2 rounded-sm', j < facility.security ? 'bg-[var(--brand)]' : 'bg-[var(--border)] dark:bg-[var(--border)]')} />
-                        ))}
-                      </div>
-                      <span className="text-[11px] text-[var(--text-secondary)]">Security</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {facility.amenities.slice(0, 3).map(a => (
-                        <span key={a} className="text-sm" title={a}>{amenityIcons[a]}</span>
-                      ))}
-                      {facility.amenities.length > 3 && (
-                        <span className="text-[10px] text-[var(--text-secondary)]">+{facility.amenities.length - 3}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => navigate(`/parking/${facility.id}`)}
-                    className="btn-primary w-full"
-                  >
-                    View Details
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
+          
+          <div className="flex items-center p-1 bg-gray-100 rounded-lg self-start sm:self-auto shrink-0">
+            <button 
+              onClick={() => setView('map')}
+              className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === 'map' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+            >
+              <MapIcon className="w-4 h-4" /> Map View
+            </button>
+            <button 
+              onClick={() => setView('list')}
+              className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === 'list' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+            >
+              <List className="w-4 h-4" /> List View
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Right Panel - Map */}
-      <div className="hidden lg:flex flex-1 relative">
-        <PremiumMapView selectedId={selectedParking} facilities={mockParkingFacilities} />
-      </div>
-    </div>
-  );
-}
-
-function PremiumMapView({ selectedId, facilities }: { selectedId: string | null; facilities: typeof mockParkingFacilities }) {
-  return (
-    <div className="relative w-full h-full bg-[var(--border)] dark:bg-[var(--bg-card)] overflow-hidden">
-      {/* Map SVG background */}
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 700" preserveAspectRatio="xMidYMid slice">
-        {/* Background */}
-        <rect width="600" height="700" fill="#E8F4E8" />
-
-        {/* Dark mode would be dark */}
-        <rect width="600" height="700" fill="#D1FAE5" opacity="0.3" />
-
-        {/* Roads */}
-        <rect x="0" y="200" width="600" height="20" fill="white" opacity="0.8" />
-        <rect x="0" y="400" width="600" height="20" fill="white" opacity="0.8" />
-        <rect x="150" y="0" width="20" height="700" fill="white" opacity="0.8" />
-        <rect x="350" y="0" width="20" height="700" fill="white" opacity="0.8" />
-        <rect x="500" y="0" width="20" height="700" fill="white" opacity="0.8" />
-
-        {/* Blocks/buildings */}
-        {[
-          [30, 30, 100, 160], [200, 30, 130, 160],
-          [30, 240, 100, 140], [200, 240, 130, 140],
-          [380, 30, 200, 160], [380, 240, 200, 140],
-          [30, 440, 100, 240], [200, 440, 130, 240],
-          [380, 440, 200, 240],
-        ].map(([x, y, w, h], idx) => (
-          <rect key={idx} x={x} y={y} width={w} height={h} rx="6" fill="#C8D6C0" opacity="0.5" />
-        ))}
-
-        {/* Metro line */}
-        <path d="M 0 150 Q 300 100 600 150" stroke="#7C3AED" strokeWidth="3" fill="none" strokeDasharray="8 4" opacity="0.5" />
-
-        {/* Parking markers */}
-        {facilities.map((f, i) => {
-          const positions = [{ x: 200, y: 320 }, { x: 420, y: 320 }, { x: 320, y: 180 }];
-          const pos = positions[i] || { x: 300, y: 350 };
-          const isSelected = f.id === selectedId;
-          return (
-            <g key={f.id}>
-              <motion.g
-                animate={isSelected ? { scale: 1.2 } : { scale: 1 }}
-                style={{ transformOrigin: `${pos.x}px ${pos.y}px` }}
-              >
-                {/* Pulse effect for selected */}
-                {isSelected && (
-                  <motion.circle
-                    cx={pos.x} cy={pos.y} r={20}
-                    fill="var(--brand)"
-                    opacity={0.2}
-                    animate={{ r: [20, 35], opacity: [0.3, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  />
-                )}
-                <circle cx={pos.x} cy={pos.y} r={16} fill={isSelected ? 'var(--brand)' : 'white'} stroke={isSelected ? 'var(--brand)' : 'var(--border)'} strokeWidth={2} />
-                <text x={pos.x} y={pos.y + 5} textAnchor="middle" fontSize={11} fontWeight="bold" fill={isSelected ? 'white' : 'var(--brand)'}>P</text>
-
-                {/* AI badge */}
-                {f.aiRecommended && (
-                  <g>
-                    <circle cx={pos.x + 12} cy={pos.y - 12} r={7} fill="#F59E0B" />
-                    <text x={pos.x + 12} y={pos.y - 9} textAnchor="middle" fontSize={8} fill="white" fontWeight="bold">AI</text>
-                  </g>
-                )}
-
-                {/* Available count */}
-                <rect x={pos.x - 14} y={pos.y + 18} width="28" height="14" rx="7" fill="white" stroke="var(--border)" strokeWidth={1} />
-                <text x={pos.x} y={pos.y + 28} textAnchor="middle" fontSize={8} fill="#16A34A" fontWeight="bold">{f.available} free</text>
-              </motion.g>
-            </g>
-          );
-        })}
-
-        {/* User location */}
-        <motion.circle
-          cx={290} cy={370}
-          r={8}
-          fill="#2563EB"
-          stroke="white"
-          strokeWidth={3}
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-        <motion.circle
-          cx={290} cy={370}
-          r={16}
-          fill="#2563EB"
-          opacity={0.15}
-          animate={{ r: [16, 28], opacity: [0.2, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-      </svg>
-
-      {/* Map overlay controls */}
-      <div className="absolute top-4 right-4 flex flex-col gap-2">
-        {['+', '-', '⊕'].map((ctrl, i) => (
-          <button key={i} className="w-9 h-9 card rounded-xl flex items-center justify-center text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--brand)] transition-colors">
-            {ctrl}
+        {/* Clean Filter Chips */}
+        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4 md:mx-0 md:px-0">
+          <button className="shrink-0 h-9 px-5 rounded-full bg-black text-white text-sm font-medium shadow hover:bg-gray-900 transition-all">
+            All Spots
           </button>
-        ))}
-      </div>
-
-      {/* Map legend */}
-      <div className="absolute bottom-4 left-4 card p-3">
-        <p className="text-xs font-semibold text-[var(--text-primary)] dark:text-white mb-2">Map Legend</p>
-        {[
-          { color: 'var(--brand)', label: 'Parking Hub' },
-          { color: '#F59E0B', label: 'AI Recommended' },
-          { color: '#2563EB', label: 'Your Location' },
-          { color: '#7C3AED', label: 'Metro Line' },
-        ].map(item => (
-          <div key={item.label} className="flex items-center gap-2 mb-1">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-            <span className="text-[11px] text-[var(--text-secondary)]">{item.label}</span>
+          <button className="shrink-0 h-9 px-4 rounded-full border border-gray-200 bg-white text-gray-600 text-sm hover:border-gray-300 hover:bg-gray-50 transition-all flex items-center gap-2">
+            Commercial
+          </button>
+          <button className="shrink-0 h-9 px-4 rounded-full border border-gray-200 bg-white text-gray-600 text-sm hover:border-gray-300 hover:bg-gray-50 transition-all flex items-center gap-2">
+            <Zap className="w-4 h-4 text-emerald-500" /> EV Chargers
+          </button>
+          <div className="ml-auto shrink-0 sticky right-0 bg-gradient-to-l from-white via-white to-transparent pl-4">
+            <button className="h-9 px-4 rounded-full border border-gray-200 md:border-transparent bg-white text-gray-500 text-sm hover:text-black hover:bg-gray-100 transition-all flex items-center gap-2 shadow-sm md:shadow-none">
+              <SlidersHorizontal className="w-4 h-4" /> Filters
+            </button>
           </div>
-        ))}
-      </div>
+        </div>
+      </motion.div>
 
-      {/* Street-view style overlay */}
-      <div className="absolute top-4 left-4 card px-3 py-2">
-        <div className="flex items-center gap-2 text-xs">
-          <MapPin className="w-3.5 h-3.5 text-[var(--brand)]" />
-          <span className="font-semibold text-[var(--text-primary)] dark:text-white">Bengaluru, KA</span>
+      {/* Main Content Split */}
+      <div className="flex-1 flex overflow-hidden">
+        
+        {/* List View - Narrower & Cleaner. Includes Lenis stopPropagation fix */}
+        <div 
+          data-lenis-prevent="true" 
+          onWheel={(e) => e.stopPropagation()} 
+          className={`shrink-0 border-r border-gray-100 overflow-y-auto p-4 bg-gray-50/30 transition-all duration-300 ${view === 'list' ? 'w-full md:w-[400px] lg:w-[450px] border-r-0 md:border-r' : 'hidden md:block w-[400px] lg:w-[450px]'}`}
+        >
+          <AnimatePresence>
+            {facilities.length === 0 ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center h-48 text-center text-gray-500">
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                  <MapPin className="w-5 h-5 text-gray-400" />
+                </div>
+                <p className="font-medium text-gray-900">No active facilities found</p>
+                <p className="text-sm mt-1">Check back later or search another area.</p>
+              </motion.div>
+            ) : (
+              <div className="space-y-4">
+                {facilities.map((f, idx) => (
+                  <motion.div
+                    layout
+                    key={f.id}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ 
+                      opacity: 1, 
+                      y: 0,
+                      boxShadow: f._lastUpdated && Date.now() - f._lastUpdated < 1500 ? '0 0 0 2px rgba(16, 185, 129, 0.3)' : '0 1px 3px rgba(0,0,0,0.05)'
+                    }}
+                    transition={{ duration: 0.3, delay: idx * 0.05 }}
+                    onClick={() => {
+                      setSelectedFacility(f);
+                      if (view === 'list') setView('map');
+                    }}
+                    className={`cursor-pointer bg-white rounded-2xl p-3 border transition-all ${
+                      selectedFacility?.id === f.id ? 'border-black ring-1 ring-black/5' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex gap-4 h-28">
+                      <div className="w-28 shrink-0 relative overflow-hidden rounded-xl bg-gray-100">
+                        <img src={f.image} alt={f.name} className="w-full h-full object-cover transition-transform hover:scale-105 duration-700" />
+                      </div>
+                      <div className="flex-1 flex flex-col justify-between py-1 pr-1">
+                        <div>
+                          <div className="flex justify-between items-start">
+                            <h3 className="font-bold text-gray-900 text-[15px] leading-tight truncate">{f.name}</h3>
+                            <div className="flex items-center text-xs font-medium text-gray-700 bg-gray-50 px-1.5 py-0.5 rounded ml-2">
+                              <Star className="w-3 h-3 text-amber-400 fill-amber-400 mr-1" />
+                              {f.rating}
+                            </div>
+                          </div>
+                          <p className="text-[13px] text-gray-500 mt-1">{f.distance} away</p>
+                        </div>
+                        <div className="flex items-end justify-between mt-2">
+                          <div className="flex flex-col">
+                            <span className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">Available</span>
+                            <motion.span 
+                              key={f.slots}
+                              initial={{ scale: 1.1, color: '#059669' }}
+                              animate={{ scale: 1, color: f.status === 'High' ? '#059669' : f.status === 'Medium' ? '#d97706' : '#dc2626' }}
+                              className="font-bold text-sm"
+                            >
+                              {f.slots} slots
+                            </motion.span>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-bold text-lg text-gray-900">₹{f.price}</span><span className="text-[11px] text-gray-500">/hr</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Map View */}
+        <div className={`flex-1 relative bg-[#e5e3df] ${view === 'list' ? 'hidden md:block' : 'block'}`}>
+          {isLoaded ? (
+            <GoogleMap
+              mapContainerStyle={{ width: '100%', height: '100%' }}
+              center={mapCenter}
+              zoom={13}
+              options={mapOptions}
+              onClick={() => setSelectedFacility(null)} 
+            >
+              {facilities.map((f) => (
+                <MarkerF
+                  key={f.id}
+                  position={{ lat: f.lat, lng: f.lng }}
+                  onClick={() => setSelectedFacility(f)}
+                  animation={f._lastUpdated && Date.now() - f._lastUpdated < 1500 ? window.google.maps.Animation.BOUNCE : undefined}
+                  icon={{
+                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 0C11.1634 0 4 7.16344 4 16C4 28 20 40 20 40C20 40 36 28 36 16C36 7.16344 28.8366 0 20 0Z" fill="${selectedFacility?.id === f.id ? '#000000' : '#111827'}"/><circle cx="20" cy="16" r="10" fill="white"/><text x="20" y="21" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="${selectedFacility?.id === f.id ? '#000000' : '#111827'}">P</text></svg>`),
+                    scaledSize: new window.google.maps.Size(selectedFacility?.id === f.id ? 44 : 36, selectedFacility?.id === f.id ? 44 : 36),
+                    anchor: new window.google.maps.Point(selectedFacility?.id === f.id ? 22 : 18, selectedFacility?.id === f.id ? 44 : 36)
+                  }}
+                />
+              ))}
+
+              {/* Render Navigation Route via API */}
+              {directionsResponse && (
+                <DirectionsRenderer
+                  directions={directionsResponse}
+                  options={{
+                    suppressMarkers: true, 
+                    polylineOptions: {
+                      strokeColor: '#3b82f6',
+                      strokeWeight: 5,
+                      strokeOpacity: 0.8,
+                    }
+                  }}
+                />
+              )}
+
+              {/* User Location Marker */}
+              {userLocation && (
+                <MarkerF
+                    position={userLocation}
+                    icon={{
+                      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#3b82f6" fill-opacity="0.2"/><circle cx="12" cy="12" r="6" fill="#3b82f6"/><circle cx="12" cy="12" r="3" fill="white"/></svg>'),
+                      scaledSize: new window.google.maps.Size(24, 24),
+                      anchor: new window.google.maps.Point(12, 12)
+                    }}
+                    title="Your Location"
+                />
+              )}
+
+              {selectedFacility && (
+                <InfoWindowF
+                  position={{ lat: selectedFacility.lat, lng: selectedFacility.lng }}
+                  onCloseClick={() => setSelectedFacility(null)}
+                  options={{ pixelOffset: new window.google.maps.Size(0, -32) }}
+                >
+                  <div className="p-2 w-48 text-black bg-white rounded-lg">
+                    <h3 className="font-bold text-sm mb-1">{selectedFacility.name}</h3>
+                    <div className="flex items-center gap-2 mb-3 text-xs">
+                      <span className={`w-2 h-2 rounded-full ${selectedFacility.status === 'High' ? 'bg-emerald-500' : selectedFacility.status === 'Medium' ? 'bg-amber-500' : 'bg-red-500'}`}></span>
+                      <span className="font-medium text-gray-700">{selectedFacility.slots} Slots</span>
+                    </div>
+                    <Button size="sm" className="w-full h-8 text-xs bg-black hover:bg-gray-800 text-white" onClick={() => navigate(`/customer/parking/${selectedFacility.id}`)}>
+                      Book ₹{selectedFacility.price}/hr
+                    </Button>
+                  </div>
+                </InfoWindowF>
+              )}
+            </GoogleMap>
+          ) : (
+            <div className="flex items-center justify-center w-full h-full bg-gray-100">
+              <span className="text-gray-500 text-sm font-medium">Loading Map...</span>
+            </div>
+          )}
+             
+          {/* Minimal Map Legend */}
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 px-4 py-2 flex flex-col gap-2"
+          >
+            <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Availability</div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></div> High (20+)
+            </div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
+              <div className="w-2 h-2 rounded-full bg-amber-500 shadow-sm"></div> Limited
+            </div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
+              <div className="w-2 h-2 rounded-full bg-red-500 shadow-sm"></div> Full
+            </div>
+          </motion.div>
         </div>
       </div>
     </div>

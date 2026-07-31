@@ -21,22 +21,16 @@ export function ApprovalsPage() {
     status: '',
   });
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const res = await SuperAdminService.getFacilityApprovals(params);
+  useEffect(() => {
+    setLoading(true);
+    const unsubscribe = SuperAdminService.subscribeToFacilityApprovals(params, (res) => {
       setData(res.data);
       setTotal(res.total);
       setTotalPages(res.totalPages);
-    } catch (err) {
-      console.error(err);
-    } finally {
       setLoading(false);
-    }
-  };
+    });
 
-  useEffect(() => {
-    loadData();
+    return () => unsubscribe();
   }, [params]);
 
   const columns: ColumnDef<SAFacility>[] = [

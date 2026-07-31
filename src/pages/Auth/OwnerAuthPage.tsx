@@ -23,7 +23,12 @@ export const OwnerAuthPage: React.FC = () => {
         throw new Error('Unauthorized access. This portal is for partners only.');
       }
       login(response.token, response.user);
-      navigate('/admin');
+      
+      if (response.user.requiresPasswordChange) {
+        navigate('/force-password-change');
+      } else {
+        navigate('/admin');
+      }
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally {

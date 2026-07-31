@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuthStore, useTenantStore } from '../../../store';
 import { FacilityService, type ClientFacility, type FacilityPricing } from './facility.service';
 import {
-  Building2, MapPin, Map, IndianRupee, Settings2, Camera, FileText,
+  Building2, MapPin, Map as MapIcon, IndianRupee, Settings2, Camera, FileText,
   ChevronLeft, AlertTriangle, CheckCircle2, Loader2, ArrowRight, Save, Edit2, Trash2, Undo
 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import DigitalTwin from '../digitalTwin/DigitalTwin';
+import { SharedMap } from '../../../components/map/SharedMap';
 
 type Tab = 'overview' | 'pricing' | 'entry_exit' | 'digital_twin' | 'cameras' | 'policies' | 'go_live';
 
@@ -20,30 +22,23 @@ export default function FacilityWorkspace() {
   const [facility, setFacility] = useState<ClientFacility | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [popupContent, setPopupContent] = useState({ title: '', message: '' });
   
   const tenantId = user?.tenantId || currentTenant?.id;
 
   useEffect(() => {
     if (!tenantId || !id) return;
     
-    const fetchFacility = async () => {
-      setLoading(true);
-      try {
-        const fac = await FacilityService.getById(tenantId, id);
-        if (fac) {
-          setFacility(fac);
-        } else {
-          // Fallback if not found (e.g. invalid ID)
-          navigate('/admin/parking');
-        }
-      } catch (err) {
-        console.error('Failed to load facility', err);
-      } finally {
+    setLoading(true);
+    FacilityService.subscribeToFacility(tenantId, id, (fac) => {
+      if (fac) {
+        setFacility(fac);
         setLoading(false);
+      } else {
+        navigate('/admin/parking');
       }
-    };
-    
-    fetchFacility();
+    });
   }, [tenantId, id, navigate]);
 
   if (loading) {
@@ -110,7 +105,9 @@ export default function FacilityWorkspace() {
                      // Mock submit for approval
                      if(tenantId && facility.id) {
                        await FacilityService.submitForApproval(tenantId, facility.id);
-                       setFacility({...facility, status: 'PENDING_APPROVAL'});
+                       setPopupContent({ title: 'Successfully Submitted!', message: 'Message sent for approval' });
+                       setShowSuccessPopup(true);
+                       setTimeout(() => setShowSuccessPopup(false), 3000);
                      }
                   }}
                 >
@@ -177,18 +174,47 @@ export default function FacilityWorkspace() {
               </>
             )}
             {facility.status === 'APPROVED' && (
+              <>
+                <button 
+                  className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-4 py-2 rounded-lg text-sm transition-all dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400 border border-red-200 dark:border-red-800"
+                  onClick={async () => {
+                    if (window.confirm('Are you sure you want to permanently close and delete this facility? It will be removed from the user and super admin portals.') && tenantId && facility.id) {
+                      await FacilityService.delete(tenantId, facility.id);
+                      navigate('/admin/parking');
+                    }
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Facility
+                </button>
+                <button 
+                  className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all"
+                  onClick={async () => {
+                     if(tenantId && facility.id) {
+                       await FacilityService.goLive(tenantId, facility.id);
+                       setPopupContent({ title: 'Facility is Live!', message: 'Users can now book parking.' });
+                       setShowSuccessPopup(true);
+                       setTimeout(() => setShowSuccessPopup(false), 3000);
+                     }
+                  }}
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Go Live
+                </button>
+              </>
+            )}
+            {facility.status === 'LIVE' && (
               <button 
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all"
+                className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-4 py-2 rounded-lg text-sm transition-all dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400 border border-red-200 dark:border-red-800"
                 onClick={async () => {
-                   // Mock go live
-                   if(tenantId && facility.id) {
-                     await FacilityService.update(tenantId, facility.id, { status: 'LIVE' });
-                     setFacility({...facility, status: 'LIVE'});
-                   }
+                  if (window.confirm('Are you sure you want to permanently close and delete this facility? It will be removed from the user and super admin portals.') && tenantId && facility.id) {
+                    await FacilityService.delete(tenantId, facility.id);
+                    navigate('/admin/parking');
+                  }
                 }}
               >
-                <CheckCircle2 className="w-4 h-4" />
-                Go Live
+                <Trash2 className="w-4 h-4" />
+                Close & Delete Facility
               </button>
             )}
           </div>
@@ -199,7 +225,7 @@ export default function FacilityWorkspace() {
           <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={Building2} label="Overview" />
           <TabButton active={activeTab === 'pricing'} onClick={() => setActiveTab('pricing')} icon={IndianRupee} label="Pricing" />
           <TabButton active={activeTab === 'entry_exit'} onClick={() => setActiveTab('entry_exit')} icon={Settings2} label="Entry & Exit" />
-          <TabButton active={activeTab === 'digital_twin'} onClick={() => setActiveTab('digital_twin')} icon={Map} label="Digital Twin" />
+          <TabButton active={activeTab === 'digital_twin'} onClick={() => setActiveTab('digital_twin')} icon={MapIcon} label="Digital Twin" />
           <TabButton active={activeTab === 'cameras'} onClick={() => setActiveTab('cameras')} icon={Camera} label="Cameras & Devices" />
           <TabButton active={activeTab === 'policies'} onClick={() => setActiveTab('policies')} icon={FileText} label="Policies" />
         </div>
@@ -222,22 +248,37 @@ export default function FacilityWorkspace() {
           {activeTab === 'overview' && (
              <div className="space-y-6">
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                 <div className="col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
-                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Facility Details</h3>
-                   <dl className="grid grid-cols-2 gap-x-4 gap-y-6">
-                     <div>
-                       <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Type</dt>
-                       <dd className="text-sm text-slate-900 dark:text-white">{facility.type}</dd>
+                 <div className="col-span-2 space-y-6">
+                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
+                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Facility Details</h3>
+                     <dl className="grid grid-cols-2 gap-x-4 gap-y-6">
+                       <div>
+                         <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Type</dt>
+                         <dd className="text-sm text-slate-900 dark:text-white">{facility.type}</dd>
+                       </div>
+                       <div>
+                         <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Capacity</dt>
+                         <dd className="text-sm text-slate-900 dark:text-white">{facility.totalCapacity} slots across {facility.floors} floors</dd>
+                       </div>
+                       <div className="col-span-2">
+                         <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Description</dt>
+                         <dd className="text-sm text-slate-900 dark:text-white">{facility.description || 'No description provided.'}</dd>
+                       </div>
+                     </dl>
+                   </div>
+                   
+                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
+                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                       <MapPin className="w-5 h-5 text-brand-500" /> Location Map
+                     </h3>
+                     <div className="w-full h-[300px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+                       <SharedMap 
+                         center={{ lat: Number(facility.latitude) || 12.9716, lng: Number(facility.longitude) || 77.5946 }} 
+                         zoom={15} 
+                         markers={[{ id: facility.id, lat: Number(facility.latitude) || 12.9716, lng: Number(facility.longitude) || 77.5946, title: facility.name }]} 
+                       />
                      </div>
-                     <div>
-                       <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Capacity</dt>
-                       <dd className="text-sm text-slate-900 dark:text-white">{facility.totalCapacity} slots across {facility.floors} floors</dd>
-                     </div>
-                     <div className="col-span-2">
-                       <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Description</dt>
-                       <dd className="text-sm text-slate-900 dark:text-white">{facility.description || 'No description provided.'}</dd>
-                     </div>
-                   </dl>
+                   </div>
                  </div>
                  
                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
@@ -294,6 +335,24 @@ export default function FacilityWorkspace() {
 
         </div>
       </div>
+      
+      {/* Success Popup */}
+      <AnimatePresence>
+        {showSuccessPopup && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl shadow-emerald-900/20"
+          >
+            <CheckCircle2 className="w-6 h-6 text-emerald-200" />
+            <div>
+              <div className="font-semibold">{popupContent.title}</div>
+              <div className="text-emerald-100 text-sm">{popupContent.message}</div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
