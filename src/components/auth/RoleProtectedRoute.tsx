@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../../store';
+import { useAuthStore, useTenantStore } from '../../store';
 import type { Role } from '../../types/auth';
 
 interface RoleProtectedRouteProps {
@@ -54,6 +54,18 @@ export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({
   if (isClientRole && !isOnChangePwdPage && !isOnWelcomePage) {
     if (!user.profileSetupComplete) {
       return <Navigate to="/admin/welcome" replace />;
+    }
+  }
+
+  // Check Subscription Expiration
+  const isSubscriptionExpiredPage = location.pathname === '/admin/subscription-expired';
+  if (isClientRole && !isOnChangePwdPage && !isOnWelcomePage && !isSubscriptionExpiredPage) {
+    const currentTenant = useTenantStore.getState().currentTenant;
+    if (currentTenant?.subscriptionEndDate) {
+      const isExpired = new Date(currentTenant.subscriptionEndDate) < new Date();
+      if (isExpired) {
+        return <Navigate to="/admin/subscription-expired" replace />;
+      }
     }
   }
 

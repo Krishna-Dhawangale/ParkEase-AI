@@ -145,7 +145,7 @@ export function LandingPage() {
                             <WordReveal
                               text="Reimagined."
                               delay={0.65}
-                              className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--brand)] via-[var(--brand-light)] to-white"
+                              className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-200 to-white"
                             />
                           </div>
                         </h1>

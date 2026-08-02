@@ -36,6 +36,7 @@ import {
   Upload,
   Zap,
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { cn } from '../../../lib/utils';
 import {
   componentPalette,
@@ -135,13 +136,13 @@ const createSnapshot = (project: TwinBuilderProject, activeFloorId: string, labe
   project: cloneProject(project),
 });
 
-const loadBuilderState = (tenantId?: string): PersistedBuilderState => {
+const loadBuilderState = (tenantId?: string, facilityId?: string): PersistedBuilderState => {
   if (typeof window === 'undefined') {
     return { project: cloneProject(mockTwinBuilderProject), activeFloorId: mockTwinBuilderProject.activeFloorId, viewportRotation: 0, snapshots: [] };
   }
 
   try {
-    const raw = window.localStorage.getItem(getDigitalTwinStorageKey(tenantId));
+    const raw = window.localStorage.getItem(getDigitalTwinStorageKey(tenantId, facilityId));
     if (!raw) {
       return { project: cloneProject(mockTwinBuilderProject), activeFloorId: mockTwinBuilderProject.activeFloorId, viewportRotation: 0, snapshots: [] };
     }
@@ -166,10 +167,14 @@ const loadBuilderState = (tenantId?: string): PersistedBuilderState => {
   }
 };
 
-const DigitalTwin = ({ readOnly = false }: { readOnly?: boolean }) => {
+const DigitalTwin = ({ readOnly = false, facilityId: propFacilityId }: { readOnly?: boolean; facilityId?: string }) => {
   const currentTenant = useTenantStore(s => s.currentTenant);
   const activeTenantId = currentTenant?.id ?? undefined;
-  const [initialState] = useState(() => loadBuilderState(activeTenantId));
+  
+  const [searchParams] = useSearchParams();
+  const facilityId = propFacilityId || searchParams.get('facilityId') || undefined;
+
+  const [initialState] = useState(() => loadBuilderState(activeTenantId, facilityId));
   const [project, setProject] = useState<TwinBuilderProject>(() => cloneProject(initialState.project));
   const [activeFloorId, setActiveFloorId] = useState(initialState.activeFloorId);
   const [layoutRotation, setLayoutRotation] = useState(initialState.viewportRotation);
@@ -499,9 +504,15 @@ const DigitalTwin = ({ readOnly = false }: { readOnly?: boolean }) => {
           snapshots: versionHistory,
         };
         if (activeTenantId) {
-          await DigitalTwinService.saveProject(activeTenantId, payload);
+          await DigitalTwinService.saveProject(activeTenantId, payload, facilityId);
         } else {
-          window.localStorage.setItem(getDigitalTwinStorageKey(activeTenantId), JSON.stringify(payload));
+          const key = getDigitalTwinStorageKey(activeTenantId, facilityId);
+          const json = JSON.stringify(payload);
+          window.localStorage.setItem(key, json);
+          // Dispatch custom event for same-tab sync to User Portal
+          window.dispatchEvent(new CustomEvent('parkease-digital-twin-sync', {
+            detail: { key, value: json, tenantId: activeTenantId, facilityId }
+          }));
         }
       } catch {
         // Ignore storage write failures and keep the in-memory session usable.
@@ -509,7 +520,7 @@ const DigitalTwin = ({ readOnly = false }: { readOnly?: boolean }) => {
     }, 1000);
 
     return () => window.clearTimeout(timer);
-  }, [activeFloorId, layoutRotation, project, versionHistory, activeTenantId]);
+  }, [activeFloorId, layoutRotation, project, versionHistory, activeTenantId, facilityId]);
 
   const restoreSnapshot = useCallback((snapshot: BuilderSnapshot) => {
     const restoredProject = cloneProject(snapshot.project);

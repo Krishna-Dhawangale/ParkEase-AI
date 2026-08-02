@@ -14,14 +14,24 @@ export const useThemeStore = create<ThemeStore>((set) => ({
     set((state) => {
       const next = state.theme === 'light' ? 'dark' : 'light';
       localStorage.setItem('parkease-theme', next);
-      if (next === 'dark') document.documentElement.classList.add('dark');
-      else document.documentElement.classList.remove('dark');
+      if (next === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
       return { theme: next };
     }),
   setTheme: (t) => {
     localStorage.setItem('parkease-theme', t);
-    if (t === 'dark') document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
+    if (t === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
     set({ theme: t });
   },
 }));

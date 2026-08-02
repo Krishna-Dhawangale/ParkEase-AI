@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuthStore, useTenantStore } from '../../../store';
 import { FacilityService, type ClientFacility, type FacilityPricing } from './facility.service';
+import { DigitalTwinService } from '../../../services/digital-twin.service';
 import {
   Building2, MapPin, Map as MapIcon, IndianRupee, Settings2, Camera, FileText,
   ChevronLeft, AlertTriangle, CheckCircle2, Loader2, ArrowRight, Save, Edit2, Trash2, Undo
@@ -161,8 +162,14 @@ export default function FacilityWorkspace() {
                 <button 
                   className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all"
                   onClick={async () => {
-                     // Mock submit for approval
+                     // Check if Digital Twin exists
                      if(tenantId && facility.id) {
+                       const dt = await DigitalTwinService.getProject(tenantId, facility.id);
+                       if (!dt || !dt.project || !dt.project.floors || dt.project.floors.length === 0 || dt.project.floors[0].objects.length === 0) {
+                         alert("You must build the Digital Twin (add floors and slots) before submitting for approval.");
+                         setActiveTab('digital_twin');
+                         return;
+                       }
                        await FacilityService.submitForApproval(tenantId, facility.id);
                        setFacility({...facility, status: 'PENDING_APPROVAL'});
                      }
@@ -191,6 +198,11 @@ export default function FacilityWorkspace() {
                   className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all"
                   onClick={async () => {
                      if(tenantId && facility.id) {
+                       const { currentTenant } = useTenantStore.getState();
+                       if (!currentTenant?.subscriptionEndDate || new Date(currentTenant.subscriptionEndDate) < new Date()) {
+                         alert("Your subscription is missing or has expired. Please subscribe to publish this facility.");
+                         return;
+                       }
                        await FacilityService.goLive(tenantId, facility.id);
                        setPopupContent({ title: 'Facility is Live!', message: 'Users can now book parking.' });
                        setShowSuccessPopup(true);
@@ -323,12 +335,12 @@ export default function FacilityWorkspace() {
           {activeTab === 'digital_twin' && (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden relative" style={{ minHeight: '600px' }}>
               <div className="absolute top-4 right-4 z-10">
-                <Link to="/admin/digital-twin" className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-all shadow-lg">
+                <Link to={`/admin/digital-twin?facilityId=${facility.id}`} className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-all shadow-lg">
                   <Edit2 className="w-4 h-4" /> Edit Digital Twin
                 </Link>
               </div>
               <div className="w-full h-full scale-[0.8] origin-top">
-                <DigitalTwin readOnly={true} />
+                <DigitalTwin readOnly={true} facilityId={facility.id} />
               </div>
             </div>
           )}

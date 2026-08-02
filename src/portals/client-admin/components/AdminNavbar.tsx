@@ -20,6 +20,7 @@ import {
 import { useAdminSidebarStore, useThemeStore, useWebSocketStore, useAuthStore, useTenantStore } from '../../../store';
 import { FacilityService, type ClientFacility } from '../parking/facility.service';
 import { cn } from '../../../lib/utils';
+import { ThemeToggle } from '../../../components/ui/ThemeToggle';
 
 /* ───────────────────────── Route Label Map ──────────────────────────────────── */
 
@@ -220,17 +221,7 @@ const AdminNavbar = () => {
         </button>
 
         {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-          aria-label="Toggle theme"
-        >
-          {theme === 'light' ? (
-            <Moon className="h-5 w-5" />
-          ) : (
-            <Sun className="h-5 w-5" />
-          )}
-        </button>
+        <ThemeToggle size="sm" />
 
         {/* Language */}
         <button

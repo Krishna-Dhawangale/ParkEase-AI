@@ -7,7 +7,9 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { mockRecentBookings } from '../../lib/data';
-import { useThemeStore, useAuthStore } from '../../store';
+import { useAuthStore, useThemeStore } from '../../store';
+import { Button } from '../../components/ui/Button';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const tabs = ['Overview', 'Vehicles', 'History', 'Rewards', 'Settings'];
@@ -317,7 +319,9 @@ export function ProfilePage() {
                       <item.icon className="w-4 h-4 text-[var(--text-secondary)]" />
                       <span className="text-sm text-[var(--text-primary)] dark:text-white">{item.label}</span>
                     </div>
-                    {item.action === 'toggle' ? (
+                    {item.label === 'Dark Mode' ? (
+                      <ThemeToggle size="sm" />
+                    ) : item.action === 'toggle' ? (
                       <div className={cn(
                         'w-10 h-6 rounded-full relative transition-colors cursor-pointer',
                         item.value ? 'bg-[var(--brand)]' : 'bg-[var(--border)] dark:bg-[var(--border)]'

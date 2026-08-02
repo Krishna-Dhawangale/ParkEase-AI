@@ -22,6 +22,7 @@ import General from '../portals/client-admin/settings/General';
 import Profile from '../portals/client-admin/profile/Profile';
 import Tickets from '../portals/client-admin/support/Tickets';
 import DeviceManager from '../portals/client-admin/devices/DeviceManager';
+import SubscriptionExpired from '../portals/client-admin/pages/SubscriptionExpired';
 
 export const adminRoutes = (
   <Route path="/admin" element={
@@ -31,6 +32,7 @@ export const adminRoutes = (
     />
   }>
     <Route path="welcome" element={<WelcomePage />} />
+    <Route path="subscription-expired" element={<SubscriptionExpired />} />
     <Route path="onboarding" element={<Navigate to="/admin/welcome" replace />} />
     <Route element={<AdminLayout />}>
       <Route index element={<Navigate to="dashboard" replace />} />

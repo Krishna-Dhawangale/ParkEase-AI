@@ -39,7 +39,8 @@ import {
 import { mockUsers, normalizeEmail, persistMockUsers } from '../../../services/api.mock';
 import { secondaryAuth, db } from '../../../lib/firebase';
 import { createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
-import { ref, set, get, child, onValue } from 'firebase/database';
+import { ref, set, get, child, onValue, remove } from 'firebase/database';
+import { DigitalTwinService } from '../../../services/digital-twin.service';
 
 // ─── Storage Keys ───────────────────────────────────────────────────────────
 
@@ -154,6 +155,7 @@ export function clearAllSAData(): void {
   store.auditLogs = [];
   store.notifications = [];
   store.reviewComments = [];
+  DigitalTwinService.clearAll();
 }
 
 
@@ -412,6 +414,7 @@ export const SuperAdminService = {
         isEmailVerified: true,
         accountStatus: 'ACTIVE',
         requiresPasswordChange: true,
+        profileSetupComplete: false,
         createdAt: now()
       });
       
@@ -499,8 +502,15 @@ export const SuperAdminService = {
     persist(keys.invoices, store.invoices);
 
     // Cascade: remove facilities
-    Array.from(store.facilities.values()).filter(f => f.organizationId === id).forEach(f => store.facilities.delete(f.id));
+    Array.from(store.facilities.values()).filter(f => f.organizationId === id).forEach(f => {
+      store.facilities.delete(f.id);
+      // Remove from Firebase Realtime DB so it disappears from customer portal
+      remove(ref(db, `facilities/${f.id}`)).catch(console.error);
+    });
     persist(keys.facilities, store.facilities);
+    
+    // Remove tenant from Firebase DB
+    remove(ref(db, `tenants/${id}`)).catch(console.error);
 
     // Remove organization
     store.organizations.delete(id);

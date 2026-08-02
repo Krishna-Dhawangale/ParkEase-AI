@@ -1,7 +1,9 @@
 import { mockTwinBuilderProject, type TwinBuilderProject, type TwinCanvasObject } from './data';
 
-export const getDigitalTwinStorageKey = (tenantId?: string) => 
-  tenantId ? `parkease-ai.digital-twin-builder.v1.${tenantId}` : 'parkease-ai.digital-twin-builder.v1';
+export const getDigitalTwinStorageKey = (tenantId?: string, facilityId?: string) => {
+  if (facilityId) return `parkease-ai.digital-twin-builder.v1.${tenantId}.${facilityId}`;
+  return tenantId ? `parkease-ai.digital-twin-builder.v1.${tenantId}` : 'parkease-ai.digital-twin-builder.v1';
+};
 
 export type DigitalTwinLiveState = {
   project: TwinBuilderProject;
@@ -24,7 +26,7 @@ const normalizeProject = (project: TwinBuilderProject): TwinBuilderProject => ({
   })),
 });
 
-export const readDigitalTwinLiveState = (tenantId?: string): DigitalTwinLiveState => {
+export const readDigitalTwinLiveState = (tenantId?: string, facilityId?: string): DigitalTwinLiveState => {
   if (typeof window === 'undefined') {
     return {
       project: normalizeProject(mockTwinBuilderProject),
@@ -35,7 +37,7 @@ export const readDigitalTwinLiveState = (tenantId?: string): DigitalTwinLiveStat
   }
 
   try {
-    const raw = window.localStorage.getItem(getDigitalTwinStorageKey(tenantId));
+    const raw = window.localStorage.getItem(getDigitalTwinStorageKey(tenantId, facilityId));
     if (!raw) {
       return {
         project: normalizeProject(mockTwinBuilderProject),

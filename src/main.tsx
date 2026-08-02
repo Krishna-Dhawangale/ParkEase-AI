@@ -7,6 +7,10 @@ import './index.css'
 const savedTheme = localStorage.getItem('parkease-theme');
 if (savedTheme === 'dark') {
   document.documentElement.classList.add('dark');
+  document.documentElement.setAttribute('data-theme', 'dark');
+} else {
+  document.documentElement.classList.remove('dark');
+  document.documentElement.setAttribute('data-theme', 'light');
 }
 
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {

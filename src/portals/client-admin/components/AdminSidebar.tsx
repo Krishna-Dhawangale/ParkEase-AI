@@ -114,20 +114,17 @@ const SidebarNavItem = ({ item, isCollapsed, onNavigate }: SidebarNavItemProps) 
       onClick={onNavigate}
       className={({ isActive }) =>
         cn(
-          'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200',
+          'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
           isActive
-            ? 'bg-blue-600/10 text-blue-400'
-            : 'text-slate-400 hover:bg-white/[0.06] hover:text-slate-200',
+            ? 'bg-black dark:bg-[#7C3AED] text-white shadow-md shadow-black/10 font-semibold'
+            : 'text-slate-600 dark:text-[#A1A6C4] hover:bg-slate-100 dark:hover:bg-[#1B2345] hover:text-slate-900 dark:hover:text-white',
           isCollapsed && 'justify-center px-2'
         )
       }
     >
       {({ isActive }) => (
         <>
-          {isActive && (
-            <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-blue-500" />
-          )}
-          <Icon className="h-[18px] w-[18px] shrink-0" />
+          <Icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-white" : "text-slate-500 dark:text-[#A1A6C4] group-hover:text-slate-900 dark:group-hover:text-white")} />
           {!isCollapsed && <span className="truncate">{item.label}</span>}
         </>
       )}
@@ -171,24 +168,24 @@ const AdminSidebar = () => {
     const collapsed = isCollapsed && !isMobile;
 
     return (
-      <div className="flex h-full flex-col">
+      <div className="flex h-full flex-col bg-white dark:bg-[#161D36] text-slate-900 dark:text-slate-100">
         {/* ── Brand ── */}
         <div
           className={cn(
-            'flex h-16 shrink-0 items-center border-b border-slate-800 px-4',
+            'flex h-16 shrink-0 items-center border-b border-slate-200 dark:border-[#232A45] px-4',
             collapsed ? 'justify-center px-2' : 'justify-between'
           )}
         >
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-black dark:bg-[#7C3AED] text-sm font-bold text-white shadow-sm">
               P
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <h2 className="truncate text-sm font-semibold text-white">
+                <h2 className="truncate text-sm font-semibold text-slate-900 dark:text-white leading-tight">
                   ParkEase AI
                 </h2>
-                <p className="truncate text-[11px] text-slate-500">
+                <p className="truncate text-[11px] text-slate-500 dark:text-[#A1A6C4] leading-tight">
                   Team Workspace
                 </p>
               </div>
@@ -197,7 +194,7 @@ const AdminSidebar = () => {
           {isMobile && (
             <button
               onClick={() => setMobileOpen(false)}
-              className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -213,7 +210,7 @@ const AdminSidebar = () => {
                   {section.label}
                 </p>
               )}
-              {collapsed && <div className="mb-2 border-t border-slate-800" />}
+              {collapsed && <div className="mb-2 border-t border-slate-200 dark:border-slate-800" />}
               <div className="space-y-0.5">
                 {section.items.map((item) => (
                   <SidebarNavItem
@@ -229,7 +226,7 @@ const AdminSidebar = () => {
         </nav>
 
         {/* ── Bottom ── */}
-        <div className="shrink-0 border-t border-slate-800 p-3">
+        <div className="shrink-0 border-t border-slate-200 dark:border-slate-800 p-3">
           <button
             onClick={handleLogout}
             className={cn(
@@ -269,7 +266,7 @@ const AdminSidebar = () => {
       {/* ── Desktop Sidebar ── */}
       <aside
         className={cn(
-          'fixed bottom-0 left-0 top-16 z-20 hidden border-r border-slate-800 bg-slate-900 transition-all duration-300 ease-in-out lg:flex lg:flex-col',
+          'fixed bottom-0 left-0 top-16 z-20 hidden border-r border-slate-200 dark:border-[#232A45] bg-white dark:bg-[#161D36] transition-all duration-300 ease-in-out lg:flex lg:flex-col',
           isCollapsed ? 'w-[72px]' : 'w-64'
         )}
       >
@@ -289,7 +286,7 @@ const AdminSidebar = () => {
               onClick={() => setMobileOpen(false)}
             />
             <motion.aside
-              className="fixed bottom-0 left-0 top-0 z-50 w-64 bg-slate-900 shadow-2xl lg:hidden"
+              className="fixed bottom-0 left-0 top-0 z-50 w-64 bg-white dark:bg-[#161D36] shadow-2xl lg:hidden"
               initial={{ x: -256 }}
               animate={{ x: 0 }}
               exit={{ x: -256 }}

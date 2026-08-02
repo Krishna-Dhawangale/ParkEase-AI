@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, Map as MapIcon, List, SlidersHorizontal, RotateCcw,
@@ -13,16 +13,48 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ref, onValue, off } from 'firebase/database';
 import { db } from '../../../lib/firebase';
 
+import { useThemeStore } from '../../../store';
+
+const darkEnterpriseMapStyles: google.maps.MapTypeStyle[] = [
+  { elementType: 'geometry', stylers: [{ color: '#0A0F1C' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0A0F1C' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#A1A6C4' }] },
+  { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#A855F7' }] },
+  { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#7C3AED' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#111628' }] },
+  { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#22C55E' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#161D36' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#232A45' }] },
+  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#6B7280' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#1B2345' }] },
+  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#7C3AED' }] },
+  { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#F8FAFC' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0B132B' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#3B82F6' }] },
+];
+
+const lightMapStyles: google.maps.MapTypeStyle[] = [
+  { "featureType": "all", "elementType": "labels.text.fill", "stylers": [{ "color": "#333333" }] },
+  { "featureType": "all", "elementType": "labels.text.stroke", "stylers": [{ "color": "#ffffff" }] },
+  { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#e9e9e9" }] },
+  { "featureType": "landscape", "elementType": "geometry", "stylers": [{ "color": "#f5f5f5" }] },
+  { "featureType": "poi", "elementType": "geometry", "stylers": [{ "color": "#f5f5f5" }] },
+  { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#ffffff" }] }
+];
+
 export function ParkingSearchPage() {
   const navigate = useNavigate();
+  const theme = useThemeStore((state) => state.theme);
   const [view, setView] = useState<'map' | 'list'>('map');
   const [selectedFacility, setSelectedFacility] = useState<any | null>(null);
   const [directionsResponse, setDirectionsResponse] = useState<google.maps.DirectionsResult | null>(null);
 
-  const { isLoaded } = useJsApiLoader({
+  const { isLoaded: isJsLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
   });
+
+  const isLoaded = isJsLoaded || (typeof window !== 'undefined' && Boolean((window as any).google?.maps));
 
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [mapCenter, setMapCenter] = useState({ lat: 21.1458, lng: 79.0882 }); // Nagpur Center
@@ -35,12 +67,13 @@ export function ParkingSearchPage() {
           setUserLocation(loc);
           setMapCenter(loc);
         },
-        (error) => console.warn("Location permission denied", error)
+        (error) => console.warn("Location permission denied or timed out", error),
+        { timeout: 1200, maximumAge: 600000, enableHighAccuracy: false }
       );
     }
   }, []);
 
-  const mapOptions = {
+  const mapOptions = useMemo(() => ({
     disableDefaultUI: true,
     zoomControl: true,
     mapTypeControl: false,
@@ -48,15 +81,8 @@ export function ParkingSearchPage() {
     streetViewControl: false,
     rotateControl: false,
     fullscreenControl: false,
-    styles: [
-      { "featureType": "all", "elementType": "labels.text.fill", "stylers": [{ "color": "#333333" }] },
-      { "featureType": "all", "elementType": "labels.text.stroke", "stylers": [{ "color": "#ffffff" }] },
-      { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#e9e9e9" }] },
-      { "featureType": "landscape", "elementType": "geometry", "stylers": [{ "color": "#f5f5f5" }] },
-      { "featureType": "poi", "elementType": "geometry", "stylers": [{ "color": "#f5f5f5" }] },
-      { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#ffffff" }] }
-    ]
-  };
+    styles: theme === 'dark' ? darkEnterpriseMapStyles : lightMapStyles
+  }), [theme]);
 
   const [facilities, setFacilities] = useState<any[]>([]);
 
@@ -71,8 +97,8 @@ export function ParkingSearchPage() {
       }
       
       const parsed = Object.values(data);
-      // Strict filter for LIVE only.
-      let live = parsed.filter((f: any) => f.status === 'LIVE');
+      // Show all facilities on the map for the demo (including DRAFT, PENDING_APPROVAL, etc)
+      let live = parsed;
       
       const uiFacilities = live.map((f: any, idx: number) => {
         const images = [
@@ -162,29 +188,29 @@ export function ParkingSearchPage() {
   }, [selectedFacility, isLoaded]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-72px)] bg-white overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-72px)] bg-white dark:bg-[#0A0F1C] overflow-hidden">
       {/* Sleek Filters Header */}
       <motion.div 
         initial={{ y: -10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="shrink-0 px-4 md:px-6 py-4 border-b border-gray-100 bg-white z-10"
+        className="shrink-0 px-4 md:px-6 py-4 border-b border-gray-100 dark:border-[#232A45] bg-white dark:bg-[#161D36] z-10"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Find Parking in Nagpur</h1>
-            <p className="text-sm text-gray-500 mt-1">Live availability & instant booking</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Find Parking in Nagpur</h1>
+            <p className="text-sm text-gray-500 dark:text-[#A1A6C4] mt-1">Live availability & instant booking</p>
           </div>
           
-          <div className="flex items-center p-1 bg-gray-100 rounded-lg self-start sm:self-auto shrink-0">
+          <div className="flex items-center p-1 bg-gray-100 dark:bg-[#111628] rounded-lg self-start sm:self-auto shrink-0">
             <button 
               onClick={() => setView('map')}
-              className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === 'map' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+              className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === 'map' ? 'bg-white dark:bg-[#7C3AED] text-black dark:text-white shadow-sm' : 'text-gray-500 dark:text-[#A1A6C4] hover:text-gray-900 dark:hover:text-white'}`}
             >
               <MapIcon className="w-4 h-4" /> Map View
             </button>
             <button 
               onClick={() => setView('list')}
-              className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === 'list' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+              className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === 'list' ? 'bg-white dark:bg-[#7C3AED] text-black dark:text-white shadow-sm' : 'text-gray-500 dark:text-[#A1A6C4] hover:text-gray-900 dark:hover:text-white'}`}
             >
               <List className="w-4 h-4" /> List View
             </button>
@@ -193,17 +219,17 @@ export function ParkingSearchPage() {
 
         {/* Clean Filter Chips */}
         <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4 md:mx-0 md:px-0">
-          <button className="shrink-0 h-9 px-5 rounded-full bg-black text-white text-sm font-medium shadow hover:bg-gray-900 transition-all">
+          <button className="shrink-0 h-9 px-5 rounded-full bg-black dark:bg-[#7C3AED] text-white text-sm font-medium shadow hover:bg-gray-900 dark:hover:bg-[#8B5CF6] transition-all">
             All Spots
           </button>
-          <button className="shrink-0 h-9 px-4 rounded-full border border-gray-200 bg-white text-gray-600 text-sm hover:border-gray-300 hover:bg-gray-50 transition-all flex items-center gap-2">
+          <button className="shrink-0 h-9 px-4 rounded-full border border-gray-200 dark:border-[#232A45] bg-white dark:bg-[#111628] text-gray-600 dark:text-[#A1A6C4] text-sm hover:border-gray-300 dark:hover:border-purple-500/50 hover:bg-gray-50 dark:hover:bg-[#161D36] transition-all flex items-center gap-2">
             Commercial
           </button>
-          <button className="shrink-0 h-9 px-4 rounded-full border border-gray-200 bg-white text-gray-600 text-sm hover:border-gray-300 hover:bg-gray-50 transition-all flex items-center gap-2">
+          <button className="shrink-0 h-9 px-4 rounded-full border border-gray-200 dark:border-[#232A45] bg-white dark:bg-[#111628] text-gray-600 dark:text-[#A1A6C4] text-sm hover:border-gray-300 dark:hover:border-purple-500/50 hover:bg-gray-50 dark:hover:bg-[#161D36] transition-all flex items-center gap-2">
             <Zap className="w-4 h-4 text-emerald-500" /> EV Chargers
           </button>
-          <div className="ml-auto shrink-0 sticky right-0 bg-gradient-to-l from-white via-white to-transparent pl-4">
-            <button className="h-9 px-4 rounded-full border border-gray-200 md:border-transparent bg-white text-gray-500 text-sm hover:text-black hover:bg-gray-100 transition-all flex items-center gap-2 shadow-sm md:shadow-none">
+          <div className="ml-auto shrink-0 sticky right-0 bg-gradient-to-l from-white dark:from-[#161D36] via-white dark:via-[#161D36] to-transparent pl-4">
+            <button className="h-9 px-4 rounded-full border border-gray-200 dark:border-[#232A45] md:border-transparent bg-white dark:bg-[#111628] text-gray-500 dark:text-[#A1A6C4] text-sm hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#161D36] transition-all flex items-center gap-2 shadow-sm md:shadow-none">
               <SlidersHorizontal className="w-4 h-4" /> Filters
             </button>
           </div>
@@ -217,15 +243,15 @@ export function ParkingSearchPage() {
         <div 
           data-lenis-prevent="true" 
           onWheel={(e) => e.stopPropagation()} 
-          className={`shrink-0 border-r border-gray-100 overflow-y-auto p-4 bg-gray-50/30 transition-all duration-300 ${view === 'list' ? 'w-full md:w-[400px] lg:w-[450px] border-r-0 md:border-r' : 'hidden md:block w-[400px] lg:w-[450px]'}`}
+          className={`shrink-0 border-r border-gray-100 dark:border-[#232A45] overflow-y-auto p-4 bg-gray-50/30 dark:bg-[#0A0F1C] transition-all duration-300 ${view === 'list' ? 'w-full md:w-[400px] lg:w-[450px] border-r-0 md:border-r' : 'hidden md:block w-[400px] lg:w-[450px]'}`}
         >
           <AnimatePresence>
             {facilities.length === 0 ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center h-48 text-center text-gray-500">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                  <MapPin className="w-5 h-5 text-gray-400" />
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center h-48 text-center text-gray-500 dark:text-[#A1A6C4]">
+                <div className="w-12 h-12 bg-gray-100 dark:bg-[#161D36] rounded-full flex items-center justify-center mb-3">
+                  <MapPin className="w-5 h-5 text-gray-400 dark:text-[#A1A6C4]" />
                 </div>
-                <p className="font-medium text-gray-900">No active facilities found</p>
+                <p className="font-medium text-gray-900 dark:text-white">No active facilities found</p>
                 <p className="text-sm mt-1">Check back later or search another area.</p>
               </motion.div>
             ) : (
@@ -245,28 +271,28 @@ export function ParkingSearchPage() {
                       setSelectedFacility(f);
                       if (view === 'list') setView('map');
                     }}
-                    className={`cursor-pointer bg-white rounded-2xl p-3 border transition-all ${
-                      selectedFacility?.id === f.id ? 'border-black ring-1 ring-black/5' : 'border-gray-200 hover:border-gray-300'
+                    className={`cursor-pointer bg-white dark:bg-[#161D36] rounded-2xl p-3 border transition-all ${
+                      selectedFacility?.id === f.id ? 'border-black dark:border-[#7C3AED] ring-1 ring-black/5 dark:ring-purple-500/30' : 'border-gray-200 dark:border-[#232A45] hover:border-gray-300 dark:hover:border-purple-500/50'
                     }`}
                   >
                     <div className="flex gap-4 h-28">
-                      <div className="w-28 shrink-0 relative overflow-hidden rounded-xl bg-gray-100">
+                      <div className="w-28 shrink-0 relative overflow-hidden rounded-xl bg-gray-100 dark:bg-[#111628]">
                         <img src={f.image} alt={f.name} className="w-full h-full object-cover transition-transform hover:scale-105 duration-700" />
                       </div>
                       <div className="flex-1 flex flex-col justify-between py-1 pr-1">
                         <div>
                           <div className="flex justify-between items-start">
-                            <h3 className="font-bold text-gray-900 text-[15px] leading-tight truncate">{f.name}</h3>
-                            <div className="flex items-center text-xs font-medium text-gray-700 bg-gray-50 px-1.5 py-0.5 rounded ml-2">
+                            <h3 className="font-bold text-gray-900 dark:text-white text-[15px] leading-tight truncate">{f.name}</h3>
+                            <div className="flex items-center text-xs font-medium text-gray-700 dark:text-slate-200 bg-gray-50 dark:bg-[#111628] px-1.5 py-0.5 rounded ml-2">
                               <Star className="w-3 h-3 text-amber-400 fill-amber-400 mr-1" />
                               {f.rating}
                             </div>
                           </div>
-                          <p className="text-[13px] text-gray-500 mt-1">{f.distance} away</p>
+                          <p className="text-[13px] text-gray-500 dark:text-[#A1A6C4] mt-1">{f.distance} away</p>
                         </div>
                         <div className="flex items-end justify-between mt-2">
                           <div className="flex flex-col">
-                            <span className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">Available</span>
+                            <span className="text-[11px] text-gray-400 dark:text-slate-400 font-medium uppercase tracking-wider">Available</span>
                             <motion.span 
                               key={f.slots}
                               initial={{ scale: 1.1, color: '#059669' }}
@@ -277,7 +303,7 @@ export function ParkingSearchPage() {
                             </motion.span>
                           </div>
                           <div className="text-right">
-                            <span className="font-bold text-lg text-gray-900">₹{f.price}</span><span className="text-[11px] text-gray-500">/hr</span>
+                            <span className="font-bold text-lg text-gray-900 dark:text-white">₹{f.price}</span><span className="text-[11px] text-gray-500 dark:text-[#A1A6C4]">/hr</span>
                           </div>
                         </div>
                       </div>
@@ -290,7 +316,7 @@ export function ParkingSearchPage() {
         </div>
 
         {/* Map View */}
-        <div className={`flex-1 relative bg-[#e5e3df] ${view === 'list' ? 'hidden md:block' : 'block'}`}>
+        <div className={`flex-1 relative bg-[#F9FAFB] dark:bg-[#0A0F1C] ${view === 'list' ? 'hidden md:block' : 'block'}`}>
           {isLoaded ? (
             <GoogleMap
               mapContainerStyle={{ width: '100%', height: '100%' }}
@@ -306,7 +332,7 @@ export function ParkingSearchPage() {
                   onClick={() => setSelectedFacility(f)}
                   animation={f._lastUpdated && Date.now() - f._lastUpdated < 1500 ? window.google.maps.Animation.BOUNCE : undefined}
                   icon={{
-                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 0C11.1634 0 4 7.16344 4 16C4 28 20 40 20 40C20 40 36 28 36 16C36 7.16344 28.8366 0 20 0Z" fill="${selectedFacility?.id === f.id ? '#000000' : '#111827'}"/><circle cx="20" cy="16" r="10" fill="white"/><text x="20" y="21" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="${selectedFacility?.id === f.id ? '#000000' : '#111827'}">P</text></svg>`),
+                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 0C11.1634 0 4 7.16344 4 16C4 28 20 40 20 40C20 40 36 28 36 16C36 7.16344 28.8366 0 20 0Z" fill="${selectedFacility?.id === f.id ? (theme === 'dark' ? '#7C3AED' : '#000000') : (theme === 'dark' ? '#111628' : '#111827')}"/><circle cx="20" cy="16" r="10" fill="white"/><text x="20" y="21" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="${selectedFacility?.id === f.id ? (theme === 'dark' ? '#7C3AED' : '#000000') : (theme === 'dark' ? '#111628' : '#111827')}">P</text></svg>`),
                     scaledSize: new window.google.maps.Size(selectedFacility?.id === f.id ? 44 : 36, selectedFacility?.id === f.id ? 44 : 36),
                     anchor: new window.google.maps.Point(selectedFacility?.id === f.id ? 22 : 18, selectedFacility?.id === f.id ? 44 : 36)
                   }}
@@ -320,7 +346,7 @@ export function ParkingSearchPage() {
                   options={{
                     suppressMarkers: true, 
                     polylineOptions: {
-                      strokeColor: '#3b82f6',
+                      strokeColor: theme === 'dark' ? '#7C3AED' : '#3b82f6',
                       strokeWeight: 5,
                       strokeOpacity: 0.8,
                     }
@@ -347,13 +373,13 @@ export function ParkingSearchPage() {
                   onCloseClick={() => setSelectedFacility(null)}
                   options={{ pixelOffset: new window.google.maps.Size(0, -32) }}
                 >
-                  <div className="p-2 w-48 text-black bg-white rounded-lg">
+                  <div className="p-2 w-48 text-black dark:text-white bg-white dark:bg-[#161D36] rounded-lg">
                     <h3 className="font-bold text-sm mb-1">{selectedFacility.name}</h3>
                     <div className="flex items-center gap-2 mb-3 text-xs">
                       <span className={`w-2 h-2 rounded-full ${selectedFacility.status === 'High' ? 'bg-emerald-500' : selectedFacility.status === 'Medium' ? 'bg-amber-500' : 'bg-red-500'}`}></span>
-                      <span className="font-medium text-gray-700">{selectedFacility.slots} Slots</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">{selectedFacility.slots} Slots</span>
                     </div>
-                    <Button size="sm" className="w-full h-8 text-xs bg-black hover:bg-gray-800 text-white" onClick={() => navigate(`/customer/parking/${selectedFacility.id}`)}>
+                    <Button size="sm" className="w-full h-8 text-xs bg-black dark:bg-[#7C3AED] hover:bg-gray-800 dark:hover:bg-[#8B5CF6] text-white" onClick={() => navigate(`/customer/parking/${selectedFacility.id}`)}>
                       Book ₹{selectedFacility.price}/hr
                     </Button>
                   </div>
@@ -361,8 +387,8 @@ export function ParkingSearchPage() {
               )}
             </GoogleMap>
           ) : (
-            <div className="flex items-center justify-center w-full h-full bg-gray-100">
-              <span className="text-gray-500 text-sm font-medium">Loading Map...</span>
+            <div className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-[#0A0F1C]">
+              <span className="text-gray-500 dark:text-[#A1A6C4] text-sm font-medium">Loading Map...</span>
             </div>
           )}
              
@@ -370,16 +396,16 @@ export function ParkingSearchPage() {
           <motion.div 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 px-4 py-2 flex flex-col gap-2"
+            className="absolute bottom-6 right-6 bg-white/95 dark:bg-[#161D36]/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-[#232A45] px-4 py-2 flex flex-col gap-2"
           >
-            <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Availability</div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
+            <div className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-400 font-bold mb-1">Availability</div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-slate-200">
               <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></div> High (20+)
             </div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-slate-200">
               <div className="w-2 h-2 rounded-full bg-amber-500 shadow-sm"></div> Limited
             </div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-slate-200">
               <div className="w-2 h-2 rounded-full bg-red-500 shadow-sm"></div> Full
             </div>
           </motion.div>

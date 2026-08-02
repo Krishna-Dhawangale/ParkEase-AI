@@ -74,13 +74,13 @@ export function SASidebar() {
 
   return (
     <aside className={cn(
-      "flex flex-col bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 z-30 fixed h-full",
+      "flex flex-col bg-white dark:bg-[#161D36] border-r border-slate-200 dark:border-[#232A45] transition-all duration-300 z-30 fixed h-full text-slate-900 dark:text-slate-100",
       isCollapsed ? "w-16" : "w-64"
     )}>
       {/* Logo Area */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800 shrink-0">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-slate-200 dark:border-[#232A45] shrink-0">
         <Link to="/super-admin/dashboard" className={cn("flex items-center gap-2", isCollapsed && "hidden")}>
-          <div className="bg-brand-600 rounded p-1.5 flex items-center justify-center">
+          <div className="bg-black dark:bg-[#7C3AED] rounded-lg p-1.5 flex items-center justify-center shadow-sm">
             <span className="text-white font-bold text-sm leading-none">P</span>
           </div>
           <div className="flex flex-col">
@@ -89,13 +89,13 @@ export function SASidebar() {
           </div>
         </Link>
         {isCollapsed && (
-          <div className="bg-brand-500 rounded p-1.5 mx-auto">
+          <div className="bg-black dark:bg-[#7C3AED] rounded-lg p-1.5 mx-auto">
             <Shield className="h-5 w-5 text-white" />
           </div>
         )}
         <button 
           onClick={toggleCollapse}
-          className={cn("p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors", isCollapsed && "hidden")}
+          className={cn("p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors", isCollapsed && "hidden")}
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -118,16 +118,16 @@ export function SASidebar() {
                     <Link
                       to={item.href}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all group",
+                        "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group",
                         isActive 
-                          ? "bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400" 
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                          ? "bg-black dark:bg-[#7C3AED] text-white shadow-md shadow-black/10 font-semibold" 
+                          : "text-slate-600 dark:text-[#A1A6C4] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1B2345]"
                       )}
                       title={isCollapsed ? item.name : undefined}
                     >
                       <item.icon className={cn(
                         "h-[18px] w-[18px] shrink-0 transition-colors stroke-[1.5]", 
-                        isActive ? "text-brand-600 dark:text-brand-400" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                        isActive ? "text-white" : "text-slate-500 dark:text-[#A1A6C4] group-hover:text-slate-900 dark:group-hover:text-white"
                       )} />
                       {!isCollapsed && <span className="truncate">{item.name}</span>}
                     </Link>

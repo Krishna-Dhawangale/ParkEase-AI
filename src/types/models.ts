@@ -21,6 +21,7 @@ export interface Tenant {
   website?: string;
   internalNotes?: string;
   isOnboarded?: boolean;
+  subscriptionEndDate?: string;
   createdAt: string;
   updatedAt: string;
 }

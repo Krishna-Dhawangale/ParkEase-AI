@@ -6,6 +6,7 @@ import { cn } from '../../../lib/utils';
 import { useAuthStore } from '../../../store';
 import { useEffect, useState } from 'react';
 import { SuperAdminService } from '../services/super-admin.service';
+import { ThemeToggle } from '../../../components/ui/ThemeToggle';
 
 export function SAHeader() {
   const { isCollapsed } = useSASidebarStore();
@@ -90,6 +91,8 @@ export function SAHeader() {
 
       {/* Right Actions */}
       <div className="flex items-center gap-4 min-w-[250px] justify-end">
+        <ThemeToggle size="sm" />
+
         <button className="relative p-2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 rounded-full transition-colors focus:outline-none">
           <span className="sr-only">View notifications</span>
           <Bell className="h-[18px] w-[18px] stroke-[1.5]" />

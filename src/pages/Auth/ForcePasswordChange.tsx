@@ -47,7 +47,7 @@ export function ForcePasswordChange() {
       if (user?.role === 'SUPER_ADMIN') {
         navigate('/super-admin');
       } else if (user?.role === 'CLIENT_ADMIN' || user?.role === 'CLIENT_OWNER') {
-        navigate('/client-admin');
+        navigate('/admin/welcome');
       } else {
         navigate('/customer');
       }

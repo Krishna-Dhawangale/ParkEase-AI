@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useThemeStore, useSidebarStore, useAuthStore } from '../../store';
 import { cn } from '../../lib/utils';
+import { ThemeToggle } from '../ui/ThemeToggle';
 import React from 'react';
 
 type NavItem = {
@@ -195,22 +196,9 @@ export function AppLayout() {
 
       {/* Bottom - Theme & User */}
       <div className="p-3 border-t border-white/60 dark:border-white/10 space-y-2">
-        <button
-          onClick={toggleTheme}
-          className={cn(
-            'sidebar-item w-full',
-            collapsed && 'justify-center px-0'
-          )}
-        >
-          {theme === 'light' ? (
-            <Moon className="w-4 h-4 flex-shrink-0" />
-          ) : (
-            <Sun className="w-4 h-4 flex-shrink-0" />
-          )}
-          {!collapsed && (
-            <span className="text-sm">{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
-          )}
-        </button>
+        <div className={cn("flex items-center px-2 py-1", collapsed && "justify-center")}>
+          <ThemeToggle size="sm" />
+        </div>
 
         <button
           onClick={handleLogout}
@@ -385,16 +373,7 @@ export function AppLayout() {
             </div>
 
             {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-xl hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
-            >
-              {theme === 'light' ? (
-                <Moon className="w-4 h-4 text-[#9CA3AF]" />
-              ) : (
-                <Sun className="w-4 h-4 text-[#F59E0B]" />
-              )}
-            </button>
+            <ThemeToggle size="sm" />
 
             {/* Notifications */}
             <button

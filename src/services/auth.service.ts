@@ -38,7 +38,12 @@ const getOrCreateUserProfile = async (user: FirebaseUser, defaultRole: 'CUSTOMER
       isEmailVerified: user.emailVerified,
       accountStatus: data.accountStatus || 'ACTIVE',
       createdAt: data.createdAt || user.metadata.creationTime || new Date().toISOString(),
-      requiresPasswordChange
+      requiresPasswordChange,
+      profileSetupComplete: data.profileSetupComplete === true,
+      phone: data.phone || '',
+      city: data.city || '',
+      contactEmail: data.contactEmail || '',
+      onboardingStatus: data.onboardingStatus || 'ACCOUNT_CREATED'
     };
   } else {
     // If no document exists, create a default CUSTOMER profile
@@ -224,7 +229,6 @@ export const AuthService = {
     if (!currentUser || currentUser.uid !== userId) throw new Error('User not found or not authenticated');
     
     try {
-      // Update Firebase Auth displayName if name changed
       if (data.firstName || data.lastName) {
         const nameParts = (currentUser.displayName || '').split(' ');
         const currentFirst = nameParts[0] || '';
@@ -238,23 +242,11 @@ export const AuthService = {
         });
       }
 
-      // Always persist any profile fields to Realtime DB
-      const dbUpdates: Record<string, unknown> = {};
-      const allowedFields: (keyof AuthUser)[] = [
-        'firstName', 'lastName', 'phone', 'city', 'contactEmail',
-        'profileSetupComplete', 'onboardingStatus', 'accountStatus'
-      ];
-      for (const field of allowedFields) {
-        if (data[field] !== undefined) {
-          dbUpdates[field] = data[field];
-        }
-      }
-      if (Object.keys(dbUpdates).length > 0) {
-        await update(ref(db, `users/${userId}`), dbUpdates);
-      }
+      // Sync to Firebase Realtime Database
+      const userRef = ref(db, `users/${userId}`);
+      await update(userRef, data);
     } catch (error: any) {
       throw new Error(mapFirebaseError(error, 'Failed to update profile'));
     }
   }
 };
-
