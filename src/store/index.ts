@@ -114,6 +114,7 @@ interface AuthStore {
   user: AuthUser | null;
   token: string | null;
   login: (token: string, user: AuthUser) => void;
+  setAuth: (token: string, user: AuthUser) => void;
   updateUser: (user: AuthUser) => void;
   logout: () => void;
 }
@@ -131,7 +132,7 @@ if (initialUserStr) {
         initialUser.role = 'SUPER_ADMIN';
       }
       if (!initialUser.permissions || initialUser.permissions.length === 0) {
-        initialUser.permissions = resolveUserPermissions(initialUser.role, initialUser.subRole);
+        initialUser.permissions = resolveUserPermissions(initialUser.role, initialUser.subRole as any);
       }
     }
   } catch (e) {
@@ -150,7 +151,20 @@ export const useAuthStore = create<AuthStore>((set) => ({
       normalizedUser.role = 'SUPER_ADMIN';
     }
     if (!normalizedUser.permissions || normalizedUser.permissions.length === 0) {
-      normalizedUser.permissions = resolveUserPermissions(normalizedUser.role, normalizedUser.subRole);
+      normalizedUser.permissions = resolveUserPermissions(normalizedUser.role, normalizedUser.subRole as any);
+    }
+
+    localStorage.setItem('parkease-token', token);
+    localStorage.setItem('parkease-user', JSON.stringify(normalizedUser));
+    set({ isAuthenticated: true, user: normalizedUser, token });
+  },
+  setAuth: (token, user) => {
+    const normalizedUser = { ...user };
+    if ((normalizedUser.role as any) === 'ADMIN') {
+      normalizedUser.role = 'SUPER_ADMIN';
+    }
+    if (!normalizedUser.permissions || normalizedUser.permissions.length === 0) {
+      normalizedUser.permissions = resolveUserPermissions(normalizedUser.role, normalizedUser.subRole as any);
     }
 
     localStorage.setItem('parkease-token', token);

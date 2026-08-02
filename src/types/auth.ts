@@ -2,17 +2,59 @@ export type Role =
   | 'CUSTOMER'
   | 'CLIENT_OWNER'
   | 'CLIENT_ADMIN'
+  | 'ADMIN'
   | 'PARKING_MANAGER'
   | 'SECURITY_GUARD'
   | 'CASHIER'
   | 'MAINTENANCE'
   | 'SUPER_ADMIN'
-  | 'SUPER_ADMIN_SUPPORT';
+  | 'SUPER_ADMIN_SUPPORT'
+  | 'USER'
+  | 'OWNER';
+
+export type SubRole =
+  | 'FACILITY_ADMIN'
+  | 'MANAGER'
+  | 'SECURITY_GUARD'
+  | 'CASHIER'
+  | 'MAINTENANCE_ENGINEER';
+
+export type Permission =
+  | 'SEARCH_PARKING'
+  | 'SLOT_BOOK'
+  | 'WALLET_USE'
+  | 'TICKET_VIEW'
+  | 'REVIEW_SUBMIT'
+  | 'FACILITY_CREATE'
+  | 'FACILITY_EDIT'
+  | 'FACILITY_DELETE'
+  | 'BOOKING_MANAGE'
+  | 'CUSTOMER_MANAGE'
+  | 'PRICING_EDIT'
+  | 'STAFF_MANAGE'
+  | 'SECURITY_CONTROL'
+  | 'WORK_ORDER_MANAGE'
+  | 'AUDIT_LOG_VIEW'
+  | 'AI_INSIGHTS_VIEW'
+  | 'STAFF_VIEW'
+  | 'CUSTOMER_VIEW'
+  | 'ANPR_VIEW'
+  | 'GATE_CONTROL'
+  | 'INCIDENT_REPORT'
+  | 'WALKIN_BOOKING'
+  | 'PAYMENT_COLLECT'
+  | 'RECEIPT_PRINT'
+  | 'WORK_ORDER_VIEW'
+  | 'WORK_ORDER_UPDATE'
+  | 'SUPER_ADMIN_ALL';
 
 export interface AuthUser {
   id: string;
+  uid?: string;
   email: string;
   role: Role;
+  permissions?: string[];
+  subRole?: string;
   firstName: string;
   lastName: string;
   profileImage?: string;

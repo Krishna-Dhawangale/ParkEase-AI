@@ -1,5 +1,5 @@
 import React from 'react';
-import DigitalTwin from '../../admin/digitalTwin/DigitalTwin';
+import DigitalTwin from '../../../portals/client-admin/digitalTwin/DigitalTwin';
 
 export const DigitalTwinBuilder: React.FC = () => {
   return (

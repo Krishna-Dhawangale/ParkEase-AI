@@ -1,6 +1,7 @@
-import type { AuthResponse, AuthUser, LoginCredentials, RegisterCredentials } from '../types/auth';
+import type { AuthResponse, AuthUser, LoginCredentials, RegisterCredentials, Role } from '../types/auth';
 import { useTenantStore } from '../store';
 import { auth, db } from '../lib/firebase';
+import { ApiClient } from '../lib/api-client';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -16,7 +17,7 @@ import type { User as FirebaseUser } from 'firebase/auth';
 import { ref, get, set, child, update } from 'firebase/database';
 
 // Helper to sync Firebase Auth user to our AuthUser
-const getOrCreateUserProfile = async (user: FirebaseUser, defaultRole: 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN' = 'CUSTOMER'): Promise<AuthUser> => {
+const getOrCreateUserProfile = async (user: FirebaseUser, defaultRole: Role = 'CUSTOMER'): Promise<AuthUser> => {
   const dbRef = ref(db);
   const snapshot = await get(child(dbRef, `users/${user.uid}`));
 
@@ -105,12 +106,19 @@ export const AuthService = {
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
-      const user = await getOrCreateUserProfile(userCredential.user);
+      const firebaseIdToken = await userCredential.user.getIdToken();
       
-      // Obtain actual JWT token from Firebase
-      const token = await userCredential.user.getIdToken();
-
-      return { token, user };
+      // Sync with FastAPI backend & obtain custom ParkEase JWT
+      try {
+        const backendRes = await ApiClient.post<any>('/auth/firebase-login', { id_token: firebaseIdToken });
+        const user = backendRes.user as AuthUser;
+        const token = backendRes.access_token;
+        return { token, user };
+      } catch (backendErr) {
+        // Fallback to local user profile if backend container is starting
+        const user = await getOrCreateUserProfile(userCredential.user);
+        return { token: firebaseIdToken, user };
+      }
     } catch (error: any) {
       console.error('[Firebase Login Error]', error);
       throw new Error(mapFirebaseError(error, 'Invalid email or password'));
@@ -179,7 +187,7 @@ export const AuthService = {
     // For client-only Firebase, onAuthStateChanged is typically used instead.
     // We will attempt to get the current logged-in user directly.
     return new Promise((resolve, reject) => {
-      const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      const unsubscribe = auth.onAuthStateChanged(async (firebaseUser: FirebaseUser | null) => {
         unsubscribe(); // Stop listening once we get the initial state
         if (firebaseUser) {
           try {

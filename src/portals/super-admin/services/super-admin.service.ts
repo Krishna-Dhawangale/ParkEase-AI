@@ -252,13 +252,13 @@ export const SuperAdminService = {
     
     let currentTenants: Record<string, any> = {};
     
-    const unsubscribeTenants = onValue(tenantsRef, (snapshot) => {
+    const unsubscribeTenants = onValue(tenantsRef, (snapshot: any) => {
       if (snapshot.exists()) {
         currentTenants = snapshot.val();
       }
     });
 
-    const unsubscribeFacilities = onValue(facilitiesRef, (snapshot) => {
+    const unsubscribeFacilities = onValue(facilitiesRef, (snapshot: any) => {
       if (snapshot.exists()) {
         const firebaseFacilities = Object.values(snapshot.val()) as any[];
         const approvals = firebaseFacilities
@@ -762,13 +762,13 @@ export const SuperAdminService = {
     
     let currentTenants: Record<string, any> = {};
     
-    const unsubscribeTenants = onValue(tenantsRef, (snapshot) => {
+    const unsubscribeTenants = onValue(tenantsRef, (snapshot: any) => {
       if (snapshot.exists()) {
         currentTenants = snapshot.val();
       }
     });
 
-    const unsubscribeFacilities = onValue(facilitiesRef, (snapshot) => {
+    const unsubscribeFacilities = onValue(facilitiesRef, (snapshot: any) => {
       if (snapshot.exists()) {
         const firebaseFacilities = Object.values(snapshot.val()) as any[];
         

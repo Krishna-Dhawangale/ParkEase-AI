@@ -1,6 +1,6 @@
 import type { AuthUser, Role, SubRole, Permission } from '../types/auth';
 
-export const ROLE_DEFAULT_PERMISSIONS: Record<Role, Permission[]> = {
+export const ROLE_DEFAULT_PERMISSIONS: Partial<Record<Role, Permission[]>> = {
   USER: [
     'SEARCH_PARKING',
     'SLOT_BOOK',
@@ -37,7 +37,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<Role, Permission[]> = {
 };
 
 export const SUBROLE_DEFAULT_PERMISSIONS: Record<SubRole, Permission[]> = {
-  FACILITY_ADMIN: ROLE_DEFAULT_PERMISSIONS.OWNER,
+  FACILITY_ADMIN: ROLE_DEFAULT_PERMISSIONS.OWNER || [],
   MANAGER: [
     'BOOKING_MANAGE',
     'CUSTOMER_MANAGE',
@@ -82,7 +82,7 @@ export function hasPermission(user: AuthUser | null, permission: Permission): bo
   if (defaultRolePerms.includes(permission)) return true;
 
   if (user.subRole) {
-    const subPerms = SUBROLE_DEFAULT_PERMISSIONS[user.subRole] || [];
+    const subPerms = SUBROLE_DEFAULT_PERMISSIONS[user.subRole as SubRole] || [];
     if (subPerms.includes(permission)) return true;
   }
 
@@ -102,9 +102,9 @@ export function hasAnyPermission(user: AuthUser | null, permissions: Permission[
  */
 export function resolveUserPermissions(role: Role, subRole?: SubRole): Permission[] {
   if (role === 'SUPER_ADMIN') return ['SUPER_ADMIN_ALL'];
-  if (role === 'USER') return ROLE_DEFAULT_PERMISSIONS.USER;
+  if (role === 'USER') return ROLE_DEFAULT_PERMISSIONS.USER || [];
   if (subRole && SUBROLE_DEFAULT_PERMISSIONS[subRole]) {
     return SUBROLE_DEFAULT_PERMISSIONS[subRole];
   }
-  return ROLE_DEFAULT_PERMISSIONS.OWNER;
+  return ROLE_DEFAULT_PERMISSIONS.OWNER || [];
 }

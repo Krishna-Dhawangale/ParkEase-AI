@@ -63,7 +63,7 @@ export function ParkingSearchPage() {
   useEffect(() => {
     const facilitiesRef = ref(db, 'facilities');
     
-    const unsubscribe = onValue(facilitiesRef, (snapshot) => {
+    const unsubscribe = onValue(facilitiesRef, (snapshot: any) => {
       const data = snapshot.val();
       if (!data) {
         setFacilities([]);
@@ -146,7 +146,7 @@ export function ParkingSearchPage() {
           destination: { lat: selectedFacility.lat, lng: selectedFacility.lng },
           travelMode: window.google.maps.TravelMode.DRIVING,
         },
-        (result, status) => {
+        (result: any, status: any) => {
           if (status === window.google.maps.DirectionsStatus.OK) {
             setDirectionsResponse(result);
           } else {

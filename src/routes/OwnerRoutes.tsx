@@ -12,7 +12,7 @@ import { SecurityOperations } from '../modules/owner/security/SecurityOperations
 import { AIAnalytics } from '../modules/owner/ai/AIAnalytics';
 import { MaintenanceWorkOrders } from '../modules/owner/maintenance/MaintenanceWorkOrders';
 import { OperationalAuditLogs } from '../modules/owner/audit/OperationalAuditLogs';
-import General from '../modules/admin/settings/General';
+import General from '../portals/client-admin/settings/General';
 
 export const ownerRoutes = (
   <Route path="/owner" element={<OwnerLayout />}>

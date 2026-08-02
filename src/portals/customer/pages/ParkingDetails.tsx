@@ -116,7 +116,7 @@ export function ParkingDetails() {
               destination: facilityLocation,
               travelMode: window.google.maps.TravelMode.DRIVING,
             },
-            (result, status) => {
+            (result: any, status: any) => {
               setIsLocating(false);
               if (status === window.google.maps.DirectionsStatus.OK) {
                 setDirectionsResponse(result);
