@@ -12,7 +12,6 @@ import { Button } from '../ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const navItems = [
-  { name: 'Home', icon: Home, path: '/customer' },
   { name: 'Find Parking', icon: Search, path: '/customer/search' },
   { name: 'My Bookings', icon: Calendar, path: '/customer/bookings' },
   { name: 'Digital Twin', icon: Box, path: '/customer/digital-twin' },
@@ -50,7 +49,8 @@ export function CustomerLayout() {
       <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto no-scrollbar">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || 
-                           (item.path !== '/customer' && location.pathname.startsWith(item.path));
+                           (location.pathname === '/customer' && item.path === '/customer/search') ||
+                           location.pathname.startsWith(item.path + '/');
           return (
             <NavLink
               key={item.name}

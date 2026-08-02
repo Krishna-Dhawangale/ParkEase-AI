@@ -1,37 +1,53 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Dependencies
+node_modules/
+**/node_modules/
 
-node_modules
-dist
-dist-ssr
-*.local
+# Build & Dist Outputs
+dist/
+**/dist/
+dist-ssr/
+*.tsbuildinfo
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+
+# Environment files
 .env
 .env.*
 !.env.example
-# Editor directories and files
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Editor & OS files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
+Thumbs.db
 *.suo
-*.ntvs*
-*.njsproj
 *.sln
-*.sw?
 
-# Temporary refactor/patch scripts (agent-generated)
-*.cjs
+# Media & Temp Files
 temp_*.tsx
 temp_*.txt
-
-# Source media originals (served from public/ instead)
 "Landing Page Video.mp4"
 "get Started audio.mp3"
-Landing\ Page\ Video.mp4
-get\ Started\ audio.mp3
+
+# Docker (Not used for local development)
+docker-compose.yml
+docker-compose*.yml
+Dockerfile
+**/Dockerfile
+*.dockerfile

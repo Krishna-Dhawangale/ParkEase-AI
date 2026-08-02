@@ -48,7 +48,7 @@ function App() {
         {/* App pages with sidebar layout (Customer Only) */}
         <Route element={<RoleProtectedRoute allowedRoles={['CUSTOMER', 'SUPER_ADMIN']} />}>
           <Route path="/customer" element={<CustomerLayout />}>
-            <Route index element={<ParkingSearchPage />} />
+            <Route index element={<Navigate to="/customer/search" replace />} />
             <Route path="search" element={<ParkingSearchPage />} />
             <Route path="parking/:id" element={<ParkingDetails />} />
             <Route path="ai-recommendation" element={<AIRecommendationPage />} />
