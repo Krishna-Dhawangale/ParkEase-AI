@@ -14,10 +14,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 const navItems = [
   { name: 'Find Parking', icon: Search, path: '/customer/search' },
   { name: 'My Bookings', icon: Calendar, path: '/customer/bookings' },
-  { name: 'Digital Twin', icon: Box, path: '/customer/digital-twin' },
   { name: 'Payments', icon: CreditCard, path: '/customer/payments' },
   { name: 'Vehicles', icon: Car, path: '/customer/vehicles' },
-  { name: 'Activity', icon: Activity, path: '/customer/activity' },
   { name: 'Profile', icon: User, path: '/customer/profile' },
   { name: 'Support', icon: HelpCircle, path: '/customer/support' },
   { name: 'Settings', icon: Settings, path: '/customer/settings' },

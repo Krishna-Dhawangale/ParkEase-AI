@@ -14,6 +14,9 @@ import { ProfilePage } from './portals/customer/pages/ProfilePage';
 import { Payments } from './portals/customer/pages/Payments';
 import { MyBookings } from './portals/customer/pages/MyBookings';
 import { ComingSoon } from './portals/customer/pages/ComingSoon';
+import { SupportPage } from './portals/customer/pages/SupportPage';
+import { SettingsPage } from './portals/customer/pages/SettingsPage';
+import { VehiclesPage } from './portals/customer/pages/VehiclesPage';
 import { AnalyticsPage } from './pages/Analytics/AnalyticsPage';
 import { AIInsightsPage } from './pages/AIInsights/AIInsightsPage';
 import { NotificationsPage } from './pages/Notifications/NotificationsPage';
@@ -56,10 +59,9 @@ function App() {
             <Route path="book" element={<Checkout />} />
             <Route path="payments" element={<Payments />} />
             <Route path="bookings" element={<MyBookings />} />
-            <Route path="vehicles" element={<ComingSoon />} />
-            <Route path="activity" element={<ComingSoon />} />
-            <Route path="support" element={<ComingSoon />} />
-            <Route path="settings" element={<ComingSoon />} />
+            <Route path="vehicles" element={<VehiclesPage />} />
+            <Route path="support" element={<SupportPage />} />
+            <Route path="settings" element={<SettingsPage />} />
             <Route path="payment" element={<PaymentPage />} />
             <Route path="ticket" element={<TicketPage />} />
             <Route path="profile" element={<ProfilePage />} />

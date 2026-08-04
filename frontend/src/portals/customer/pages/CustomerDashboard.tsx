@@ -17,7 +17,7 @@ export function CustomerDashboard() {
   const summaryCards = [
     { title: 'Upcoming Bookings', value: '2', icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50', link: '/customer/bookings', linkText: 'View bookings' },
     { title: 'Vehicles', value: '2', icon: Car, color: 'text-emerald-500', bg: 'bg-emerald-50', link: '/customer/vehicles', linkText: 'Manage vehicles' },
-    { title: 'Recent Activity', value: '5', icon: Clock, color: 'text-purple-500', bg: 'bg-purple-50', link: '/customer/activity', linkText: 'View activity' },
+    { title: 'Recent Activity', value: '5', icon: Clock, color: 'text-purple-500', bg: 'bg-purple-50', link: '/customer/bookings', linkText: 'View activity' },
   ];
 
   const upcomingBookings = [
@@ -143,7 +143,7 @@ export function CustomerDashboard() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-900">Recent Activity</h2>
-            <button onClick={() => navigate('/customer/activity')} className="text-sm font-medium text-gray-600 hover:text-gray-900">View all</button>
+            <button onClick={() => navigate('/customer/bookings')} className="text-sm font-medium text-gray-600 hover:text-gray-900">View all</button>
           </div>
           
           <RevealTransition delay={0.4}>
