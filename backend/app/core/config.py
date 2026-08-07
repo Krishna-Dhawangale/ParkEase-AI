@@ -14,7 +14,11 @@ class Settings(BaseSettings):
     # Database & Redis
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", 
+<<<<<<< HEAD
         "postgresql+asyncpg://postgres:ParkEaseAI@localhost:5432/parkease_ai"
+=======
+        "postgresql+asyncpg://postgres:Girish%40123@localhost:5432/parkease_db"
+>>>>>>> d63686c104185579b973a7d90ddb2651c3425076
     )
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
@@ -34,6 +38,15 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
         "http://localhost:3000",
     ]
+
+    # ----- Booking Settings -----
+    BOOKING_PAYMENT_TTL_MINUTES: int = int(os.getenv("BOOKING_PAYMENT_TTL_MINUTES", "5"))
+    BOOKING_CLEANUP_INTERVAL_HOURS: int = int(os.getenv("BOOKING_CLEANUP_INTERVAL_HOURS", "4"))
+
+    # ----- Digital Twin Settings -----
+    TWIN_WS_PUSH_INTERVAL_SECONDS: int = int(os.getenv("TWIN_WS_PUSH_INTERVAL_SECONDS", "5"))
+    TWIN_BATTERY_MIN: int = int(os.getenv("TWIN_BATTERY_MIN", "85"))
+    TWIN_BATTERY_MAX: int = int(os.getenv("TWIN_BATTERY_MAX", "100"))
 
     class Config:
         case_sensitive = True

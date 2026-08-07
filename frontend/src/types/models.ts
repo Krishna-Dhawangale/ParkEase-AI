@@ -141,3 +141,74 @@ export interface Floor {
   updatedAt: string;
 }
 
+// --- BOOKING SYSTEM TYPES ---
+
+export type BookingStatus =
+  | 'PENDING_PAYMENT'
+  | 'CONFIRMED'
+  | 'ACTIVE'
+  | 'COMPLETED'
+  | 'CANCELLED';
+
+export interface Booking {
+  id: string;
+  facilityId: string;
+  facilityName: string;
+  floorId?: string;
+  floorName?: string;
+  slotId?: string;
+  slotName?: string;
+  vehicleId?: string;
+  vehiclePlate: string;
+  startTime: string;          // ISO 8601 UTC — frontend computes countdown
+  endTime: string;            // ISO 8601 UTC — frontend computes countdown
+  totalAmount: number;
+  currency: string;
+  status: BookingStatus;
+  qrCodeToken?: string;
+  isActive: boolean;          // Computed by backend
+  paymentExpiresAt?: string;  // For PENDING_PAYMENT TTL countdown
+  createdAt: string;
+}
+
+export interface MyBookingsData {
+  active: Booking[];
+  past: Booking[];
+  cancelled: Booking[];
+}
+
+export interface BookingCreatePayload {
+  facility_id: string;
+  floor_id: string;
+  slot_id: string;
+  vehicle_id: string;
+  start_time: string;   // ISO 8601 UTC
+  end_time: string;     // ISO 8601 UTC
+}
+
+export interface SlotWithAvailability extends ParkingSlot {
+  floorId: string;
+  floorName: string;
+  isBookable: boolean;  // Computed: no overlap AND not MAINTENANCE
+}
+
+export interface DigitalTwinState {
+  slotId: string;
+  slotName: string;
+  floorName: string;
+  status: string;
+  sensorStatus: string;
+  occupancyDetected: boolean;
+  batteryLevel: number;
+  lastUpdated: string;
+  bookingEndTime?: string;  // Frontend computes countdown
+  vehiclePlate?: string;
+}
+
+// --- API RESPONSE ENVELOPE ---
+
+export interface ApiEnvelope<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
