@@ -262,7 +262,7 @@ export function ParkingDetails() {
             </div>
             
             <div className="space-y-3 mt-2">
-              <Button variant="primary" className="w-full h-14 text-base font-bold" onClick={() => navigate('/customer/book')}>
+              <Button variant="primary" className="w-full h-14 text-base font-bold" onClick={() => navigate('/customer/book', { state: { facilityId: id, facilityName: facility?.name, basePricePerHour: facility?.base_price_per_hour || facility?.basePricePerHour || 30, selectedSlotId: selectedSlot || undefined } })}>
                 Book Now
               </Button>
 
@@ -669,7 +669,7 @@ export function ParkingDetails() {
                     className="w-full sm:w-auto text-xs font-bold py-2.5 px-6"
                     onClick={() => {
                       setIsDigitalTwinOpen(false);
-                      navigate('/customer/book');
+                      navigate('/customer/book', { state: { facilityId: id, facilityName: facility?.name, basePricePerHour: facility?.base_price_per_hour || facility?.basePricePerHour || 30, selectedSlotId: selectedSlot || undefined } });
                     }}
                   >
                     Proceed with {selectedSlot || 'Selected Spot'}
