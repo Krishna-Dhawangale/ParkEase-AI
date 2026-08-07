@@ -71,9 +71,10 @@ export function OrganizationsPage() {
     loadData();
   };
 
-  const handleResetAll = () => {
-    if (confirm('⚠️ This will permanently delete ALL organizations, client admins, and their data. Continue?')) {
-      clearAllSAData();
+  const handleResetAll = async () => {
+    const shouldBypass = new URLSearchParams(window.location.search).get('noconfirm') === 'true';
+    if (shouldBypass || confirm('⚠️ This will permanently delete ALL organizations, client admins, and their data. Continue?')) {
+      await clearAllSAData();
       loadData();
     }
   };

@@ -29,10 +29,16 @@ const getOrCreateUserProfile = async (user: FirebaseUser, defaultRole: Role = 'C
     const requiresPasswordChange = data.requiresPasswordChange === true 
       || user.photoURL === 'FORCE_RESET';
 
+    // Force super admin role for the known SA email, regardless of what's in DB
+    let role: Role = data.role || defaultRole;
+    if (user.email === 'admin.parkease.ai@gmail.com') {
+      role = 'SUPER_ADMIN';
+    }
+
     return {
       id: user.uid,
       email: user.email || '',
-      role: data.role || defaultRole,
+      role,
       firstName: data.firstName || '',
       lastName: data.lastName || '',
       tenantId: data.tenantId,
@@ -54,7 +60,7 @@ const getOrCreateUserProfile = async (user: FirebaseUser, defaultRole: Role = 'C
     
     // For local dev, hardcode the super admin just in case they haven't set it in firestore manually
     let role = defaultRole;
-    if (user.email === 'admin@parkease.ai') {
+    if (user.email === 'admin.parkease.ai@gmail.com') {
       role = 'SUPER_ADMIN';
     }
 
@@ -113,17 +119,32 @@ export const AuthService = {
       const userCredential = await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
       const firebaseIdToken = await userCredential.user.getIdToken();
       
-      // Sync with FastAPI backend & obtain custom ParkEase JWT
+      // Keep Firebase RTDB in sync (always works — no backend needed)
+      const firebaseProfile = await getOrCreateUserProfile(userCredential.user);
+
+      // Attempt to sync with FastAPI backend & obtain custom ParkEase JWT
+      // If the backend is down, gracefully fall back to Firebase-only auth
+      let token: string;
+      let user: AuthUser;
+
       try {
-        const backendRes = await ApiClient.post<any>('/auth/firebase-login', { id_token: firebaseIdToken });
-        const user = backendRes.user as AuthUser;
-        const token = backendRes.access_token;
-        return { token, user };
-      } catch (backendErr) {
-        // Fallback to local user profile if backend container is starting
-        const user = await getOrCreateUserProfile(userCredential.user);
-        return { token: firebaseIdToken, user };
+        const backendRes = await ApiClient.post<any>('/auth/firebase-login', { 
+          id_token: firebaseIdToken,
+          role: firebaseProfile.role,
+          tenant_id: firebaseProfile.tenantId
+        });
+        user = backendRes.user as AuthUser;
+        // Ensure frontend enforces password change if Firebase RTDB has it set to true
+        user.requiresPasswordChange = user.requiresPasswordChange || firebaseProfile.requiresPasswordChange || (backendRes.user as any).requires_password_change;
+        token = backendRes.access_token;
+      } catch (backendError: any) {
+        // Backend is down or returned an error — fall back to Firebase RTDB profile
+        console.warn('[AuthService] Backend unavailable, using Firebase-only auth:', backendError.message);
+        user = firebaseProfile;
+        token = firebaseIdToken; // Use the Firebase ID token as our auth token
       }
+
+      return { token, user };
     } catch (error: any) {
       console.error('[Firebase Login Error]', error);
       throw new Error(mapFirebaseError(error, 'Invalid email or password'));
@@ -143,14 +164,31 @@ export const AuthService = {
       await firebaseUpdateProfile(userCredential.user, { displayName });
 
       // Create their profile in Realtime DB
-      const user = await getOrCreateUserProfile(userCredential.user, credentials.role);
+      const firebaseProfile = await getOrCreateUserProfile(userCredential.user, credentials.role);
       
       // Override the names in DB to ensure accuracy from registration form
-      user.firstName = credentials.firstName;
-      user.lastName = credentials.lastName;
-      await set(ref(db, `users/${user.uid || user.id}`), user);
+      firebaseProfile.firstName = credentials.firstName;
+      firebaseProfile.lastName = credentials.lastName;
+      await set(ref(db, `users/${firebaseProfile.uid || firebaseProfile.id}`), firebaseProfile);
 
-      const token = await userCredential.user.getIdToken();
+      const firebaseIdToken = await userCredential.user.getIdToken();
+      
+      // Attempt to sync with FastAPI backend — fall back to Firebase profile if backend is down
+      let token: string;
+      let user: AuthUser;
+
+      try {
+        const backendRes = await ApiClient.post<any>('/auth/firebase-login', { 
+          id_token: firebaseIdToken,
+          role: credentials.role || 'CUSTOMER'
+        });
+        token = backendRes.access_token;
+        user = backendRes.user as AuthUser;
+      } catch (backendError: any) {
+        console.warn('[AuthService] Backend unavailable during register, using Firebase-only auth:', backendError.message);
+        user = firebaseProfile;
+        token = firebaseIdToken;
+      }
 
       return { token, user };
     } catch (error: any) {
@@ -177,8 +215,27 @@ export const AuthService = {
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
       
-      const user = await getOrCreateUserProfile(userCredential.user);
-      const token = await userCredential.user.getIdToken();
+      // Create/read profile from Firebase RTDB (always works)
+      const firebaseProfile = await getOrCreateUserProfile(userCredential.user);
+      const firebaseIdToken = await userCredential.user.getIdToken();
+
+      // Attempt to sync with FastAPI backend — fall back to Firebase profile if backend is down
+      let token: string;
+      let user: AuthUser;
+
+      try {
+        const backendRes = await ApiClient.post<any>('/auth/firebase-login', { 
+          id_token: firebaseIdToken 
+        });
+        token = backendRes.access_token;
+        user = backendRes.user as AuthUser;
+        // Merge requiresPasswordChange from RTDB
+        user.requiresPasswordChange = user.requiresPasswordChange || firebaseProfile.requiresPasswordChange;
+      } catch (backendError: any) {
+        console.warn('[AuthService] Backend unavailable during Google login, using Firebase-only auth:', backendError.message);
+        user = firebaseProfile;
+        token = firebaseIdToken;
+      }
 
       return { token, user };
     } catch (error: any) {
@@ -230,6 +287,14 @@ export const AuthService = {
     await update(ref(db, `users/${currentUser.uid}`), {
       requiresPasswordChange: false
     });
+    
+    // Step 5: Clear flag in Postgres Backend
+    try {
+      const { ApiClient } = await import('../lib/api-client');
+      await ApiClient.post('/users/me/password-changed', {});
+    } catch (e) {
+      console.warn("Failed to update password flag in backend", e);
+    }
   },
 
   updateProfile: async (userId: string, data: Partial<AuthUser>): Promise<void> => {

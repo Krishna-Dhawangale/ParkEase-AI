@@ -7,6 +7,10 @@ class UserRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def get_all_users(self) -> list[User]:
+        result = await self.db.execute(select(User))
+        return result.scalars().all()
+
     async def get_by_id(self, user_id: str) -> Optional[User]:
         result = await self.db.execute(select(User).where(User.id == user_id))
         return result.scalars().first()
@@ -25,3 +29,11 @@ class UserRepository:
         await self.db.flush()
         await self.db.refresh(user)
         return user
+
+    async def delete(self, user_id: str) -> bool:
+        user = await self.get_by_id(user_id)
+        if user:
+            await self.db.delete(user)
+            await self.db.flush()
+            return True
+        return False

@@ -143,9 +143,9 @@ export function CreateOrganizationPage() {
         email: res.clientAdmin.email,
         tempPassword: res.temporaryPassword
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Failed to create organization. Please try again.');
+      alert(err.message || 'Failed to create organization. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -63,7 +63,7 @@ export const SuperAdminService = {
       throw new Error(`Failed to create admin account: ${error.message}`);
     }
 
-    // 3. Return combined payload expected by the UI and save User Profile to Firestore
+    // 3. Return combined payload expected by the UI and save User Profile to RTDB
     const clientAdmin: AuthUser = {
       id: firebaseUser.uid,
       email: firebaseUser.email || '',
@@ -73,11 +73,49 @@ export const SuperAdminService = {
       tenantId: newTenant.id,
       isEmailVerified: false,
       accountStatus: 'ACTIVE',
+      requiresPasswordChange: true,
+      profileSetupComplete: false,
+      onboardingStatus: 'ACCOUNT_CREATED',
       createdAt: new Date().toISOString()
     };
     
     // Save the client admin profile to the 'users' collection in Realtime DB
     await set(ref(db, 'users/' + clientAdmin.id), clientAdmin);
+
+    // Attempt to sync organization and client admin to backend (Postgres) — non-blocking if backend is down
+    try {
+      const { ApiClient } = await import('../lib/api-client');
+      
+      // 1. Sync Organization
+      await ApiClient.post('/tenants', {
+        id: newTenant.id,
+        name: newTenant.name,
+        slug: newTenant.slug,
+        status: newTenant.status,
+        plan: newTenant.plan,
+        type: newTenant.type,
+        contact_person: newTenant.contactPerson,
+        contact_email: newTenant.contactEmail,
+        contact_phone: newTenant.contactPhone,
+        address_json: newTenant.address,
+        gst_number: newTenant.gstNumber,
+        website: newTenant.website,
+        is_onboarded: newTenant.isOnboarded
+      });
+
+      // 2. Sync Client Admin
+      await ApiClient.post('/users/client-admin', {
+        first_name: data.clientAdmin.firstName,
+        last_name: data.clientAdmin.lastName,
+        email: firebaseUser.email || '',
+        organization_id: newTenant.id,
+        password: tempPassword,
+        id: firebaseUser.uid
+      });
+    } catch (backendErr: any) {
+      console.warn('[SuperAdminService] Backend sync skipped (backend may be down):', backendErr.message);
+      // Non-fatal — the user profile is already in Firebase RTDB and Auth
+    }
 
     return {
       organization: newTenant,

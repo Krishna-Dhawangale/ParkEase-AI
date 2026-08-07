@@ -3,12 +3,14 @@ from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from app.core.database import Base
 
+from sqlalchemy.dialects.postgresql import ENUM, UUID
+
 class User(Base):
     __tablename__ = "users"
 
     id = Column(String, primary_key=True, index=True) # Firebase UID
     email = Column(String, unique=True, index=True, nullable=False)
-    role = Column(String, nullable=False, default="CUSTOMER")
+    role = Column(ENUM('CUSTOMER', 'CLIENT_ADMIN', 'SUPER_ADMIN', 'ATTENDANT', name='user_role'), nullable=False, default="CUSTOMER")
     sub_role = Column(String, nullable=True)
     permissions_json = Column(JSON, nullable=True)
     first_name = Column(String, nullable=True)

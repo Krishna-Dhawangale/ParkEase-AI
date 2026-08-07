@@ -22,5 +22,16 @@ class FacilityRepository:
     async def create_facility(self, facility: Facility) -> Facility:
         self.db.add(facility)
         await self.db.flush()
-        await self.db.refresh(facility)
-        return facility
+        return await self.get_by_id(facility.id)
+
+    async def update_facility(self, facility: Facility) -> Facility:
+        await self.db.flush()
+        return await self.get_by_id(facility.id)
+
+    async def delete_facility(self, facility_id: str) -> bool:
+        facility = await self.get_by_id(facility_id)
+        if facility:
+            await self.db.delete(facility)
+            await self.db.flush()
+            return True
+        return False

@@ -32,17 +32,39 @@ export function ParkingDetails() {
 
   useEffect(() => {
     const fetchFacility = async () => {
-      const dbRef = ref(db);
-      const snapshot = await get(child(dbRef, `facilities/${id}`));
-      if (snapshot.exists()) {
-        const f = snapshot.val();
-        setFacility({
-          ...f,
-          coordinates: { lat: Number(f.latitude) || 21.1458, lng: Number(f.longitude) || 79.0882 },
-          capacity: f.totalCapacity || 50,
-          slots: f.totalCapacity || 50
-        });
+      try {
+        const dbRef = ref(db);
+        const snapshot = await get(child(dbRef, `facilities/${id}`));
+        if (snapshot.exists()) {
+          const f = snapshot.val();
+          setFacility({
+            ...f,
+            coordinates: { lat: Number(f.latitude) || 21.1458, lng: Number(f.longitude) || 79.0882 },
+            capacity: f.totalCapacity || 50,
+            slots: f.totalCapacity || 50
+          });
+          return;
+        }
+      } catch (e) {
+        console.warn('Firebase fetch failed, falling back to local');
       }
+
+      // Fallback
+      try {
+        const raw = localStorage.getItem('parkease_sa_facilities');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const f = parsed.find((fac: any) => fac.id === id);
+          if (f) {
+            setFacility({
+              ...f,
+              coordinates: f.coordinates || { lat: Number(f.latitude) || 21.1458, lng: Number(f.longitude) || 79.0882 },
+              capacity: f.capacity || f.totalCapacity || 50,
+              slots: f.slots || f.capacity || 50
+            });
+          }
+        }
+      } catch {}
     };
     if (id) fetchFacility();
   }, [id]);

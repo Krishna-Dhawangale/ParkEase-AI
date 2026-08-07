@@ -12,9 +12,18 @@ class UserBase(BaseModel):
     city: Optional[str] = None
     tenant_id: Optional[str] = None
 
+class ClientAdminCreateRequest(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    organization_id: str
+    password: Optional[str] = None
+    id: Optional[str] = None
+
 class FirebaseLoginRequest(BaseModel):
     id_token: str
     role: Optional[str] = None
+    tenant_id: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str

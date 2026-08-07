@@ -46,7 +46,7 @@ function App() {
         <Route path="/force-password-change" element={<ForcePasswordChange />} />
         
         {/* App pages with sidebar layout (Customer Only) */}
-        <Route element={<RoleProtectedRoute allowedRoles={['CUSTOMER', 'SUPER_ADMIN']} />}>
+        <Route element={<RoleProtectedRoute allowedRoles={['CUSTOMER']} />}>
           <Route path="/customer" element={<CustomerLayout />}>
             <Route index element={<Navigate to="/customer/search" replace />} />
             <Route path="search" element={<ParkingSearchPage />} />

@@ -10,13 +10,12 @@ if sys.platform == 'win32':
         sys.stdout.reconfigure(encoding='utf-8')
     except Exception:
         pass
-
-PASSWORD = 'Girish@123'
+PASSWORD = 'ParkEaseAI'
 ENCODED_PASSWORD = urllib.parse.quote(PASSWORD)
 HOST = '127.0.0.1'
 PORT = 5432
 USER = 'postgres'
-DB_NAME = 'parkease_db'
+DB_NAME = 'parkease_ai'
 
 async def main():
     print(f"Connecting to PostgreSQL server at {HOST}:{PORT} as '{USER}'...")

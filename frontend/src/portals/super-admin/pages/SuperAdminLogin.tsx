@@ -6,8 +6,8 @@ import { useAuthStore } from '../../../store';
 import { AuthService } from '../../../services/auth.service';
 
 export function SuperAdminLogin() {
-  const [email, setEmail] = useState('admin@parkease.com'); // Pre-fill for dev
-  const [password, setPassword] = useState('admin123'); // Pre-fill for dev
+  const [email, setEmail] = useState('admin.parkease.ai@gmail.com'); // Pre-fill for dev
+  const [password, setPassword] = useState('Admin@123'); // Pre-fill for dev
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -81,7 +81,7 @@ export function SuperAdminLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="block w-full rounded-md border-0 py-2.5 px-3 text-slate-900 dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 dark:bg-slate-950 sm:text-sm sm:leading-6"
-              placeholder="admin@parkease.ai"
+              placeholder="admin.parkease.ai@gmail.com"
             />
           </div>
 

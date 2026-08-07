@@ -54,7 +54,7 @@ export function ParkingSearchPage() {
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
   });
 
-  const isLoaded = isJsLoaded || (typeof window !== 'undefined' && Boolean((window as any).google?.maps));
+  const isLoaded = isJsLoaded || (typeof window !== 'undefined' && Boolean((window as any).google?.maps?.Size));
 
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [mapCenter, setMapCenter] = useState({ lat: 21.1458, lng: 79.0882 }); // Nagpur Center
@@ -87,57 +87,104 @@ export function ParkingSearchPage() {
   const [facilities, setFacilities] = useState<any[]>([]);
 
   useEffect(() => {
-    const facilitiesRef = ref(db, 'facilities');
-    
-    const unsubscribe = onValue(facilitiesRef, (snapshot: any) => {
-      const data = snapshot.val();
-      if (!data) {
-        setFacilities([]);
-        return;
+    let isActive = true;
+
+    const fetchFacilities = async () => {
+      try {
+        const { ApiClient } = await import('../../../lib/api-client');
+        const facilitiesData: any[] = await ApiClient.get('/facilities/');
+        
+        if (!isActive) return;
+
+        // Only show facilities that are actively LIVE
+        const live = facilitiesData.filter((f: any) => f.status === 'LIVE');
+        
+        const uiFacilities = live.map((f: any, idx: number) => {
+          const images = [
+            'https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&q=80&w=300&h=200',
+            'https://images.unsplash.com/photo-1621293954908-907159247fc8?auto=format&fit=crop&q=80&w=300&h=200',
+            'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&q=80&w=300&h=200'
+          ];
+          // Calculate dynamic values
+          const capacity = f.capacity || 50;
+          const slots = capacity; // Base slots, simulated websocket will alter this
+          const price = f.base_price_per_hour || 30;
+          
+          const availability = capacity > 0 ? (slots / capacity) * 100 : 0;
+          let status = 'High';
+          if (availability < 20) status = 'Low';
+          else if (availability < 50) status = 'Medium';
+          
+          return {
+            id: f.id, 
+            name: f.name, 
+            address: `${f.city}, ${f.state}`,
+            distance: `${(Math.random() * 5 + 0.5).toFixed(1)} km`,
+            slots: slots, 
+            capacity: capacity,
+            rating: (4.0 + Math.random()).toFixed(1), 
+            reviews: Math.floor(Math.random() * 200) + 10,
+            price: price,
+            image: images[idx % images.length], 
+            status,
+            lat: Number(f.latitude) || 21.1458, 
+            lng: Number(f.longitude) || 79.0882,
+            _lastUpdated: 0
+          };
+        });
+        
+        setFacilities(uiFacilities);
+      } catch (err) {
+        console.warn('[ParkingSearch] Backend unavailable, using local mock data');
+        try {
+          const raw = localStorage.getItem('parkease_sa_facilities');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            const live = parsed.filter((f: any) => f.approvalStatus === 'LIVE' || f.status === 'LIVE');
+            
+            const uiFacilities = live.map((f: any, idx: number) => {
+              const images = [
+                'https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&q=80&w=300&h=200',
+                'https://images.unsplash.com/photo-1621293954908-907159247fc8?auto=format&fit=crop&q=80&w=300&h=200',
+                'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&q=80&w=300&h=200'
+              ];
+              const capacity = f.capacity || 50;
+              const slots = capacity;
+              const price = f.base_price_per_hour || 30;
+              
+              const availability = capacity > 0 ? (slots / capacity) * 100 : 0;
+              let status = 'High';
+              if (availability < 20) status = 'Low';
+              else if (availability < 50) status = 'Medium';
+              
+              return {
+                id: f.id, 
+                name: f.name, 
+                address: `${f.city || 'Unknown'}, ${f.state || 'Unknown'}`,
+                distance: `${(Math.random() * 5 + 0.5).toFixed(1)} km`,
+                slots: slots, 
+                capacity: capacity,
+                rating: (4.0 + Math.random()).toFixed(1), 
+                reviews: Math.floor(Math.random() * 200) + 10,
+                price: price,
+                image: images[idx % images.length], 
+                status,
+                lat: f.coordinates?.lat || Number(f.latitude) || 21.1458, 
+                lng: f.coordinates?.lng || Number(f.longitude) || 79.0882,
+                _lastUpdated: 0
+              };
+            });
+            setFacilities(uiFacilities);
+          }
+        } catch {}
       }
-      
-      const parsed = Object.values(data);
-      // Show all facilities on the map for the demo (including DRAFT, PENDING_APPROVAL, etc)
-      let live = parsed;
-      
-      const uiFacilities = live.map((f: any, idx: number) => {
-        const images = [
-          'https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&q=80&w=300&h=200',
-          'https://images.unsplash.com/photo-1621293954908-907159247fc8?auto=format&fit=crop&q=80&w=300&h=200',
-          'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&q=80&w=300&h=200'
-        ];
-        // Calculate dynamic values
-        const capacity = f.totalCapacity || 50;
-        const slots = capacity; // Base slots, simulated websocket will alter this
-        const price = f.pricing?.hourlyRate || 30;
-        
-        const availability = capacity > 0 ? (slots / capacity) * 100 : 0;
-        let status = 'High';
-        if (availability < 20) status = 'Low';
-        else if (availability < 50) status = 'Medium';
-        
-        return {
-          id: f.id, 
-          name: f.name, 
-          address: `${f.city}, ${f.state}`,
-          distance: `${(Math.random() * 5 + 0.5).toFixed(1)} km`,
-          slots: slots, 
-          capacity: capacity,
-          rating: (4.0 + Math.random()).toFixed(1), 
-          reviews: Math.floor(Math.random() * 200) + 10,
-          price: price,
-          image: images[idx % images.length], 
-          status,
-          lat: Number(f.latitude) || 21.1458, 
-          lng: Number(f.longitude) || 79.0882,
-          _lastUpdated: 0
-        };
-      });
-      
-      setFacilities(uiFacilities);
-    });
+    };
+
+    fetchFacilities();
+    // Poll every 10 seconds to get new facilities
+    const pollInterval = setInterval(fetchFacilities, 10000);
     
-    // Simulate WebSocket for real-time occupancy updates
+    // Simulate WebSocket for real-time occupancy updates on top of the fetched list
     const wsInterval = setInterval(() => {
       setFacilities(prev => prev.map(f => {
         if (Math.random() > 0.6) {
@@ -156,7 +203,8 @@ export function ParkingSearchPage() {
     }, 4000);
 
     return () => {
-      off(facilitiesRef, 'value', unsubscribe);
+      isActive = false;
+      clearInterval(pollInterval);
       clearInterval(wsInterval);
     };
   }, []);

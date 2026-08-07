@@ -21,7 +21,7 @@ class Facility(Base):
     capacity = Column(Integer, default=0)
     base_price_per_hour = Column(Float, default=10.0)
     currency = Column(String, default="USD")
-    status = Column(String, default="LIVE")
+    status = Column(String, default="DRAFT")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

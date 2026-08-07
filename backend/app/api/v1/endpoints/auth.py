@@ -14,6 +14,7 @@ async def firebase_login(
     service = AuthService(db)
     result = await service.authenticate_firebase_token(
         id_token=payload.id_token, 
-        default_role=payload.role or "CUSTOMER"
+        default_role=payload.role or "CUSTOMER",
+        tenant_id=payload.tenant_id
     )
     return result

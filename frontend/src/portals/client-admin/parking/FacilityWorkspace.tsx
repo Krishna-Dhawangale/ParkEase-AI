@@ -198,20 +198,24 @@ export default function FacilityWorkspace() {
                   className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all"
                   onClick={async () => {
                      if(tenantId && facility.id) {
-                       const { currentTenant } = useTenantStore.getState();
-                       if (!currentTenant?.subscriptionEndDate || new Date(currentTenant.subscriptionEndDate) < new Date()) {
-                         alert("Your subscription is missing or has expired. Please subscribe to publish this facility.");
-                         return;
-                       }
-                       await FacilityService.goLive(tenantId, facility.id);
-                       setPopupContent({ title: 'Facility is Live!', message: 'Users can now book parking.' });
+                       // We bypass the mock subscription logic to simulate an immediate payment here
+                       setPopupContent({ title: 'Processing Payment...', message: 'Please wait while we secure your transaction.' });
                        setShowSuccessPopup(true);
-                       setTimeout(() => setShowSuccessPopup(false), 3000);
+                       
+                       try {
+                         await FacilityService.processPaymentAndGoLive(tenantId, facility.id);
+                         setPopupContent({ title: 'Payment Successful!', message: 'Facility is now LIVE and users can book parking.' });
+                         setFacility({...facility, status: 'LIVE'});
+                         setTimeout(() => setShowSuccessPopup(false), 3000);
+                       } catch (e) {
+                         alert("Payment failed.");
+                         setShowSuccessPopup(false);
+                       }
                      }
                   }}
                 >
-                  <CheckCircle2 className="w-4 h-4" />
-                  Go Live
+                  <IndianRupee className="w-4 h-4" />
+                  Make Payment & Go Live
                 </button>
               </>
             )}

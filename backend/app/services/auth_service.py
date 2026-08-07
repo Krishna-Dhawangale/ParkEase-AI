@@ -10,7 +10,7 @@ class AuthService:
     def __init__(self, db: AsyncSession):
         self.user_repo = UserRepository(db)
 
-    async def authenticate_firebase_token(self, id_token: str, default_role: str = "CUSTOMER") -> Dict[str, Any]:
+    async def authenticate_firebase_token(self, id_token: str, default_role: str = "CUSTOMER", tenant_id: str = None) -> Dict[str, Any]:
         # Step 1: Verify token via Firebase Admin or fallback
         decoded = verify_firebase_id_token(id_token)
         if not decoded:
@@ -26,19 +26,27 @@ class AuthService:
         user = await self.user_repo.get_by_id(uid)
         if not user:
             role = default_role
-            if email == "admin@parkease.ai":
+            if email == "admin.parkease.ai@gmail.com":
                 role = "SUPER_ADMIN"
 
+            full_name = decoded.get("name") or "Super Admin"
             user = User(
                 id=uid,
                 email=email,
                 role=role,
-                first_name=decoded.get("name", "User").split(" ")[0],
-                last_name=" ".join(decoded.get("name", "").split(" ")[1:]),
+                first_name=full_name.split(" ")[0],
+                last_name=" ".join(full_name.split(" ")[1:]),
                 is_email_verified=decoded.get("email_verified", False),
                 account_status="ACTIVE",
+                tenant_id=tenant_id
             )
             user = await self.user_repo.create(user)
+
+        if user.account_status == "DISABLED":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your account has been disabled by the Super Admin."
+            )
 
         # Step 3: Issue custom ParkEase JWT token
         token = create_access_token(
@@ -56,6 +64,9 @@ class AuthService:
             "tenantId": user.tenant_id,
             "isEmailVerified": user.is_email_verified,
             "accountStatus": user.account_status,
+            "requiresPasswordChange": user.requires_password_change or False,
+            "profileSetupComplete": user.profile_setup_complete or False,
+            "onboardingStatus": user.onboarding_status or "ACCOUNT_CREATED",
             "createdAt": user.created_at.isoformat() if user.created_at else "",
         }
 

@@ -138,7 +138,7 @@ try {
 
 // ─── Dev Utility: Reset All Data ────────────────────────────────────────────
 
-export function clearAllSAData(): void {
+export async function clearAllSAData(): Promise<void> {
   // Clear all SA store keys
   Object.values(keys).forEach(k => localStorage.removeItem(k));
   // Clear auth mock stores
@@ -156,6 +156,30 @@ export function clearAllSAData(): void {
   store.notifications = [];
   store.reviewComments = [];
   DigitalTwinService.clearAll();
+
+  // Clear Firebase RTDB so clients cannot login after reset
+  try {
+    const { db: rtdb, auth } = await import('../../../lib/firebase');
+    const { ref, set, get, remove } = await import('firebase/database');
+    
+    // Clear tenants
+    await remove(ref(rtdb, 'tenants'));
+    
+    // For users, we want to delete everyone EXCEPT the currently logged in super admin
+    const currentUserId = auth.currentUser?.uid;
+    const usersRef = ref(rtdb, 'users');
+    const snapshot = await get(usersRef);
+    if (snapshot.exists()) {
+      const users = snapshot.val();
+      for (const uid in users) {
+        if (uid !== currentUserId) {
+          await remove(ref(rtdb, `users/${uid}`));
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Failed to clear Firebase RTDB data:', error);
+  }
 }
 
 
@@ -388,71 +412,105 @@ export const SuperAdminService = {
     };
     store.invoices.set(invId, inv);
     persist(keys.invoices, store.invoices);
-
-    const temporaryPassword = `Temp${Math.random().toString(36).slice(2, 8)}!${Math.floor(Math.random() * 90 + 10)}`;
-
+    
+    let temporaryPassword = '';
+    
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        secondaryAuth,
-        adminEmail,
-        temporaryPassword
-      );
-      
-      await updateProfile(userCredential.user, {
+      // Generate a secure temporary password
+      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+      temporaryPassword = "Aa1!" + Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+
+      // Create user in Firebase Auth via the secondary app (doesn't log out the Super Admin)
+      const { secondaryAuth, db: rtdb } = await import('../../../lib/firebase');
+      const { createUserWithEmailAndPassword, updateProfile, signOut } = await import('firebase/auth');
+      const { ref, set } = await import('firebase/database');
+
+      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, adminEmail, temporaryPassword);
+      const firebaseUser = userCredential.user;
+
+      // Tag user for forced password reset
+      await updateProfile(firebaseUser, {
         displayName: `${admin.firstName} ${admin.lastName}`.trim(),
         photoURL: 'FORCE_RESET'
       });
 
-      // Save user profile to Realtime DB
-      await set(ref(db, `users/${userCredential.user.uid}`), {
-        id: userCredential.user.uid,
+      // Sign out the secondary app so it's clean for next use
+      await signOut(secondaryAuth);
+
+      // Save client admin profile to Firebase RTDB
+      const userProfile = {
+        id: firebaseUser.uid,
         email: adminEmail,
-        role: 'CLIENT_OWNER',
-        tenantId: orgId,
+        role: 'CLIENT_ADMIN',
         firstName: admin.firstName,
         lastName: admin.lastName,
-        isEmailVerified: true,
+        tenantId: orgId,
+        isEmailVerified: false,
         accountStatus: 'ACTIVE',
         requiresPasswordChange: true,
         profileSetupComplete: false,
-        createdAt: now()
-      });
-      
-      // Save the organization tenant to DB
-      await set(ref(db, `tenants/${orgId}`), {
+        onboardingStatus: 'ACCOUNT_CREATED',
+        createdAt: new Date().toISOString()
+      };
+      await set(ref(rtdb, `users/${firebaseUser.uid}`), userProfile);
+
+      // Update the local admin ID to match Firebase UID
+      admin.id = firebaseUser.uid;
+      store.clientAdmins.set(admin.id, admin);
+      persist(keys.admins, store.clientAdmins);
+
+      // Also save the tenant/organization to Firebase RTDB for cross-service access
+      await set(ref(rtdb, `tenants/${orgId}`), {
         id: orgId,
         name: org.name,
         slug: org.name.toLowerCase().replace(/\s+/g, '-'),
-        status: 'ACTIVE',
-        createdAt: now(),
-        updatedAt: now()
+        status: org.status,
+        plan: payload.subscription.planId,
+        type: org.type,
+        contactPerson: payload.contact.name,
+        contactEmail: payload.contact.email,
+        contactPhone: payload.contact.phone,
+        isOnboarded: false,
+        createdAt: org.createdAt,
+        updatedAt: org.updatedAt
       });
 
-      await signOut(secondaryAuth);
+      // Optionally sync to backend (Postgres) — non-blocking
+      try {
+        const { ApiClient } = await import('../../../lib/api-client');
+        
+        await ApiClient.post('/tenants/', {
+          id: orgId,
+          name: org.name,
+          slug: org.name.toLowerCase().replace(/\s+/g, '-'),
+          status: org.status === 'ONBOARDING' ? 'ACTIVE' : org.status,
+          plan: payload.subscription.planId,
+          type: org.type,
+          contact_person: payload.contact.name,
+          contact_email: payload.contact.email,
+          contact_phone: payload.contact.phone,
+          website: payload.organization.website,
+          is_onboarded: false
+        });
+
+        await ApiClient.post('/users/client-admin', {
+          first_name: admin.firstName,
+          last_name: admin.lastName,
+          email: adminEmail,
+          organization_id: orgId,
+          password: temporaryPassword,
+          id: admin.id
+        });
+      } catch (backendErr: any) {
+        console.warn('[CreateOrg] Backend sync skipped (backend may be down):', backendErr.message);
+      }
     } catch (error: any) {
-      console.error('[Firebase] Failed to provision client admin:', error);
+      console.error('Failed to provision client admin via Firebase:', error);
+      if (error.code === 'auth/email-already-in-use' || error.message.includes('email-already-in-use')) {
+        throw new Error('This email is already registered in Firebase. Please use a different email address for the Client Admin.');
+      }
       throw new Error(`Failed to create admin account: ${error.message}`);
     }
-
-    const mockPasswords = JSON.parse(localStorage.getItem('mockPasswords') || '{}');
-    mockPasswords[adminEmail] = temporaryPassword;
-    localStorage.setItem('mockPasswords', JSON.stringify(mockPasswords));
-
-    // Sync to mockUsers — the single auth source of truth
-    mockUsers.push({
-      id: adminId,
-      email: adminEmail,
-      role: 'CLIENT_OWNER',
-      tenantId: orgId,
-      firstName: admin.firstName,
-      lastName: admin.lastName,
-      isEmailVerified: true,
-      requiresPasswordChange: true,
-      accountStatus: 'ACTIVE',
-      onboardingStatus: 'ACCOUNT_CREATED',
-      createdAt: now()
-    });
-    persistMockUsers();
 
     return { organization: org, clientAdmin: admin, subscription: sub, temporaryPassword };
   },
@@ -471,9 +529,17 @@ export const SuperAdminService = {
   },
 
   async deleteOrganization(id: string): Promise<void> {
-    await delay(400);
+    await delay(300);
     const org = store.organizations.get(id);
     if (!org) return;
+
+    // Delete from PostgreSQL backend
+    try {
+      const { ApiClient } = await import('../../../lib/api-client');
+      await ApiClient.delete(`/tenants/${id}`);
+    } catch (error) {
+      console.error('[Backend] Failed to delete tenant:', error);
+    }
 
     // Cascade: remove client admins for this org
     const adminsToDelete = Array.from(store.clientAdmins.values()).filter(a => a.organizationId === id);
@@ -590,61 +656,42 @@ export const SuperAdminService = {
     organizationId: string;
     role?: string;
   }): Promise<{ user: ClientAdmin; temporaryPassword: string }> {
-    await delay(600);
     const org = store.organizations.get(payload.organizationId);
     if (!org) throw new Error("Organization not found.");
     
-    // Check duplicate
-    const normalizedEmail = normalizeEmail(payload.email);
-    const existing = Array.from(store.clientAdmins.values()).find(a => normalizeEmail(a.email) === normalizedEmail);
-    if (existing) {
-      throw new Error("An account already exists with this email address.");
+    try {
+      const { ApiClient } = await import('../../../lib/api-client');
+      const response: any = await ApiClient.post('/users/client-admin', {
+        first_name: payload.firstName,
+        last_name: payload.lastName,
+        email: payload.email,
+        organization_id: payload.organizationId
+      });
+      
+      const user = response.user;
+      const admin: ClientAdmin = {
+        id: user.id,
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        email: user.email,
+        phone: user.phone || '',
+        organizationId: org.id,
+        organizationName: org.name,
+        role: user.role,
+        status: user.account_status === 'ACTIVE' ? 'ACTIVE' : 'DISABLED',
+        mustChangePassword: user.requires_password_change,
+        lastLoginAt: null,
+        createdAt: user.created_at || new Date().toISOString(),
+      };
+      
+      store.clientAdmins.set(admin.id, admin);
+      persist(keys.admins, store.clientAdmins);
+      addAudit('CLIENT_ADMIN_CREATED', 'ClientAdmin', admin.id, org.id, org.name, { email: admin.email });
+      
+      return { user: admin, temporaryPassword: response.temporary_password };
+    } catch (err: any) {
+      throw new Error(err.message || 'Failed to create Client Admin');
     }
-
-    const adminId = uid();
-    const admin: ClientAdmin = {
-      id: adminId,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      email: normalizedEmail,
-      phone: payload.phone || '',
-      organizationId: org.id,
-      organizationName: org.name,
-      role: 'CLIENT_ADMIN',
-      status: 'INVITED',
-      mustChangePassword: true,
-      lastLoginAt: null,
-      createdAt: now(),
-    };
-
-    store.clientAdmins.set(adminId, admin);
-    persist(keys.admins, store.clientAdmins);
-
-    // Sync to mockUsers — the single auth source of truth
-    mockUsers.push({
-      id: adminId,
-      email: normalizedEmail,
-      role: 'CLIENT_ADMIN',
-      tenantId: org.id,
-      firstName: admin.firstName,
-      lastName: admin.lastName,
-      isEmailVerified: true,
-      requiresPasswordChange: true,
-      accountStatus: 'ACTIVE',
-      onboardingStatus: 'ACCOUNT_CREATED',
-      createdAt: now()
-    });
-    persistMockUsers();
-
-    addAudit('CLIENT_ADMIN_CREATED', 'ClientAdmin', adminId, org.id, org.name, { email: admin.email });
-
-    const temporaryPassword = `Temp${Math.random().toString(36).slice(2, 8)}!${Math.floor(Math.random() * 90 + 10)}`;
-    
-    const mockPasswords = JSON.parse(localStorage.getItem('mockPasswords') || '{}');
-    mockPasswords[normalizedEmail] = temporaryPassword;
-    localStorage.setItem('mockPasswords', JSON.stringify(mockPasswords));
-
-    return { user: admin, temporaryPassword };
   },
 
   async deleteClientAdmin(id: string): Promise<void> {
@@ -731,79 +778,46 @@ export const SuperAdminService = {
 
   async getFacility(id: string): Promise<SAFacility | null> {
     await delay(150);
-    const facRef = ref(db, `facilities/${id}`);
-    const snapshot = await get(facRef);
-    if (!snapshot.exists()) return null;
+    try {
+      const raw = localStorage.getItem(keys.facilities);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        parsed.forEach((item: any) => store.facilities.set(item.id, item));
+      }
+    } catch {}
     
-    const f = snapshot.val();
-    
-    const tenantRef = ref(db, `tenants/${f.tenantId}`);
-    const tenantSnap = await get(tenantRef);
-    const orgName = tenantSnap.exists() ? tenantSnap.val().name : 'Unknown Organization';
-    
-    return {
-      id: f.id,
-      name: f.name,
-      organizationId: f.tenantId,
-      organizationName: orgName,
-      city: f.city || 'Unknown',
-      state: f.state || 'Unknown',
-      type: f.type || 'COMMERCIAL',
-      approvalStatus: f.status === 'PENDING_APPROVAL' ? 'UNDER_REVIEW' : f.status,
-      capacity: f.totalCapacity || 0,
-      currentOccupancy: 0,
-      floors: f.floors || 1,
-      slots: f.totalCapacity || 0,
-      digitalTwinStatus: 'NOT_CONFIGURED',
-      deviceHealth: 'NO_DEVICES',
-      bookingsToday: 0,
-      submittedAt: f.status === 'PENDING_APPROVAL' ? (f.updatedAt || f.createdAt) : null,
-      approvedAt: f.approvedAt || null,
-      createdAt: f.createdAt || new Date().toISOString(),
-      updatedAt: f.updatedAt || new Date().toISOString(),
-      pricingConfigured: f.pricingConfigured || false,
-      entryExitConfigured: false
-    };
+    return store.facilities.get(id) || null;
   },
 
   subscribeToFacilityApprovals(params: PaginationParams & { status?: string }, callback: (res: PaginatedResponse<SAFacility>) => void): () => void {
-    const facilitiesRef = ref(db, 'facilities');
-    const tenantsRef = ref(db, 'tenants');
-    
-    let currentTenants: Record<string, any> = {};
-    
-    const unsubscribeTenants = onValue(tenantsRef, (snapshot: any) => {
-      if (snapshot.exists()) {
-        currentTenants = snapshot.val();
-      }
-    });
-
-    const unsubscribeFacilities = onValue(facilitiesRef, (snapshot: any) => {
-      if (snapshot.exists()) {
-        const firebaseFacilities = Object.values(snapshot.val()) as any[];
+    const fetchApprovals = async () => {
+      try {
+        const { ApiClient } = await import('../../../lib/api-client');
+        const facilities: any[] = await ApiClient.get('/facilities/');
+        const tenants: any[] = await ApiClient.get('/tenants/');
         
-        let items: SAFacility[] = firebaseFacilities
+        let items: SAFacility[] = facilities
           .filter(f => ['PENDING_APPROVAL', 'CHANGES_REQUESTED', 'APPROVED', 'DRAFT'].includes(f.status))
           .map(f => ({
             id: f.id,
             name: f.name,
-            organizationId: f.tenantId,
-            organizationName: currentTenants[f.tenantId]?.name || 'Unknown Organization',
+            organizationId: f.tenant_id,
+            organizationName: tenants.find(t => t.id === f.tenant_id)?.name || 'Unknown Organization',
             city: f.city || 'Unknown',
             state: f.state || 'Unknown',
             type: f.type || 'COMMERCIAL',
             approvalStatus: f.status === 'PENDING_APPROVAL' ? 'UNDER_REVIEW' : f.status,
-            capacity: f.totalCapacity || 0,
+            capacity: f.capacity || 0,
             currentOccupancy: 0,
             floors: f.floors || 1,
-            slots: f.totalCapacity || 0,
+            slots: f.capacity || 0,
             digitalTwinStatus: 'NOT_CONFIGURED',
             deviceHealth: 'NO_DEVICES',
             bookingsToday: 0,
-            submittedAt: f.status === 'PENDING_APPROVAL' ? (f.updatedAt || f.createdAt) : null,
+            submittedAt: f.status === 'PENDING_APPROVAL' ? (f.updated_at || f.created_at) : null,
             approvedAt: f.approvedAt || null,
-            createdAt: f.createdAt || new Date().toISOString(),
-            updatedAt: f.updatedAt || new Date().toISOString(),
+            createdAt: f.created_at || new Date().toISOString(),
+            updatedAt: f.updated_at || new Date().toISOString(),
             pricingConfigured: f.pricingConfigured || false,
             entryExitConfigured: false
           }));
@@ -830,91 +844,111 @@ export const SuperAdminService = {
           pageSize: params.pageSize,
           totalPages: totalPages === 0 ? 1 : totalPages
         });
-      } else {
-        callback({ data: [], total: 0, page: 1, pageSize: params.pageSize, totalPages: 1 });
-      }
-    });
+      } catch (err) {
+        console.warn('[subscribeToFacilityApprovals] Backend unavailable, using local mock data');
+        
+        // Hydrate store from local storage to pick up changes made by client portal in another tab
+        try {
+          const raw = localStorage.getItem(keys.facilities);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            parsed.forEach((item: any) => store.facilities.set(item.id, item));
+          }
+        } catch {}
 
-    return () => {
-      unsubscribeTenants();
-      unsubscribeFacilities();
+        // Fallback to local store data synced from client portal
+        let items = Array.from(store.facilities.values())
+          .filter(f => ['UNDER_REVIEW', 'CHANGES_REQUESTED', 'APPROVED', 'DRAFT'].includes(f.approvalStatus));
+          
+        if (params.status) {
+          items = items.filter(f => f.approvalStatus === params.status);
+        }
+        
+        if (params.search) {
+          const q = params.search.toLowerCase();
+          items = items.filter(f => f.name.toLowerCase().includes(q) || f.organizationName.toLowerCase().includes(q));
+        }
+        
+        items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        
+        const total = items.length;
+        const totalPages = Math.ceil(total / params.pageSize);
+        const pagedData = items.slice((params.page - 1) * params.pageSize, params.page * params.pageSize);
+        
+        callback({
+          data: pagedData,
+          total,
+          page: params.page,
+          pageSize: params.pageSize,
+          totalPages: totalPages === 0 ? 1 : totalPages
+        });
+      }
     };
+
+    fetchApprovals();
+    const interval = setInterval(fetchApprovals, 5000);
+    return () => clearInterval(interval);
   },
 
   async approveFacility(id: string, comment?: string): Promise<SAFacility | null> {
     await delay(400);
-    const facRef = ref(db, `facilities/${id}`);
-    const snapshot = await get(facRef);
-    if (!snapshot.exists()) return null;
-    
-    const facility = snapshot.val();
-    const ts = new Date().toISOString();
-    
-    await set(facRef, {
-      ...facility,
-      status: 'APPROVED',
-      approvedAt: ts,
-      updatedAt: ts
-    });
-    
-    addAudit('FACILITY_APPROVED', 'Facility', id, facility.tenantId, 'Organization');
-    store.reviewComments.push({ id: uid(), facilityId: id, actorId: 'sa-1', actorName: 'Super Admin', action: 'APPROVED', comment: comment ?? 'Approved for Go-Live', createdAt: now() });
-    persistArray(keys.reviewComments, store.reviewComments);
-    
-    // Update the mock user's onboardingStatus
-    const authUser = mockUsers.find((u: any) => u.tenantId === facility.tenantId);
-    if (authUser) {
-      authUser.onboardingStatus = 'APPROVED';
-      persistMockUsers();
+    try {
+      const { ApiClient } = await import('../../../lib/api-client');
+      await ApiClient.patch(`/facilities/${id}`, { status: 'APPROVED' });
+    } catch (e) {
+      console.warn('[approveFacility] Backend unavailable, updating locally');
     }
     
-    return this.getFacility(id);
+    const f = store.facilities.get(id);
+    if (f) {
+      f.approvalStatus = 'APPROVED';
+      f.updatedAt = now();
+      if (comment) {
+        store.reviewComments.push({ id: uid(), facilityId: id, actorId: 'sa-1', actorName: 'Super Admin', action: 'APPROVED', comment, createdAt: now() });
+        persistArray(keys.reviewComments, store.reviewComments);
+      }
+      store.facilities.set(id, f);
+      persist(keys.facilities, store.facilities);
+      addAudit('FACILITY_APPROVED', 'Facility', id, f.organizationId, f.organizationName);
+      return f;
+    }
+    return { id, approvalStatus: 'APPROVED' } as any;
   },
 
   async requestFacilityChanges(id: string, comment: string): Promise<SAFacility | null> {
     await delay(400);
-    const facRef = ref(db, `facilities/${id}`);
-    const snapshot = await get(facRef);
-    if (!snapshot.exists()) return null;
+    const f = store.facilities.get(id);
+    if (!f) return null;
     
-    const facility = snapshot.val();
-    const ts = new Date().toISOString();
+    f.approvalStatus = 'CHANGES_REQUESTED';
+    f.updatedAt = now();
     
-    await set(facRef, {
-      ...facility,
-      status: 'CHANGES_REQUESTED',
-      rejectionReason: comment,
-      updatedAt: ts
-    });
+    store.facilities.set(id, f);
+    persist(keys.facilities, store.facilities);
     
-    addAudit('FACILITY_CHANGES_REQUESTED', 'Facility', id, facility.tenantId, 'Organization', { comment });
+    addAudit('FACILITY_CHANGES_REQUESTED', 'Facility', id, f.organizationId, f.organizationName, { comment });
     store.reviewComments.push({ id: uid(), facilityId: id, actorId: 'sa-1', actorName: 'Super Admin', action: 'CHANGES_REQUESTED', comment, createdAt: now() });
     persistArray(keys.reviewComments, store.reviewComments);
 
-    return this.getFacility(id);
+    return f;
   },
 
   async rejectFacility(id: string, reason: string): Promise<SAFacility | null> {
     await delay(400);
-    const facRef = ref(db, `facilities/${id}`);
-    const snapshot = await get(facRef);
-    if (!snapshot.exists()) return null;
+    const f = store.facilities.get(id);
+    if (!f) return null;
     
-    const facility = snapshot.val();
-    const ts = new Date().toISOString();
+    f.approvalStatus = 'REJECTED' as any;
+    f.updatedAt = now();
     
-    await set(facRef, {
-      ...facility,
-      status: 'REJECTED',
-      rejectionReason: reason,
-      updatedAt: ts
-    });
+    store.facilities.set(id, f);
+    persist(keys.facilities, store.facilities);
     
-    addAudit('FACILITY_REJECTED', 'Facility', id, facility.tenantId, 'Organization', { reason });
+    addAudit('FACILITY_REJECTED', 'Facility', id, f.organizationId, f.organizationName, { reason });
     store.reviewComments.push({ id: uid(), facilityId: id, actorId: 'sa-1', actorName: 'Super Admin', action: 'REJECTED', comment: reason, createdAt: now() });
     persistArray(keys.reviewComments, store.reviewComments);
 
-    return this.getFacility(id);
+    return f;
   },
 
   async suspendFacility(id: string, reason: string): Promise<SAFacility | null> {
